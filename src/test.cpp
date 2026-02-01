@@ -1,0 +1,856 @@
+#include <cpp20.hpp>
+
+using namespace cpp20;
+using namespace vec;
+
+[[cpp11::register]]
+void dummy() {
+}
+
+[[cpp11::register]]
+SEXP foo(SEXP x) {
+  // auto ok = internal::as_r_string(r_true);
+  // return as_vector(as<r_string_t>(r_true));
+  // return r_vector_t<r_lgl>(x);
+// return as<r_vector_t<r_string_t>>(r_vector_t<r_lgl>(x));
+
+  SEXP out = internal::visit_vector(x, [&](auto xvec) -> SEXP {
+    return as<r_vec<r_str>>(xvec);
+  });
+  return out;
+
+  // return as<r_vector_t<r_string_t>>(r_vector_t<r_lgl>(x));
+
+  // // return make_list(as<r_string_t>(1.5), as<r_string_t>(na::real));
+  // return as_vector(as<r_string_t>(vec::new_vector<r_complex_t>(1, 123)));
+}
+
+[[cpp11::register]]
+SEXP bar(SEXP x) {
+  SEXP out = internal::visit_vector(x, [&](auto xvec) -> SEXP {
+    return as<r_vec<r_int>>(xvec);
+  });
+  return out;
+}
+
+
+[[cpp11::register]]
+SEXP foobar(SEXP x) {
+    auto out = internal::visit_vector(x, [&](auto xvec) -> r_vec<r_lgl> {
+      return xvec.is_na();
+  });
+  return out;
+}
+
+
+
+[[cpp11::register]]
+SEXP foofoo() {
+  auto out = r_posixcts(10);
+  out.fill(0, out.length(), 0);
+  out.set_tzone(as<r_str>("UTC"));
+
+  return out;
+}
+
+
+
+[[cpp11::register]]
+SEXP ok() {
+  r_lgl out = r_na;
+  return make_vec<r_sexp>(out, out.is_false(), out.is_true(), out.is_na());
+}
+
+[[cpp11::register]]
+SEXP yeah(SEXP x) {
+  auto out = internal::visit_vector(x, [&](auto xvec) -> r_factors {
+    return as<r_factors>(xvec);
+  });
+
+  return out;
+}
+
+
+[[cpp11::register]]
+SEXP foo2() {
+  return as<r_vec<r_int>>(r_int(1));
+}
+
+
+[[cpp11::register]]
+SEXP foo4(SEXP x) {
+  auto out = internal::visit_vector(x, [&](auto xvec) -> r_vec<r_str> {
+    return as<r_vec<r_str>>(xvec);
+  });
+
+  return out;
+}
+
+[[cpp11::register]]
+SEXP foo5(SEXP x) {
+
+  auto xvec = r_vec<r_str>(x);
+  auto out = as<r_vec<r_dbl>>(xvec);
+
+  return out;
+}
+
+
+[[cpp11::register]]
+SEXP foo6(SEXP x){
+    auto out = internal::visit_vector(x, [&](auto xvec) -> r_posixcts {
+    return as<r_posixcts>(xvec);
+  });
+
+  return out;
+}
+
+
+[[cpp11::register]]
+SEXP foo7(SEXP x){
+    auto out = internal::visit_vector(x, [&](auto xvec) -> r_vec<r_str> {
+    return xvec.names();
+  });
+
+  return out;
+}
+
+
+[[cpp11::register]]
+SEXP foo8(){
+  auto x = r_vec<r_sexp>(1);
+  auto y = r_vec<r_str>(3);
+  x.set(0, y);
+
+  return x;
+}
+
+
+[[cpp11::register]]
+SEXP foo9(){
+  auto x = make_vec<r_int>(1, 2, 3);
+  auto y = make_vec<r_dbl>(arg("x") = 2.5);
+  auto out = make_vec<r_sexp>(arg("first") = x, arg("second") = y);
+
+  return out;
+}
+
+[[cpp11::register]]
+SEXP foo10(SEXP x){
+  auto y = r_vec<r_int>(x);
+  return y.resize(10);
+}
+
+
+[[cpp11::register]]
+SEXP foo11(SEXP x){
+  auto y = r_vec<r_int>(x);
+  return attr::get_attrs(y.sexp);
+}
+
+
+[[cpp11::register]]
+SEXP foo12(SEXP x, SEXP attrs){
+  auto y = r_vec<r_int>(x);
+  attr::set_attrs(y.sexp, as<r_vec<r_sexp>>(attrs));
+  return y;
+}
+
+[[cpp11::register]]
+SEXP foo13(SEXP x){
+  auto y = r_vec<r_int>(x);
+  attr::modify_attrs(y.sexp, arg("ok") = make_vec<r_int>(1, 2, 3));
+  return y;
+}
+
+// Go from an r_sexp to an r_vec<>
+
+[[cpp11::register]]
+SEXP foo14(){
+  r_sexp x = r_sexp(r_vec<r_int>(10));
+  auto out = as<r_vec<r_str>>(x);
+
+  return out;
+}
+
+
+[[cpp11::register]]
+SEXP foo15(){
+  return r_vec<r_str>(10, "Hello");
+}
+
+[[cpp11::register]]
+SEXP foo16(SEXP x){
+  return as_vector(as<r_int>(x));
+}
+
+[[cpp11::register]]
+SEXP foo17(SEXP x){
+  return r_vec<r_sexp>(1, r_sexp(x));
+}
+
+[[cpp11::register]]
+SEXP foo18(SEXP x){
+  return x;
+  // auto y = r_vec<r_int>(10, 3);
+  // auto out = r_list(1, y);
+  // auto out2 = out.get(0);
+  //
+  // return out2;
+}
+
+
+// Compilation error (expected)
+// SEXP foo19(SEXP x){
+//   return as_vector(x);
+// }
+
+[[cpp11::register]]
+double foo20(){
+  int x = std::abs(na::integer);
+  return x == NA_INTEGER ? na::real : as<r_dbl>(x);
+}
+
+[[cpp11::register]]
+SEXP foo21(int n){
+  return r_vec<r_int>(n, 0);
+}
+[[cpp11::register]]
+SEXP foo22(SEXP cols){
+  auto new_cols = r_vec<r_sexp>(cols);
+  return new_cols.get(1);
+  // return internal::new_df_impl(r_vec<r_sexp>(cols));
+  // r_vec<r_int> row_names;
+  // return row_names;
+}
+[[cpp11::register]]
+SEXP foo23(){
+  return as<r_vec<r_str>>("data.frame");
+}
+
+[[cpp11::register]]
+SEXP foo24(SEXP cols){
+  auto new_cols = r_vec<r_sexp>(cols);
+  return new_cols.get(1);
+}
+
+[[cpp11::register]]
+SEXP foo25(SEXP cols, SEXP x){
+  auto new_cols = r_vec<r_sexp>(cols);
+  new_cols.set(1, r_sexp(x));
+  return new_cols;
+}
+
+[[cpp11::register]]
+SEXP foo26(){
+  return make_vec<r_sexp>(arg("r_sexp") = sizeof(r_sexp), arg ("SEXP") = sizeof(SEXP), arg("sexp") = sizeof(cpp11::sexp), arg("r_str") = sizeof(r_str), 
+arg("r_dbl") = sizeof(r_dbl), arg("r_int") = sizeof(r_int), arg("r_lgl") = sizeof(r_lgl), arg("r_cplx") = sizeof(r_cplx),
+  arg("r_sym") = sizeof(r_sym), arg("r_vec<r_int>") = sizeof(r_vec<r_int>));
+}
+
+
+[[cpp11::register]]
+SEXP foo27(SEXP cols){
+  return internal::new_df_impl(r_vec<r_sexp>(cols));
+}
+
+
+[[cpp11::register]]
+SEXP foo28(SEXP x, SEXP y){
+  r_vec<r_sexp> x_ = r_vec<r_sexp>(x);
+  r_sexp y_ = r_sexp(y);
+  int n = x_.length();
+  for (int i = 0; i < n; ++i){
+    x_.set(i, r_sexp(y_));
+  }
+  return x_;
+}
+
+[[cpp11::register]]
+SEXP foo29(SEXP x){
+  return internal::visit_vector(x, [&](auto xvec) -> SEXP {
+    return xvec.is_na();
+  });
+}
+
+[[cpp11::register]]
+int foo30(){
+  r_lgl x = r_true;
+  // return !x;
+  if (x != r_false){
+    return 1;
+  } else {
+    return 2;
+  }
+}
+
+[[cpp11::register]]
+SEXP foo31(){
+  return make_vec<r_dbl>(arg("x") = 2.5, arg("y") = 3.5);
+}
+[[cpp11::register]]
+SEXP foo32(){
+  return make_vec<r_int>(1, 2, 3);
+}
+
+[[cpp11::register]]
+SEXP foo33() {
+  return r_dates();
+}
+[[cpp11::register]]
+SEXP foo34() {
+  return r_dates(10);
+}
+[[cpp11::register]]
+SEXP foo35() {
+  return r_dates(10, 3);
+}
+
+[[cpp11::register]]
+SEXP foo36(int n) {
+  return r_dates(n, 0);
+}
+
+[[cpp11::register]]
+SEXP foo_rep_len(SEXP x, int n) {
+  return internal::visit_vector(x, [&](auto xvec) -> SEXP {
+    return xvec.rep_len(n);
+  });
+}
+
+
+[[cpp11::register]]
+SEXP foo_sum(SEXP x, bool na_rm) {
+  return internal::visit_vector(x, [&](auto xvec) -> SEXP {
+    using T = typename decltype(xvec)::data_type;
+    if constexpr (any<T, r_int, r_dbl>){
+      return as_vector(sum(xvec, na_rm));
+    } else {
+      return r_null;
+    }
+  });
+}
+[[cpp11::register]]
+SEXP foo_sum_int(SEXP x, bool na_rm) {
+  return internal::visit_vector(x, [&](auto xvec) -> SEXP {
+    using T = typename decltype(xvec)::data_type;
+    if constexpr (any<T, r_int>){
+      return as_vector(sum_int(xvec, na_rm));
+    } else {
+      return r_null;
+    }
+  });
+}
+[[cpp11::register]]
+SEXP foo_range(SEXP x, bool na_rm) {
+  return internal::visit_vector(x, [&](auto xvec) -> SEXP {
+    using T = typename decltype(xvec)::data_type;
+    if constexpr (any<T, r_int, r_dbl>){
+      return as_vector(range(xvec, na_rm));
+    } else {
+      return r_null;
+    }
+  });
+}
+
+[[cpp11::register]]
+SEXP foo_na_count(SEXP x) {
+  return internal::visit_vector(x, [&](auto xvec) -> SEXP {
+    return as<r_vec<r_int>>(xvec.na_count());
+  });
+}
+
+
+[[cpp11::register]]
+SEXP foo39(SEXP x, bool na_rm){
+  return internal::visit_vector(x, [&](auto xvec) -> SEXP {
+    using t = decltype(xvec);
+    if constexpr (is<t, r_vec<r_int>> || is<t, r_vec<r_dbl>> || is<t, r_vec<r_lgl>>){
+      return range(xvec, na_rm);
+    } else {
+      return r_null;
+    }
+  });
+}
+
+[[cpp11::register]]
+SEXP foo40(SEXP x, bool na_rm){
+  return internal::visit_vector(x, [&](auto xvec) -> SEXP {
+    using t = decltype(xvec);
+    if constexpr (is<t, r_vec<r_int>> || is<t, r_vec<r_dbl>> || is<t, r_vec<r_lgl>>){
+      return as_vector(min(xvec, na_rm));
+    } else {
+      Rf_error("error");
+      return r_null;
+    }
+  });
+} 
+
+[[cpp11::register]]
+SEXP foo41(SEXP x){
+  r_vec<r_int> y = r_vec<r_int>(x);
+  return as<r_vec<r_dbl>>(sum_int(y));
+}
+
+
+[[cpp11::register]]
+SEXP foo42(SEXP x) {
+  auto xvec = r_vec<r_dbl>(x);
+
+    r_size_t n = xvec.length();
+
+    r_dbl sum(0);
+
+    for (r_size_t i = 0; i < n; ++i){
+      sum += xvec.get(i);
+    }
+    return as_vector(sum);
+}
+
+
+[[cpp11::register]]
+SEXP foo43(SEXP x) {
+  auto xvec = r_vec<r_dbl>(x);
+
+    r_size_t n = xvec.length();
+    const auto *p_x = xvec.data();
+
+    r_dbl sum(0);
+
+    for (r_size_t i = 0; i < n; ++i){
+      sum += p_x[i];
+    }
+    return as_vector(sum);
+}
+
+
+[[cpp11::register]]
+SEXP foo44(SEXP x) {
+  auto xvec = r_vec<r_dbl>(x);
+
+    r_size_t n = xvec.length();
+    const auto* RESTRICT p_x = xvec.data();
+
+    r_dbl sum(0);
+
+    for (r_size_t i = 0; i < n; ++i){
+      sum += p_x[i];
+    }
+    return as_vector(sum);
+}
+
+
+// SEXP foo45(SEXP x) {
+//   auto xvec = r_vec<r_dbl>(x);
+
+//     r_size_t n = xvec.length();
+//     const auto* RESTRICT p_x = xvec.data();
+
+//     double sum(0);
+
+//     for (r_size_t i = 0; i < n; ++i){
+//       sum += p_x[i];
+//     }
+//     return as_vector(r_dbl(sum));
+// }
+
+[[cpp11::register]]
+SEXP foo46() {
+  r_str x("hi");
+  auto y = unwrap(x);
+  return y;
+}
+
+[[cpp11::register]]
+SEXP foo47(int n) {
+  return r_vec<r_int>(n, 0);
+}
+
+
+
+[[cpp11::register]]
+SEXP foo48(SEXP x) {
+  auto xvec = r_vec<r_int>(x);
+
+    r_size_t n = xvec.length();
+
+    r_int min_ = r_limits<r_int>::max();
+
+    for (r_size_t i = 0; i < n; ++i){
+      min_ = min(min_, xvec.get(i)); 
+    }
+    return as_vector(min_);
+}
+
+[[cpp11::register]]
+SEXP foo49(SEXP x, bool na_rm){
+  return internal::visit_vector(x, [&](auto xvec) -> SEXP {
+    using t = decltype(xvec);
+    if constexpr (is<t, r_vec<r_int>> || is<t, r_vec<r_dbl>> || is<t, r_vec<r_lgl>>){
+      return as_vector(sum(xvec, na_rm));
+    } else {
+      Rf_error("error");
+      return r_null;
+    }
+  });
+} 
+
+[[cpp11::register]]
+SEXP foo50(SEXP x, bool na_rm){
+  r_vec<r_int> x_ = r_vec<r_int>(x);
+
+  return as<r_vec<r_dbl>>(sum_int(x_, na_rm));
+} 
+
+
+[[cpp11::register]]
+SEXP foo51(SEXP x){
+  r_vec<r_int> x_ = r_vec<r_int>(x);
+  return abs(x_); 
+} 
+
+
+[[cpp11::register]]
+bool foo52(){
+  if constexpr (CastableToRVal<decltype("yes")>){
+    return true;
+  } else {
+   return false; 
+  }
+}
+
+[[cpp11::register]]
+bool foo53(){
+  if constexpr (CastableToRVal<int16_t>){
+    return true;
+  } else {
+   return false; 
+  }
+}
+
+
+[[cpp11::register]]
+SEXP foo54(SEXP x){
+  auto y = r_vec<r_int>(x);
+  return as_r_val(y);
+}
+
+
+[[cpp11::register]]
+SEXP foo55(SEXP x, SEXP y){
+  auto x_ = r_vec<r_int>(x);
+  auto y_ = r_vec<r_int>(y);  
+  r_size_t n = x_.length();
+  auto z = r_vec<r_int>(n);
+
+  OMP_SIMD
+  for (r_size_t i = 0; i < n; ++i){
+    z.set(i, x_.get(i) + y_.get(i));
+  }
+  return z;
+}
+
+
+[[cpp11::register]]
+SEXP foo56(SEXP x, SEXP y){
+  auto x_ = r_vec<r_dbl>(x);
+  auto y_ = r_vec<r_dbl>(y);  
+  r_size_t n = x_.length();
+  auto z = r_vec<r_dbl>(n);
+
+  OMP_SIMD
+  for (r_size_t i = 0; i < n; ++i){
+    z.set(i, x_.get(i) + y_.get(i));
+  }
+  return z;
+}
+
+[[cpp11::register]]
+SEXP foo57(SEXP x, SEXP y){
+  auto x_ = r_vec<r_dbl>(x);
+  auto y_ = r_vec<r_dbl>(y);  
+  r_size_t n = x_.length();
+  auto z = r_vec<r_dbl>(n);
+
+  auto* RESTRICT p_x = x_.data();
+  auto* RESTRICT p_y = y_.data();
+  auto* RESTRICT p_z = z.data();
+
+  OMP_SIMD
+  for (r_size_t i = 0; i < n; ++i){
+    p_z[i] = p_x[i] + p_y[i];
+  }
+  return z;
+}
+
+
+[[cpp11::register]]
+SEXP foo58(SEXP x) {
+  return internal::visit_vector(x, [&](auto xvec) -> SEXP {
+    using data_t = typename decltype(xvec)::data_type;
+    if constexpr (is<data_t, r_int> || is<data_t, r_dbl>){
+      xvec.replace(0, xvec.length(), data_t(44), data_t(1234));
+      return xvec;
+    } else {
+      return r_null;
+    }
+  });
+}
+
+
+[[cpp11::register]]
+SEXP foo_make_list(){
+  return make_vec<r_sexp>(arg("first") = "no", arg("second") = "yes", "maybe");
+}
+
+[[cpp11::register]]
+SEXP foo_make_list2(){
+  return make_vec<r_sexp>(arg("first") = r_str("no"), arg("second") = r_str("yes"), r_str("maybe"));
+}
+
+[[cpp11::register]]
+SEXP foo_add1(SEXP x, SEXP y) {
+  return internal::visit_vector(x, [&](auto xvec) -> SEXP {
+    auto yvec = as<decltype(xvec)>(y);
+    using data_t = typename decltype(xvec)::data_type;
+    if constexpr (any<data_t, r_lgl, r_int, r_int64, r_dbl>){
+      return as_vector(xvec.get(0) + yvec.get(0));
+    } else {
+      return r_null;
+    }
+  });
+}
+
+
+[[cpp11::register]]
+SEXP foo_add(SEXP x){
+  return internal::visit_vector(x, [&](auto xvec) -> SEXP {
+    using data_t = typename decltype(xvec)::data_type;
+    r_size_t n = xvec.length();
+    if constexpr (RMathType<data_t>){
+      auto out = r_vec<data_t>(n);
+      OMP_SIMD
+      for (r_size_t i = 0; i < n; ++i){
+        out.set(i, xvec.get(i) + xvec.get(i));
+      }
+      return out;
+    } else {
+      return r_null;
+    }
+  });
+}
+
+[[cpp11::register]]
+SEXP foo_vec_add(SEXP x){
+  auto xvec = as<r_vec<r_int>>(x);
+  return xvec + 2;
+}
+
+[[cpp11::register]]
+SEXP foo_vec_add2(SEXP x){
+  auto xvec = as<r_vec<r_int>>(x);
+  return 2 + xvec;
+}
+
+[[cpp11::register]]
+SEXP foo_vec_add3(SEXP x){
+  auto xvec = as<r_vec<r_int>>(x);
+  return xvec + xvec;
+}
+
+
+[[cpp11::register]]
+SEXP foo_vec_add4(SEXP x, SEXP y){
+  auto xvec = as<r_vec<r_int>>(x);
+  auto yvec = as<r_vec<r_int>>(y);
+  return xvec + yvec;
+}
+
+
+[[cpp11::register]]
+SEXP foo_vec_subtract(SEXP x, SEXP y){
+  auto xvec = as<r_vec<r_int>>(x);
+  auto yvec = as<r_vec<r_int>>(y);
+  return xvec - yvec; 
+}
+
+
+[[cpp11::register]]
+SEXP foo_vec_multiply(SEXP x, SEXP y){
+  auto xvec = as<r_vec<r_int>>(x);
+  auto yvec = as<r_vec<r_int>>(y);
+  return xvec * yvec; 
+}
+
+[[cpp11::register]]
+SEXP foo_vec_divide(SEXP x, SEXP y){
+  auto xvec = as<r_vec<r_int>>(x);
+  auto yvec = as<r_vec<r_int>>(y);
+  return xvec / yvec; 
+}
+
+[[cpp11::register]]
+SEXP foo59(SEXP x){
+  auto y = as<r_vec<r_int>>(x);
+  return y.rep_len(100);
+}
+
+[[cpp11::register]]
+SEXP foo_factor(SEXP x){
+  return internal::visit_vector(x, [&](auto xvec) -> SEXP {
+    if constexpr (RScalar<typename decltype(xvec)::data_type>){
+      return r_factors(xvec);
+    } else {
+      abort("e");
+    }
+  });
+}
+[[cpp11::register]]
+SEXP foo_factor2(SEXP x, SEXP levels){
+  return r_factors(as<r_vec<r_str>>(x), as<r_vec<r_str>>(levels));
+}
+[[cpp11::register]]
+SEXP foo_factor3(){
+  return r_factors();
+}
+
+
+[[cpp11::register]]
+SEXP foo_test(){
+  r_str x = r_str("hi");
+  return r_vec<r_str>(1, x);
+}
+
+[[cpp11::register]]
+SEXP foo_test2(){
+  r_vec<r_int> x(r_null);
+  return x;
+}
+
+
+// SEXP foo_gcd(SEXP x) {
+//   return internal::visit_vector(x, [&](auto xvec) -> SEXP {
+//     if constexpr (RMathType<typename decltype(xvec)::data_type>){
+//       return as_vector(gcd(xvec));
+//     } else {
+//       abort("e");
+//     }
+//   });
+// }
+
+
+[[cpp11::register]]
+SEXP foo_gcd(SEXP x, bool na_rm){
+  return internal::visit_vector(x, [&](auto xvec) -> SEXP {
+    using data_t = typename decltype(xvec)::data_type;
+    if constexpr (RMathType<data_t>){
+      return as_vector(gcd(xvec, na_rm));
+    } else {
+      return r_null;
+    }
+  });
+}
+
+[[cpp11::register]]
+SEXP foo_lcm(SEXP x, bool na_rm){
+  return internal::visit_vector(x, [&](auto xvec) -> SEXP {
+    using data_t = typename decltype(xvec)::data_type;
+    if constexpr (RMathType<data_t>){
+      return as_vector(lcm(xvec, na_rm));
+    } else {
+      return r_null;
+    }
+  });
+}
+
+
+[[cpp11::register]]
+SEXP foo_range2(SEXP x){
+  return internal::visit_vector(x, [&](auto xvec) -> SEXP {
+    using data_t = typename decltype(xvec)::data_type;
+    if constexpr (RMathType<data_t>){
+      return range(xvec);
+    } else {
+      return r_null;
+    }
+  });
+}
+
+[[cpp11::register]]
+SEXP foo_range3(SEXP x){
+  return internal::visit_vector(x, [&](auto xvec) -> SEXP {
+    using data_t = typename decltype(xvec)::data_type;
+    if constexpr (RMathType<data_t>){
+      return range(xvec, true);
+    } else {
+      return r_null;
+    }
+  });
+}
+
+[[cpp11::register]]
+SEXP foo_sset(SEXP x, SEXP i){
+  return internal::visit_vector(x, [&](auto xvec) -> SEXP {
+    return xvec.subset(as<r_vec<r_int>>(i));
+  });
+}
+
+
+[[cpp11::register]]
+SEXP foo_lgl(){
+  r_lgl a = r_true;
+  r_lgl b = r_false;
+  r_lgl c = r_na;
+  return make_vec<r_sexp>(
+    a && a, // true
+    a || a, // true 
+    b && b, // false
+    b || b, // false 
+    a && b, // false 
+    a || b, // true 
+    c || a, // true 
+    c && b, // false
+    a || c, // true
+    b && c, // false
+    a && c, // NA
+    b && c, // false
+    b || c, // NA
+    c && c, // NA
+    c || c // NA
+  );
+}
+
+[[cpp11::register]]
+SEXP foo_unique(SEXP x) {
+  return internal::visit_vector(x, [&](auto xvec) -> SEXP {
+    if constexpr (any<decltype(xvec), r_vec<r_sexp>>){
+      return r_null;
+    } else {
+      return unique(xvec);
+    }
+  });
+}
+
+
+[[cpp11::register]]
+SEXP foo_unique_strs(SEXP x) {
+  return internal::visit_vector(x, [&](auto xvec) -> SEXP {
+    if constexpr (any<decltype(xvec), r_vec<r_sexp>>){
+      return r_null;
+    } else {
+      return as<r_vec<r_str>>(unique(xvec));
+    }
+  });
+}
+
+
+[[cpp11::register]]
+SEXP foo_match_unique(SEXP x) {
+  return internal::visit_vector(x, [&](auto xvec) -> SEXP {
+    if constexpr (any<decltype(xvec), r_vec<r_sexp>>){
+      return r_null;
+    } else {
+      return match(xvec, unique(xvec));
+    }
+  });
+}
