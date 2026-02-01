@@ -17,6 +17,16 @@ struct r_vec {
   // T - Otherwise
   using ptr_t = std::conditional_t<RPtrWritableType<T>, unwrap_t<T>*, const SEXP*>;  
   ptr_t m_ptr = nullptr;
+
+  void initialise_ptr(){
+    if constexpr (RPtrWritableType<T>) {
+      m_ptr = internal::vector_ptr<T>(unwrap(sexp));
+    } else if constexpr (any<T, r_sexp, r_sym>) {
+      m_ptr = (const SEXP*) DATAPTR_RO(unwrap(sexp));
+      } else if constexpr (is<T, r_str>){
+      m_ptr = (const SEXP*) STRING_PTR_RO(unwrap(sexp));
+      }
+  }
       
   public:
 
@@ -28,13 +38,7 @@ struct r_vec {
   explicit r_vec(r_size_t n)
     : sexp(internal::new_vec_impl<std::remove_cvref_t<T>>(n))
   {
-    if constexpr (RPtrWritableType<T>) {
-      m_ptr = internal::vector_ptr<T>(unwrap(sexp));
-    } else if constexpr (any<T, r_sexp, r_sym>) {
-      m_ptr = (const SEXP*) VECTOR_PTR_RO(unwrap(sexp));
-      } else if constexpr (is<T, r_str>){
-      m_ptr = (const SEXP*) STRING_PTR_RO(unwrap(sexp));
-      }
+    initialise_ptr();
   }
 
   template<typename U>
@@ -49,15 +53,7 @@ struct r_vec {
   // Constructors from existing r_sexp/SEXP
   explicit r_vec(r_sexp s) : sexp(std::move(s)) {
     if (unwrap(sexp) != R_NilValue) {
-      // vector_ptr helper must be updated to return SEXP* for r_sexp/r_str/r_sym
-      // We cast strictly to the stored type
-      if constexpr (RPtrWritableType<T>) {
-        m_ptr = internal::vector_ptr<T>(sexp);
-      } else if constexpr (any<T, r_sexp, r_sym>) {
-        m_ptr = (const SEXP*) VECTOR_PTR_RO(sexp); 
-      } else if constexpr (is<T, r_str>){
-        m_ptr = (const SEXP*) STRING_PTR_RO(sexp);
-      }
+      initialise_ptr();
     }
 }
 
