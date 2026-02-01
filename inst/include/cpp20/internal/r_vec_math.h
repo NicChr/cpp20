@@ -271,6 +271,38 @@ T lcm(const r_vec<T> &x, bool na_rm = false, T tol = r_limits<T>::tolerance()){
     return out;
   }
 
+
+// r_lgl not bool because bool can't be NA
+template <RVal T>
+inline r_lgl all_whole_numbers(r_vec<T> x, bool na_rm = false, r_dbl tol = r_limits<r_dbl>::tolerance()){
+
+    if constexpr (RIntegerType<T>){
+        return r_true;
+    } else if constexpr (RFloatType<T>){
+        
+        r_size_t n = x.length();
+
+        r_lgl out = r_true;
+        r_size_t na_count = 0;
+
+        for (r_size_t i = 0; i < n; ++i) {
+            out = is_whole_number(x.get(i), tol);
+            na_count += is_na(out);
+            if (out == r_false){
+                break;
+            }
+        }
+        if (out == r_true && !na_rm && na_count > 0){
+            out = r_na;
+        } else if (na_rm && na_count == n){
+            out = r_true;
+        }
+        return out;
+    } else {
+        return r_false;
+    }
+}
+
 }
 
 

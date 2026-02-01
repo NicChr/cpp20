@@ -636,6 +636,13 @@ extern "C" SEXP _cpp20_foo_match_unique(SEXP x) {
     return cpp11::as_sexp(foo_match_unique(cpp11::as_cpp<cpp11::decay_t<SEXP>>(x)));
   END_CPP11
 }
+// test.cpp
+SEXP foo_all_whole(SEXP x);
+extern "C" SEXP _cpp20_foo_all_whole(SEXP x) {
+  BEGIN_CPP11
+    return cpp11::as_sexp(foo_all_whole(cpp11::as_cpp<cpp11::decay_t<SEXP>>(x)));
+  END_CPP11
+}
 
 extern "C" {
 static const R_CallMethodDef CallEntries[] = {
@@ -697,6 +704,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"_cpp20_foo9",             (DL_FUNC) &_cpp20_foo9,             0},
     {"_cpp20_foo_add",          (DL_FUNC) &_cpp20_foo_add,          1},
     {"_cpp20_foo_add1",         (DL_FUNC) &_cpp20_foo_add1,         2},
+    {"_cpp20_foo_all_whole",    (DL_FUNC) &_cpp20_foo_all_whole,    1},
     {"_cpp20_foo_factor",       (DL_FUNC) &_cpp20_foo_factor,       1},
     {"_cpp20_foo_factor2",      (DL_FUNC) &_cpp20_foo_factor2,      2},
     {"_cpp20_foo_factor3",      (DL_FUNC) &_cpp20_foo_factor3,      0},

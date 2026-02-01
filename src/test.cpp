@@ -854,3 +854,11 @@ SEXP foo_match_unique(SEXP x) {
     }
   });
 }
+
+
+[[cpp11::register]]
+SEXP foo_all_whole(SEXP x) {
+  return internal::visit_vector(x, [&](auto xvec) -> SEXP {
+    return as_vector(all_whole_numbers(xvec));
+  });
+}

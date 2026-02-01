@@ -359,3 +359,7 @@ foo_unique_strs <- function(x) {
 foo_match_unique <- function(x) {
   .Call(`_cpp20_foo_match_unique`, x)
 }
+
+foo_all_whole <- function(x) {
+  .Call(`_cpp20_foo_all_whole`, x)
+}

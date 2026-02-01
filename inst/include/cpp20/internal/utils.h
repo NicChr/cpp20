@@ -1,5 +1,5 @@
-#ifndef CPP20_C_CORE_H
-#define CPP20_C_CORE_H
+#ifndef CPP20_UTILS_H
+#define CPP20_UTILS_H
 
 // cpp20 Core definitions and templates
 // License: MIT
@@ -64,45 +64,6 @@ inline r_sexp shallow_copy(r_sexp x){
 //   r_sexp out = fn::eval_fn(colon_fn, env::base_env, 1, n);
 //   return r_vec<r_int>(out);
 // }
-
-// r_lgl not bool because bool can't be NA
-inline r_lgl all_whole_numbers(r_sexp x, r_dbl tol_, bool na_rm_){
-
-  r_size_t n = x.length();
-
-  // Use r_lgl instead of bool as r_lgl can hold NA
-  r_lgl out = r_true;
-  r_size_t na_count = 0;
-
-  switch ( internal::CPP20_TYPEOF(x) ){
-  case LGLSXP:
-  case INTSXP:
-  case internal::CPP20_INT64SXP: {
-    break;
-  }
-  case REALSXP: {
-    auto xvec = as<r_vec<r_dbl>>(x);
-    for (r_size_t i = 0; i < n; ++i) {
-      out = static_cast<r_lgl>(is_whole_number(xvec.get(i), tol_));
-      na_count += is_na(out);
-      if (out == r_false){
-        break;
-      }
-    }
-    if (out == r_true && !na_rm_ && na_count > 0){
-      out = na::logical;
-    } else if (na_rm_ && na_count == n){
-      out = r_true;
-    }
-    break;
-  }
-  default: {
-    out = r_false;
-    break;
-  }
-  }
-  return out;
-}
 }
 
 namespace vec {
