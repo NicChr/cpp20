@@ -360,6 +360,10 @@ foo_match_unique <- function(x) {
   .Call(`_cpp20_foo_match_unique`, x)
 }
 
+foo_match <- function(x, table) {
+  .Call(`_cpp20_foo_match`, x, table)
+}
+
 foo_all_whole <- function(x) {
   .Call(`_cpp20_foo_all_whole`, x)
 }

@@ -856,6 +856,18 @@ SEXP foo_match_unique(SEXP x) {
 
 
 [[cpp11::register]]
+SEXP foo_match(SEXP x, SEXP table) {
+  return internal::visit_vector(x, [&](auto xvec) -> SEXP {
+    if constexpr (any<decltype(xvec), r_vec<r_sexp>>){
+      return r_null;
+    } else {
+      return match(xvec, as<decltype(xvec)>(table));
+    }
+  });
+}
+
+
+[[cpp11::register]]
 SEXP foo_all_whole(SEXP x) {
   return internal::visit_vector(x, [&](auto xvec) -> SEXP {
     return as_vector(all_whole_numbers(xvec));
