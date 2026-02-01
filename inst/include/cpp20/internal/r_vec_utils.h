@@ -16,10 +16,6 @@ using vec_ptr_t = std::conditional_t<std::is_const_v<T>, const unwrap_t<T>*, unw
 inline r_sexp new_vec(SEXPTYPE type, r_size_t n){
   return r_sexp(cpp11::safe[Rf_allocVector](type, n));
 }
-// Not used, to be removed later
-inline r_sexp coerce_vec(SEXP x, SEXPTYPE type){
-  return r_sexp(cpp11::safe[Rf_coerceVector](x, type));
-}
 
 template<RPtrWritableType T>
 inline vec_ptr_t<T> vector_ptr(SEXP x) {

@@ -6,6 +6,13 @@ using namespace cpp20;
 void dummy() {
 }
 
+
+[[cpp11::register]]
+void cpp_set_threads(int n){
+  set_threads(n);
+}
+
+
 [[cpp11::register]]
 SEXP foo(SEXP x) {
   // auto ok = internal::as_r_string(r_true);
@@ -242,7 +249,7 @@ SEXP foo25(SEXP cols, SEXP x){
 
 [[cpp11::register]]
 SEXP foo26(){
-  return make_vec<r_sexp>(arg("r_sexp") = sizeof(r_sexp), arg ("SEXP") = sizeof(SEXP), arg("sexp") = sizeof(cpp11::sexp), arg("r_str") = sizeof(r_str), 
+  return make_vec<r_sexp>(arg("r_sexp") = sizeof(r_sexp), arg ("SEXP") = sizeof(SEXP), arg("sexp") = sizeof(cpp11::sexp), arg("r_str") = sizeof(r_str),
 arg("r_dbl") = sizeof(r_dbl), arg("r_int") = sizeof(r_int), arg("r_lgl") = sizeof(r_lgl), arg("r_cplx") = sizeof(r_cplx),
   arg("r_sym") = sizeof(r_sym), arg("r_vec<r_int>") = sizeof(r_vec<r_int>));
 }
@@ -383,7 +390,7 @@ SEXP foo40(SEXP x, bool na_rm){
       return r_null;
     }
   });
-} 
+}
 
 [[cpp11::register]]
 SEXP foo41(SEXP x){
@@ -476,7 +483,7 @@ SEXP foo48(SEXP x) {
     r_int min_ = r_limits<r_int>::max();
 
     for (r_size_t i = 0; i < n; ++i){
-      min_ = min(min_, xvec.get(i)); 
+      min_ = min(min_, xvec.get(i));
     }
     return as_vector(min_);
 }
@@ -492,21 +499,21 @@ SEXP foo49(SEXP x, bool na_rm){
       return r_null;
     }
   });
-} 
+}
 
 [[cpp11::register]]
 SEXP foo50(SEXP x, bool na_rm){
   r_vec<r_int> x_ = r_vec<r_int>(x);
 
   return as<r_vec<r_dbl>>(sum_int(x_, na_rm));
-} 
+}
 
 
 [[cpp11::register]]
 SEXP foo51(SEXP x){
   r_vec<r_int> x_ = r_vec<r_int>(x);
-  return abs(x_); 
-} 
+  return abs(x_);
+}
 
 
 [[cpp11::register]]
@@ -514,7 +521,7 @@ bool foo52(){
   if constexpr (CastableToRVal<decltype("yes")>){
     return true;
   } else {
-   return false; 
+   return false;
   }
 }
 
@@ -523,7 +530,7 @@ bool foo53(){
   if constexpr (CastableToRVal<int16_t>){
     return true;
   } else {
-   return false; 
+   return false;
   }
 }
 
@@ -538,7 +545,7 @@ SEXP foo54(SEXP x){
 [[cpp11::register]]
 SEXP foo55(SEXP x, SEXP y){
   auto x_ = r_vec<r_int>(x);
-  auto y_ = r_vec<r_int>(y);  
+  auto y_ = r_vec<r_int>(y);
   r_size_t n = x_.length();
   auto z = r_vec<r_int>(n);
 
@@ -553,7 +560,7 @@ SEXP foo55(SEXP x, SEXP y){
 [[cpp11::register]]
 SEXP foo56(SEXP x, SEXP y){
   auto x_ = r_vec<r_dbl>(x);
-  auto y_ = r_vec<r_dbl>(y);  
+  auto y_ = r_vec<r_dbl>(y);
   r_size_t n = x_.length();
   auto z = r_vec<r_dbl>(n);
 
@@ -567,7 +574,7 @@ SEXP foo56(SEXP x, SEXP y){
 [[cpp11::register]]
 SEXP foo57(SEXP x, SEXP y){
   auto x_ = r_vec<r_dbl>(x);
-  auto y_ = r_vec<r_dbl>(y);  
+  auto y_ = r_vec<r_dbl>(y);
   r_size_t n = x_.length();
   auto z = r_vec<r_dbl>(n);
 
@@ -670,7 +677,7 @@ SEXP foo_vec_add4(SEXP x, SEXP y){
 SEXP foo_vec_subtract(SEXP x, SEXP y){
   auto xvec = as<r_vec<r_int>>(x);
   auto yvec = as<r_vec<r_int>>(y);
-  return xvec - yvec; 
+  return xvec - yvec;
 }
 
 
@@ -678,14 +685,14 @@ SEXP foo_vec_subtract(SEXP x, SEXP y){
 SEXP foo_vec_multiply(SEXP x, SEXP y){
   auto xvec = as<r_vec<r_int>>(x);
   auto yvec = as<r_vec<r_int>>(y);
-  return xvec * yvec; 
+  return xvec * yvec;
 }
 
 [[cpp11::register]]
 SEXP foo_vec_divide(SEXP x, SEXP y){
   auto xvec = as<r_vec<r_int>>(x);
   auto yvec = as<r_vec<r_int>>(y);
-  return xvec / yvec; 
+  return xvec / yvec;
 }
 
 [[cpp11::register]]
@@ -802,12 +809,12 @@ SEXP foo_lgl(){
   r_lgl c = r_na;
   return make_vec<r_sexp>(
     a && a, // true
-    a || a, // true 
+    a || a, // true
     b && b, // false
-    b || b, // false 
-    a && b, // false 
-    a || b, // true 
-    c || a, // true 
+    b || b, // false
+    a && b, // false
+    a || b, // true
+    c || a, // true
     c && b, // false
     a || c, // true
     b && c, // false
@@ -884,4 +891,9 @@ SEXP foo_copy(SEXP x) {
 [[cpp11::register]]
 SEXP foo_copy2(SEXP x) {
   return deep_copy(r_sexp(x));
+}
+
+[[cpp11::register]]
+SEXP foo_new_int(int n){
+  return r_vec<r_int>(n, 0);
 }

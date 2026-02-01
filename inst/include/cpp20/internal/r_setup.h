@@ -46,12 +46,6 @@
 #define OMP_DO_NOTHING
 #endif
 
-// Kept for dependency reasons
-
-#ifndef VECTOR_PTR_RO
-#define VECTOR_PTR_RO(x) ((const SEXP *) DATAPTR_RO(x))
-#endif
-
 namespace cpp20 {
     
 using r_size_t = R_xlen_t;
@@ -60,35 +54,10 @@ namespace internal {
 
 inline constexpr int64_t CPP20_OMP_THRESHOLD = 100000;
 inline constexpr SEXPTYPE CPP20_INT64SXP = 64;
+inline int cpp20_n_threads = 1;
 
 inline SEXPTYPE CPP20_TYPEOF(SEXP x){
   return Rf_inherits(x, "integer64") ? internal::CPP20_INT64SXP : TYPEOF(x);
-}
-
-inline int64_t* INTEGER64_PTR(SEXP x) {
-  return reinterpret_cast<int64_t*>(REAL(x));
-}
-inline const int64_t* INTEGER64_PTR_RO(SEXP x) {
-  return reinterpret_cast<const int64_t*>(REAL_RO(x));
-}
-// Check that n = 0 to avoid R CMD warnings
-inline void *safe_memmove(void *dst, const void *src, size_t n){
-  return n ? std::memmove(dst, src, n) : dst;
-}
-
-inline SEXP CPP20_CORES = NULL;
-
-inline int get_threads(){
-  if (CPP20_CORES == NULL){
-    CPP20_CORES = Rf_install("cpp20.cores");
-  }
-  int n_threads = cpp11::safe[Rf_asInteger](Rf_GetOption1(CPP20_CORES));
-  n_threads = std::min(n_threads, OMP_MAX_THREADS);
-  return n_threads > 1 ? n_threads : 1;
-}
-
-inline int calc_threads(r_size_t data_size){
-  return data_size >= CPP20_OMP_THRESHOLD ? get_threads() : 1;
 }
 
 template<typename T>
@@ -129,6 +98,25 @@ internal::r_safe_impl(                                                          
       return F(std::forward<decltype(args)>(args)...);                                 \
     }                                                                                  \
 )
+
+}
+
+// Set & get the number of OMP threads
+inline int get_threads(){
+  auto n_threads = std::min(internal::cpp20_n_threads, OMP_MAX_THREADS);
+  return n_threads > 1 ? n_threads : 1;
+}
+inline void set_threads(int n){
+  int max_threads = OMP_MAX_THREADS;
+  internal::cpp20_n_threads = std::min(n, max_threads);
+}
+
+
+namespace internal {
+
+inline int calc_threads(r_size_t data_size){
+  return data_size >= CPP20_OMP_THRESHOLD ? get_threads() : 1;
+}
 
 }
 

@@ -4,6 +4,10 @@ dummy <- function() {
   invisible(.Call(`_cpp20_dummy`))
 }
 
+cpp_set_threads <- function(n) {
+  invisible(.Call(`_cpp20_cpp_set_threads`, n))
+}
+
 foo <- function(x) {
   .Call(`_cpp20_foo`, x)
 }
@@ -374,4 +378,8 @@ foo_copy <- function(x) {
 
 foo_copy2 <- function(x) {
   .Call(`_cpp20_foo_copy2`, x)
+}
+
+foo_new_int <- function(n) {
+  .Call(`_cpp20_foo_new_int`, n)
 }

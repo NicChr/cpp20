@@ -14,6 +14,14 @@ extern "C" SEXP _cpp20_dummy() {
   END_CPP11
 }
 // test.cpp
+void cpp_set_threads(int n);
+extern "C" SEXP _cpp20_cpp_set_threads(SEXP n) {
+  BEGIN_CPP11
+    cpp_set_threads(cpp11::as_cpp<cpp11::decay_t<int>>(n));
+    return R_NilValue;
+  END_CPP11
+}
+// test.cpp
 SEXP foo(SEXP x);
 extern "C" SEXP _cpp20_foo(SEXP x) {
   BEGIN_CPP11
@@ -664,10 +672,18 @@ extern "C" SEXP _cpp20_foo_copy2(SEXP x) {
     return cpp11::as_sexp(foo_copy2(cpp11::as_cpp<cpp11::decay_t<SEXP>>(x)));
   END_CPP11
 }
+// test.cpp
+SEXP foo_new_int(int n);
+extern "C" SEXP _cpp20_foo_new_int(SEXP n) {
+  BEGIN_CPP11
+    return cpp11::as_sexp(foo_new_int(cpp11::as_cpp<cpp11::decay_t<int>>(n)));
+  END_CPP11
+}
 
 extern "C" {
 static const R_CallMethodDef CallEntries[] = {
     {"_cpp20_bar",              (DL_FUNC) &_cpp20_bar,              1},
+    {"_cpp20_cpp_set_threads",  (DL_FUNC) &_cpp20_cpp_set_threads,  1},
     {"_cpp20_dummy",            (DL_FUNC) &_cpp20_dummy,            0},
     {"_cpp20_foo",              (DL_FUNC) &_cpp20_foo,              1},
     {"_cpp20_foo10",            (DL_FUNC) &_cpp20_foo10,            1},
@@ -739,6 +755,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"_cpp20_foo_match",        (DL_FUNC) &_cpp20_foo_match,        2},
     {"_cpp20_foo_match_unique", (DL_FUNC) &_cpp20_foo_match_unique, 1},
     {"_cpp20_foo_na_count",     (DL_FUNC) &_cpp20_foo_na_count,     1},
+    {"_cpp20_foo_new_int",      (DL_FUNC) &_cpp20_foo_new_int,      1},
     {"_cpp20_foo_range",        (DL_FUNC) &_cpp20_foo_range,        2},
     {"_cpp20_foo_range2",       (DL_FUNC) &_cpp20_foo_range2,       1},
     {"_cpp20_foo_range3",       (DL_FUNC) &_cpp20_foo_range3,       1},
