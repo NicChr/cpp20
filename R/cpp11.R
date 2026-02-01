@@ -383,3 +383,7 @@ foo_copy2 <- function(x) {
 foo_new_int <- function(n) {
   .Call(`_cpp20_foo_new_int`, n)
 }
+
+foo_copy_constructor <- function(x) {
+  .Call(`_cpp20_foo_copy_constructor`, x)
+}

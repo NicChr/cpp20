@@ -10,6 +10,13 @@ namespace cpp20 {
 template<RVal T>
 struct r_vec {
 
+  r_sexp sexp = r_null;
+  using data_type = T;
+
+  bool is_null() const noexcept {
+    return sexp.is_null();
+  }
+
   private:
 
   // Initialise read-only ptr to: 
@@ -19,20 +26,18 @@ struct r_vec {
   ptr_t m_ptr = nullptr;
 
   void initialise_ptr(){
-    if constexpr (RPtrWritableType<T>) {
-      m_ptr = internal::vector_ptr<T>(unwrap(sexp));
-    } else if constexpr (any<T, r_sexp, r_sym>) {
-      m_ptr = (const SEXP*) DATAPTR_RO(unwrap(sexp));
+    if (!is_null()) {
+      if constexpr (RPtrWritableType<T>) {
+        m_ptr = internal::vector_ptr<T>(unwrap(sexp));
+      } else if constexpr (any<T, r_sexp, r_sym>) {
+        m_ptr = (const SEXP*) DATAPTR_RO(unwrap(sexp));
       } else if constexpr (is<T, r_str>){
-      m_ptr = (const SEXP*) STRING_PTR_RO(unwrap(sexp));
+        m_ptr = (const SEXP*) STRING_PTR_RO(unwrap(sexp));
       }
+    }
   }
       
   public:
-
-  r_sexp sexp = r_null;
-
-  using data_type = T;
 
   // Constructor that wraps new_vec_impl<T>
   explicit r_vec(r_size_t n)
@@ -52,16 +57,46 @@ struct r_vec {
 
   // Constructors from existing r_sexp/SEXP
   explicit r_vec(r_sexp s) : sexp(std::move(s)) {
-    if (unwrap(sexp) != R_NilValue) {
-      initialise_ptr();
-    }
-}
+    initialise_ptr();
+  }
 
-explicit r_vec(SEXP s) : r_vec(r_sexp(s)) {}
+  explicit r_vec(SEXP s) : r_vec(r_sexp(s)) {}
+
+  // // Copy constructor - copy sexp and re-initialise pointer
+  // r_vec(const r_vec& other) : sexp(other.sexp) {
+  //   initialise_ptr();
+  // }
+
+  // // Move constructor - move both sexp and pointer
+  // r_vec(r_vec&& other) noexcept 
+  //   : sexp(std::move(other.sexp)), m_ptr(other.m_ptr) 
+  // {
+  //   other.m_ptr = nullptr;
+  // }
+
+  // // Copy assignment - copy sexp and re-initialise pointer
+  // r_vec& operator=(const r_vec& other) {
+  //   if (this != &other) {
+  //     sexp = other.sexp;
+  //     m_ptr = nullptr;
+  //     initialise_ptr();
+  //   }
+  //   return *this;
+  // }
+
+  // // Move assignment - move both sexp and pointer
+  // r_vec& operator=(r_vec&& other) noexcept {
+  //   if (this != &other) {
+  //     sexp = std::move(other.sexp);
+  //     m_ptr = other.m_ptr;
+  //     other.m_ptr = nullptr;
+  //   }
+  //   return *this;
+  // }
 
   // Implicit conversion to SEXP
   operator SEXP() const {
-    return sexp;
+    return unwrap(sexp);
   }
 
   // Explicit conversion to r_sexp
@@ -81,10 +116,6 @@ explicit r_vec(SEXP s) : r_vec(r_sexp(s)) {}
 
   ptr_t end() {
       return data() + size();
-  }
-
-  bool is_null() const noexcept {
-    return sexp.is_null();
   }
 
   r_size_t length() const noexcept {

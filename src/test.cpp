@@ -897,3 +897,10 @@ SEXP foo_copy2(SEXP x) {
 SEXP foo_new_int(int n){
   return r_vec<r_int>(n, 0);
 }
+
+[[cpp11::register]]
+SEXP foo_copy_constructor(SEXP x){
+  auto y = r_vec<r_int>(x);
+  auto z = y;
+  return as_vector(z.get(0));
+}
