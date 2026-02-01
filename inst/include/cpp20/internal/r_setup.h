@@ -96,6 +96,40 @@ inline constexpr bool between_impl(const T x, const T lo, const T hi) {
   return x >= lo && x <= hi;
 }
 
+// Wrap any callable f, and return a new callable that:
+//   - takes (auto&&... args)
+//   - calls f(args...) inside cpp11::unwind_protect
+
+// Like cpp11::safe but works also  for variadic fns
+template <typename F>
+auto r_safe_impl(F f) {
+  return [f](auto&&... args)
+    -> decltype(f(std::forward<decltype(args)>(args)...)) {
+
+      using result_t = decltype(f(std::forward<decltype(args)>(args)...));
+
+      if constexpr (std::is_void_v<result_t>) {
+        cpp11::unwind_protect([&] {
+          f(std::forward<decltype(args)>(args)...);
+        });
+        // no return; result_t is void
+      } else {
+        return cpp11::unwind_protect([&]() -> result_t {
+          return f(std::forward<decltype(args)>(args)...);
+        });
+      }
+    };
+
+}
+
+#define r_safe(F)                                                                      \
+internal::r_safe_impl(                                                                 \
+  [&](auto&&... args)                                                                  \
+    -> decltype(F(std::forward<decltype(args)>(args)...)) {                            \
+      return F(std::forward<decltype(args)>(args)...);                                 \
+    }                                                                                  \
+)
+
 }
 
 // Recycle loop indices
@@ -109,7 +143,7 @@ template <typename... Args>
   cpp11::stop(fmt, args...);
 }
 
-}
+} // end of cpp20 namespace
 
 // Making complex numbers hashable
 namespace ankerl {

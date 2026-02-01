@@ -88,6 +88,16 @@ inline r_vec<T> make_vec(Args... args) {
   }
 }
 
+namespace attr {
+
+template<typename... Args>
+inline void modify_attrs(r_sexp x, Args... args) {
+  auto attrs = make_vec<r_sexp>(args...);
+  internal::modify_attrs_impl(x, attrs);
+}
+
+}
+
 }
 
 #endif

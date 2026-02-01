@@ -1,7 +1,6 @@
 #include <cpp20.hpp>
 
 using namespace cpp20;
-using namespace vec;
 
 [[cpp11::register]]
 void dummy() {
@@ -861,4 +860,16 @@ SEXP foo_all_whole(SEXP x) {
   return internal::visit_vector(x, [&](auto xvec) -> SEXP {
     return as_vector(all_whole_numbers(xvec));
   });
+}
+
+[[cpp11::register]]
+SEXP foo_copy(SEXP x) {
+  return internal::visit_vector(x, [&](auto xvec) -> SEXP {
+    return deep_copy(xvec);
+  });
+}
+
+[[cpp11::register]]
+SEXP foo_copy2(SEXP x) {
+  return deep_copy(r_sexp(x));
 }

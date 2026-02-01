@@ -363,3 +363,11 @@ foo_match_unique <- function(x) {
 foo_all_whole <- function(x) {
   .Call(`_cpp20_foo_all_whole`, x)
 }
+
+foo_copy <- function(x) {
+  .Call(`_cpp20_foo_copy`, x)
+}
+
+foo_copy2 <- function(x) {
+  .Call(`_cpp20_foo_copy2`, x)
+}
