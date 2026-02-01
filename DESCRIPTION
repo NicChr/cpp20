@@ -1,5 +1,5 @@
 Package: cpp20
-Title: A C++20 API for interacting with R
+Title: A C++20 API For Interacting With R
 Version: 0.0.0.9000
 Authors@R: 
     person("Nick", "Christofides", , "nick.christofides.r@gmail.com", role = c("aut", "cre"),
