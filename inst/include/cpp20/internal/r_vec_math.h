@@ -8,17 +8,23 @@ namespace cpp20 {
 template<typename T, typename U>
 requires (RVector<T> || RVector<U>)
 inline auto operator+(const T& lhs, const U& rhs) { 
-
     if constexpr (RVector<T> && RVector<U>){
-        if (lhs.length() == 1){
+        r_size_t lhs_size = lhs.length();
+        r_size_t rhs_size = rhs.length();
+        if (lhs_size == 1){
             return lhs.get(0) + rhs;
-        } else if (rhs.length() == 1){
+        } else if (rhs_size == 1){
             return lhs + rhs.get(0);
+        } else if (lhs_size == rhs_size){
+            using common_t = common_r_math_t<typename T::data_type, typename U::data_type>;
+            r_vec<common_t> out(lhs_size);
+            OMP_SIMD
+            for (r_size_t i = 0; i < lhs_size; ++i){
+                out.set(i, lhs.get(i) + rhs.get(i));
+            }
+            return out;
         } else {
             // Slower recycling approach
-            r_size_t lhs_size = lhs.length();
-            r_size_t rhs_size = rhs.length();
-
             r_size_t n = std::max(lhs_size, rhs_size);
             if (lhs_size == 0 || rhs_size == 0){
                 n = 0;
@@ -56,18 +62,24 @@ inline auto operator+(const T& lhs, const U& rhs) {
 
 template<typename T, typename U>
 requires (RVector<T> || RVector<U>)
-inline auto operator-(const T& lhs, const U& rhs) {
-
+inline auto operator-(const T& lhs, const U& rhs) { 
     if constexpr (RVector<T> && RVector<U>){
-        if (lhs.length() == 1){
+        r_size_t lhs_size = lhs.length();
+        r_size_t rhs_size = rhs.length();
+        if (lhs_size == 1){
             return lhs.get(0) - rhs;
-        } else if (rhs.length() == 1){
+        } else if (rhs_size == 1){
             return lhs - rhs.get(0);
+        } else if (lhs_size == rhs_size){
+            using common_t = common_r_math_t<typename T::data_type, typename U::data_type>;
+            r_vec<common_t> out(lhs_size);
+            OMP_SIMD
+            for (r_size_t i = 0; i < lhs_size; ++i){
+                out.set(i, lhs.get(i) - rhs.get(i));
+            }
+            return out;
         } else {
             // Slower recycling approach
-            r_size_t lhs_size = lhs.length();
-            r_size_t rhs_size = rhs.length();
-
             r_size_t n = std::max(lhs_size, rhs_size);
             if (lhs_size == 0 || rhs_size == 0){
                 n = 0;
@@ -105,18 +117,24 @@ inline auto operator-(const T& lhs, const U& rhs) {
 
 template<typename T, typename U>
 requires (RVector<T> || RVector<U>)
-inline auto operator*(const T& lhs, const U& rhs) {
-
+inline auto operator*(const T& lhs, const U& rhs) { 
     if constexpr (RVector<T> && RVector<U>){
-        if (lhs.length() == 1){
+        r_size_t lhs_size = lhs.length();
+        r_size_t rhs_size = rhs.length();
+        if (lhs_size == 1){
             return lhs.get(0) * rhs;
-        } else if (rhs.length() == 1){
+        } else if (rhs_size == 1){
             return lhs * rhs.get(0);
+        } else if (lhs_size == rhs_size){
+            using common_t = common_r_math_t<typename T::data_type, typename U::data_type>;
+            r_vec<common_t> out(lhs_size);
+            OMP_SIMD
+            for (r_size_t i = 0; i < lhs_size; ++i){
+                out.set(i, lhs.get(i) * rhs.get(i));
+            }
+            return out;
         } else {
             // Slower recycling approach
-            r_size_t lhs_size = lhs.length();
-            r_size_t rhs_size = rhs.length();
-
             r_size_t n = std::max(lhs_size, rhs_size);
             if (lhs_size == 0 || rhs_size == 0){
                 n = 0;
@@ -154,18 +172,25 @@ inline auto operator*(const T& lhs, const U& rhs) {
 
 template<typename T, typename U>
 requires (RVector<T> || RVector<U>)
-inline auto operator/(const T& lhs, const U& rhs) {
+inline r_vec<r_dbl> operator/(const T& lhs, const U& rhs) {
 
     if constexpr (RVector<T> && RVector<U>){
-        if (lhs.length() == 1){
+        r_size_t lhs_size = lhs.length();
+        r_size_t rhs_size = rhs.length();
+
+        if (lhs_size == 1){
             return lhs.get(0) / rhs;
-        } else if (rhs.length() == 1){
+        } else if (rhs_size == 1){
             return lhs / rhs.get(0);
+        } else if (lhs_size == rhs_size){
+            r_vec<r_dbl> out(lhs_size);
+            OMP_SIMD
+            for (r_size_t i = 0; i < lhs_size; ++i){
+                out.set(i, lhs.get(i) / rhs.get(i));
+            }
+            return out;
         } else {
             // Slower recycling approach
-            r_size_t lhs_size = lhs.length();
-            r_size_t rhs_size = rhs.length();
-
             r_size_t n = std::max(lhs_size, rhs_size);
             if (lhs_size == 0 || rhs_size == 0){
                 n = 0;
