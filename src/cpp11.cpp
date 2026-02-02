@@ -526,6 +526,20 @@ extern "C" SEXP _cpp20_foo_vec_add5(SEXP x, SEXP y) {
   END_CPP11
 }
 // test.cpp
+SEXP foo_vec_add6(SEXP x, SEXP y);
+extern "C" SEXP _cpp20_foo_vec_add6(SEXP x, SEXP y) {
+  BEGIN_CPP11
+    return cpp11::as_sexp(foo_vec_add6(cpp11::as_cpp<cpp11::decay_t<SEXP>>(x), cpp11::as_cpp<cpp11::decay_t<SEXP>>(y)));
+  END_CPP11
+}
+// test.cpp
+SEXP foo_vec_add7(SEXP x);
+extern "C" SEXP _cpp20_foo_vec_add7(SEXP x) {
+  BEGIN_CPP11
+    return cpp11::as_sexp(foo_vec_add7(cpp11::as_cpp<cpp11::decay_t<SEXP>>(x)));
+  END_CPP11
+}
+// test.cpp
 SEXP foo_vec_subtract(SEXP x, SEXP y);
 extern "C" SEXP _cpp20_foo_vec_subtract(SEXP x, SEXP y) {
   BEGIN_CPP11
@@ -635,6 +649,13 @@ SEXP foo_unique(SEXP x);
 extern "C" SEXP _cpp20_foo_unique(SEXP x) {
   BEGIN_CPP11
     return cpp11::as_sexp(foo_unique(cpp11::as_cpp<cpp11::decay_t<SEXP>>(x)));
+  END_CPP11
+}
+// test.cpp
+SEXP foo_unique2(SEXP x);
+extern "C" SEXP _cpp20_foo_unique2(SEXP x) {
+  BEGIN_CPP11
+    return cpp11::as_sexp(foo_unique2(cpp11::as_cpp<cpp11::decay_t<SEXP>>(x)));
   END_CPP11
 }
 // test.cpp
@@ -821,12 +842,15 @@ static const R_CallMethodDef CallEntries[] = {
     {"_cpp20_foo_test",             (DL_FUNC) &_cpp20_foo_test,             0},
     {"_cpp20_foo_test2",            (DL_FUNC) &_cpp20_foo_test2,            0},
     {"_cpp20_foo_unique",           (DL_FUNC) &_cpp20_foo_unique,           1},
+    {"_cpp20_foo_unique2",          (DL_FUNC) &_cpp20_foo_unique2,          1},
     {"_cpp20_foo_unique_strs",      (DL_FUNC) &_cpp20_foo_unique_strs,      1},
     {"_cpp20_foo_vec_add",          (DL_FUNC) &_cpp20_foo_vec_add,          1},
     {"_cpp20_foo_vec_add2",         (DL_FUNC) &_cpp20_foo_vec_add2,         1},
     {"_cpp20_foo_vec_add3",         (DL_FUNC) &_cpp20_foo_vec_add3,         1},
     {"_cpp20_foo_vec_add4",         (DL_FUNC) &_cpp20_foo_vec_add4,         2},
     {"_cpp20_foo_vec_add5",         (DL_FUNC) &_cpp20_foo_vec_add5,         2},
+    {"_cpp20_foo_vec_add6",         (DL_FUNC) &_cpp20_foo_vec_add6,         2},
+    {"_cpp20_foo_vec_add7",         (DL_FUNC) &_cpp20_foo_vec_add7,         1},
     {"_cpp20_foo_vec_divide",       (DL_FUNC) &_cpp20_foo_vec_divide,       2},
     {"_cpp20_foo_vec_multiply",     (DL_FUNC) &_cpp20_foo_vec_multiply,     2},
     {"_cpp20_foo_vec_subtract",     (DL_FUNC) &_cpp20_foo_vec_subtract,     2},

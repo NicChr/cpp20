@@ -680,6 +680,18 @@ SEXP foo_vec_add5(SEXP x, SEXP y){
 }
 
 [[cpp11::register]]
+SEXP foo_vec_add6(SEXP x, SEXP y){
+  auto xvec = as<r_vec<r_int>>(x);
+  auto yvec = as<r_vec<r_int>>(y);
+  return xvec += yvec;
+}
+[[cpp11::register]]
+SEXP foo_vec_add7(SEXP x){
+  auto xvec = as<r_vec<r_int>>(x);
+  return xvec + xvec + xvec;
+}
+
+[[cpp11::register]]
 SEXP foo_vec_subtract(SEXP x, SEXP y){
   auto xvec = as<r_vec<r_int>>(x);
   auto yvec = as<r_vec<r_int>>(y);
@@ -839,6 +851,20 @@ SEXP foo_unique(SEXP x) {
       return r_null;
     } else {
       return unique(xvec);
+    }
+  });
+}
+
+[[cpp11::register]]
+SEXP foo_unique2(SEXP x) {
+  return internal::visit_vector(x, [&](auto xvec) -> SEXP {
+    if constexpr (any<decltype(xvec), r_vec<r_sexp>>){
+      return r_null;
+    } else {
+      auto group_info = make_groups(xvec);
+      auto starts = group_starts(group_info);
+      starts += 1;
+      return xvec.subset(starts);
     }
   });
 }

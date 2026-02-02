@@ -296,6 +296,14 @@ foo_vec_add5 <- function(x, y) {
   .Call(`_cpp20_foo_vec_add5`, x, y)
 }
 
+foo_vec_add6 <- function(x, y) {
+  .Call(`_cpp20_foo_vec_add6`, x, y)
+}
+
+foo_vec_add7 <- function(x) {
+  .Call(`_cpp20_foo_vec_add7`, x)
+}
+
 foo_vec_subtract <- function(x, y) {
   .Call(`_cpp20_foo_vec_subtract`, x, y)
 }
@@ -358,6 +366,10 @@ foo_lgl <- function() {
 
 foo_unique <- function(x) {
   .Call(`_cpp20_foo_unique`, x)
+}
+
+foo_unique2 <- function(x) {
+  .Call(`_cpp20_foo_unique2`, x)
 }
 
 foo_unique_strs <- function(x) {

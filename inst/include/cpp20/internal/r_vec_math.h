@@ -223,6 +223,62 @@ inline r_vec<r_dbl> operator/(const T& lhs, const U& rhs) {
     }
 }
 
+#define CPP20_BINARY_OP_IN_PLACE(OP)            \
+if constexpr (RVector<T> && RVector<U>){        \
+    r_size_t lhs_size = lhs.length();        \
+    r_size_t rhs_size = rhs.length();        \
+    if (rhs_size == 1){        \
+        return lhs OP##= rhs.get(0);        \
+    } else if (lhs_size == rhs_size){        \
+        OMP_SIMD        \
+        for (r_size_t i = 0; i < lhs_size; ++i){        \
+            lhs.set(i, lhs.get(i) OP rhs.get(i));        \
+        }        \
+        return lhs;        \
+    } else {        \
+        r_size_t n = lhs_size;        \
+        for (r_size_t i = 0, rhsi = 0; i < n;         \
+            recycle_index(rhsi, rhs_size),         \
+            ++i){        \
+                lhs.set(i, lhs.get(i) OP rhs.get(rhsi));        \
+        }        \
+        return lhs;        \
+    }        \
+} else if constexpr (RVector<T>){        \
+    r_size_t n = lhs.length();        \
+    OMP_SIMD        \
+    for (r_size_t i = 0; i < n; ++i){        \
+        lhs.set(i, lhs.get(i) OP rhs);        \
+    }        \
+    return lhs;        \
+} else {        \
+    static_assert(always_false<T>, "`lhs` must be a vector");        \
+}
+
+
+template<typename T, typename U>
+requires (RVector<T> || RVector<U>)
+inline T& operator+=(T& lhs, const U& rhs) {
+    CPP20_BINARY_OP_IN_PLACE(+);
+}
+
+template<typename T, typename U>
+requires (RVector<T> || RVector<U>)
+inline T& operator-=(T& lhs, const U& rhs) { 
+    CPP20_BINARY_OP_IN_PLACE(-);
+}
+
+template<typename T, typename U>
+requires (RVector<T> || RVector<U>)
+inline T& operator*=(T& lhs, const U& rhs) { 
+    CPP20_BINARY_OP_IN_PLACE(*);
+}
+
+template<typename T, typename U>
+requires (RVector<T> || RVector<U>)
+inline T& operator/=(T& lhs, const U& rhs) {
+    CPP20_BINARY_OP_IN_PLACE(/);
+}
 
 template<RIntegerType T>
 T gcd(const r_vec<T> &x, bool na_rm = false, T tol = r_limits<T>::tolerance()){
