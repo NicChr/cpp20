@@ -50,6 +50,25 @@ concept CppFloatType = std::is_floating_point_v<std::remove_cvref_t<T>>;
 template <typename T>
 concept FloatType = RFloatType<T> || CppFloatType<T>;
 
+namespace internal {
+
+template <typename T>
+struct is_cpp_complex : std::false_type {};
+
+template <typename U>
+struct is_cpp_complex<std::complex<U>> : std::true_type {};
+
+}
+
+template <typename T>
+concept RComplexType = is<T, r_cplx>;
+
+template <typename T>
+concept CppComplexType = internal::is_cpp_complex<std::remove_cvref_t<T>>::value;
+
+template <typename T>
+concept ComplexType = RComplexType<T> || CppComplexType<T>;
+
 template <typename T>
 concept RMathType = RIntegerType<T> || RFloatType<T>;
 
