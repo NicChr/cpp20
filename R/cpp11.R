@@ -292,6 +292,10 @@ foo_vec_add4 <- function(x, y) {
   .Call(`_cpp20_foo_vec_add4`, x, y)
 }
 
+foo_vec_add5 <- function(x, y) {
+  .Call(`_cpp20_foo_vec_add5`, x, y)
+}
+
 foo_vec_subtract <- function(x, y) {
   .Call(`_cpp20_foo_vec_subtract`, x, y)
 }
@@ -360,6 +364,10 @@ foo_unique_strs <- function(x) {
   .Call(`_cpp20_foo_unique_strs`, x)
 }
 
+foo_as_str <- function(x) {
+  .Call(`_cpp20_foo_as_str`, x)
+}
+
 foo_match_unique <- function(x) {
   .Call(`_cpp20_foo_match_unique`, x)
 }
@@ -386,4 +394,20 @@ foo_new_int <- function(n) {
 
 foo_copy_constructor <- function(x) {
   .Call(`_cpp20_foo_copy_constructor`, x)
+}
+
+foo_group_id <- function(x) {
+  .Call(`_cpp20_foo_group_id`, x)
+}
+
+foo_n_groups <- function(x) {
+  .Call(`_cpp20_foo_n_groups`, x)
+}
+
+foo_groups_sorted <- function(x) {
+  .Call(`_cpp20_foo_groups_sorted`, x)
+}
+
+foo_group_starts <- function(x, n_groups, sorted) {
+  .Call(`_cpp20_foo_group_starts`, x, n_groups, sorted)
 }

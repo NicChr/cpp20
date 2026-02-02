@@ -329,7 +329,7 @@ SEXP foo_rep_len(SEXP x, int n) {
 SEXP foo_sum(SEXP x, bool na_rm) {
   return internal::visit_vector(x, [&](auto xvec) -> SEXP {
     using T = typename decltype(xvec)::data_type;
-    if constexpr (any<T, r_int, r_dbl>){
+    if constexpr (any<T, r_lgl, r_int, r_dbl>){
       return as_vector(sum(xvec, na_rm));
     } else {
       return r_null;
@@ -672,6 +672,12 @@ SEXP foo_vec_add4(SEXP x, SEXP y){
   return xvec + yvec;
 }
 
+[[cpp11::register]]
+SEXP foo_vec_add5(SEXP x, SEXP y){
+  auto xvec = as<r_vec<r_dbl>>(x);
+  auto yvec = as<r_vec<r_dbl>>(y);
+  return xvec + yvec;
+}
 
 [[cpp11::register]]
 SEXP foo_vec_subtract(SEXP x, SEXP y){
@@ -849,6 +855,16 @@ SEXP foo_unique_strs(SEXP x) {
   });
 }
 
+[[cpp11::register]]
+SEXP foo_as_str(SEXP x) {
+  return internal::visit_vector(x, [&](auto xvec) -> SEXP {
+    if constexpr (any<decltype(xvec), r_vec<r_sexp>>){
+      return r_null;
+    } else {
+      return as<r_vec<r_str>>(xvec);
+    }
+  });
+}
 
 [[cpp11::register]]
 SEXP foo_match_unique(SEXP x) {
@@ -904,3 +920,64 @@ SEXP foo_copy_constructor(SEXP x){
   auto z = y;
   return as_vector(z.get(0));
 }
+
+[[cpp11::register]]
+SEXP foo_group_id(SEXP x){
+  return internal::visit_vector(x, [&](auto xvec) -> SEXP {
+    using data_t = typename decltype(xvec)::data_type;
+    if constexpr (is<data_t, r_sexp>){
+      return r_null;
+    } else {
+      return make_groups(xvec).ids;
+    }
+  });
+}
+
+[[cpp11::register]]
+SEXP foo_n_groups(SEXP x){
+  return internal::visit_vector(x, [&](auto xvec) -> SEXP {
+    using data_t = typename decltype(xvec)::data_type;
+    if constexpr (is<data_t, r_sexp>){
+      return r_null;
+    } else {
+      return as_vector(make_groups(xvec).n_groups);
+    }
+  });
+}
+
+[[cpp11::register]]
+SEXP foo_groups_sorted(SEXP x){
+  return internal::visit_vector(x, [&](auto xvec) -> SEXP {
+    using data_t = typename decltype(xvec)::data_type;
+    if constexpr (is<data_t, r_sexp>){
+      return r_null;
+    } else {
+      return as_vector(make_groups(xvec).sorted);
+    }
+  });
+}
+
+[[cpp11::register]]
+SEXP foo_group_starts(SEXP x, int n_groups, bool sorted){
+  return internal::visit_vector(x, [&](auto xvec) -> SEXP {
+    using data_t = typename decltype(xvec)::data_type;
+    if constexpr (is<data_t, r_sexp>){
+      return r_null;
+    } else {
+      auto y = r_vec<r_int>(x);
+      groups ok(y, n_groups, sorted);
+      return group_starts(ok);
+    }
+  });
+}
+
+// SEXP foo_group_id2(SEXP x){
+//   return internal::visit_vector(x, [&](auto xvec) -> SEXP {
+//     using data_t = typename decltype(xvec)::data_type;
+//     if constexpr (any<data_t, r_lgl, r_int, r_dbl>){
+//       return make_sorted_groups(xvec).ids;
+//     } else {
+//       return r_null;
+//     }
+//   });
+// }

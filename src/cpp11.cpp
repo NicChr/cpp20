@@ -519,6 +519,13 @@ extern "C" SEXP _cpp20_foo_vec_add4(SEXP x, SEXP y) {
   END_CPP11
 }
 // test.cpp
+SEXP foo_vec_add5(SEXP x, SEXP y);
+extern "C" SEXP _cpp20_foo_vec_add5(SEXP x, SEXP y) {
+  BEGIN_CPP11
+    return cpp11::as_sexp(foo_vec_add5(cpp11::as_cpp<cpp11::decay_t<SEXP>>(x), cpp11::as_cpp<cpp11::decay_t<SEXP>>(y)));
+  END_CPP11
+}
+// test.cpp
 SEXP foo_vec_subtract(SEXP x, SEXP y);
 extern "C" SEXP _cpp20_foo_vec_subtract(SEXP x, SEXP y) {
   BEGIN_CPP11
@@ -638,6 +645,13 @@ extern "C" SEXP _cpp20_foo_unique_strs(SEXP x) {
   END_CPP11
 }
 // test.cpp
+SEXP foo_as_str(SEXP x);
+extern "C" SEXP _cpp20_foo_as_str(SEXP x) {
+  BEGIN_CPP11
+    return cpp11::as_sexp(foo_as_str(cpp11::as_cpp<cpp11::decay_t<SEXP>>(x)));
+  END_CPP11
+}
+// test.cpp
 SEXP foo_match_unique(SEXP x);
 extern "C" SEXP _cpp20_foo_match_unique(SEXP x) {
   BEGIN_CPP11
@@ -684,6 +698,34 @@ SEXP foo_copy_constructor(SEXP x);
 extern "C" SEXP _cpp20_foo_copy_constructor(SEXP x) {
   BEGIN_CPP11
     return cpp11::as_sexp(foo_copy_constructor(cpp11::as_cpp<cpp11::decay_t<SEXP>>(x)));
+  END_CPP11
+}
+// test.cpp
+SEXP foo_group_id(SEXP x);
+extern "C" SEXP _cpp20_foo_group_id(SEXP x) {
+  BEGIN_CPP11
+    return cpp11::as_sexp(foo_group_id(cpp11::as_cpp<cpp11::decay_t<SEXP>>(x)));
+  END_CPP11
+}
+// test.cpp
+SEXP foo_n_groups(SEXP x);
+extern "C" SEXP _cpp20_foo_n_groups(SEXP x) {
+  BEGIN_CPP11
+    return cpp11::as_sexp(foo_n_groups(cpp11::as_cpp<cpp11::decay_t<SEXP>>(x)));
+  END_CPP11
+}
+// test.cpp
+SEXP foo_groups_sorted(SEXP x);
+extern "C" SEXP _cpp20_foo_groups_sorted(SEXP x) {
+  BEGIN_CPP11
+    return cpp11::as_sexp(foo_groups_sorted(cpp11::as_cpp<cpp11::decay_t<SEXP>>(x)));
+  END_CPP11
+}
+// test.cpp
+SEXP foo_group_starts(SEXP x, int n_groups, bool sorted);
+extern "C" SEXP _cpp20_foo_group_starts(SEXP x, SEXP n_groups, SEXP sorted) {
+  BEGIN_CPP11
+    return cpp11::as_sexp(foo_group_starts(cpp11::as_cpp<cpp11::decay_t<SEXP>>(x), cpp11::as_cpp<cpp11::decay_t<int>>(n_groups), cpp11::as_cpp<cpp11::decay_t<bool>>(sorted)));
   END_CPP11
 }
 
@@ -749,6 +791,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"_cpp20_foo_add",              (DL_FUNC) &_cpp20_foo_add,              1},
     {"_cpp20_foo_add1",             (DL_FUNC) &_cpp20_foo_add1,             2},
     {"_cpp20_foo_all_whole",        (DL_FUNC) &_cpp20_foo_all_whole,        1},
+    {"_cpp20_foo_as_str",           (DL_FUNC) &_cpp20_foo_as_str,           1},
     {"_cpp20_foo_copy",             (DL_FUNC) &_cpp20_foo_copy,             1},
     {"_cpp20_foo_copy2",            (DL_FUNC) &_cpp20_foo_copy2,            1},
     {"_cpp20_foo_copy_constructor", (DL_FUNC) &_cpp20_foo_copy_constructor, 1},
@@ -756,12 +799,16 @@ static const R_CallMethodDef CallEntries[] = {
     {"_cpp20_foo_factor2",          (DL_FUNC) &_cpp20_foo_factor2,          2},
     {"_cpp20_foo_factor3",          (DL_FUNC) &_cpp20_foo_factor3,          0},
     {"_cpp20_foo_gcd",              (DL_FUNC) &_cpp20_foo_gcd,              2},
+    {"_cpp20_foo_group_id",         (DL_FUNC) &_cpp20_foo_group_id,         1},
+    {"_cpp20_foo_group_starts",     (DL_FUNC) &_cpp20_foo_group_starts,     3},
+    {"_cpp20_foo_groups_sorted",    (DL_FUNC) &_cpp20_foo_groups_sorted,    1},
     {"_cpp20_foo_lcm",              (DL_FUNC) &_cpp20_foo_lcm,              2},
     {"_cpp20_foo_lgl",              (DL_FUNC) &_cpp20_foo_lgl,              0},
     {"_cpp20_foo_make_list",        (DL_FUNC) &_cpp20_foo_make_list,        0},
     {"_cpp20_foo_make_list2",       (DL_FUNC) &_cpp20_foo_make_list2,       0},
     {"_cpp20_foo_match",            (DL_FUNC) &_cpp20_foo_match,            2},
     {"_cpp20_foo_match_unique",     (DL_FUNC) &_cpp20_foo_match_unique,     1},
+    {"_cpp20_foo_n_groups",         (DL_FUNC) &_cpp20_foo_n_groups,         1},
     {"_cpp20_foo_na_count",         (DL_FUNC) &_cpp20_foo_na_count,         1},
     {"_cpp20_foo_new_int",          (DL_FUNC) &_cpp20_foo_new_int,          1},
     {"_cpp20_foo_range",            (DL_FUNC) &_cpp20_foo_range,            2},
@@ -779,6 +826,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"_cpp20_foo_vec_add2",         (DL_FUNC) &_cpp20_foo_vec_add2,         1},
     {"_cpp20_foo_vec_add3",         (DL_FUNC) &_cpp20_foo_vec_add3,         1},
     {"_cpp20_foo_vec_add4",         (DL_FUNC) &_cpp20_foo_vec_add4,         2},
+    {"_cpp20_foo_vec_add5",         (DL_FUNC) &_cpp20_foo_vec_add5,         2},
     {"_cpp20_foo_vec_divide",       (DL_FUNC) &_cpp20_foo_vec_divide,       2},
     {"_cpp20_foo_vec_multiply",     (DL_FUNC) &_cpp20_foo_vec_multiply,     2},
     {"_cpp20_foo_vec_subtract",     (DL_FUNC) &_cpp20_foo_vec_subtract,     2},
