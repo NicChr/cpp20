@@ -1,4 +1,5 @@
 PKG_CXXFLAGS = $(SHLIB_OPENMP_CXXFLAGS)
+PKG_CXXFLAGS += -fno-math-errno -fno-trapping-math
 PKG_LIBS = $(SHLIB_OPENMP_CXXFLAGS)
 PKG_CPPFLAGS = -I../inst/include
 CXX_STD = CXX20
