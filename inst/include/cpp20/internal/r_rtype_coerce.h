@@ -126,7 +126,19 @@ inline r_str as_r_string(T x){
     } else {
       return as_r_string("FALSE");
     }
-  } else if constexpr (RMathType<T>){
+  } else if constexpr (IntegerType<T>){
+    if (is_na(x)){
+      return na_value<r_str>();
+    }
+    // return as_r_string(std::to_string(unwrap(x)).c_str()); // C++ one-liner
+    char buffer[32];
+    auto result = std::to_chars(buffer, buffer + sizeof(buffer), unwrap(x));
+    if (result.ec != std::errc{}) {
+      abort("Internal error, increase buffer size for string conversion");
+    }
+    *result.ptr = '\0';  // Null-terminate
+    return as_r_string(static_cast<const char *>(buffer));
+  } else if constexpr (FloatType<T>){
     if (is_na(x)){
       return na_value<r_str>();
     }
@@ -137,12 +149,12 @@ inline r_str as_r_string(T x){
     }
     *result.ptr = '\0';  // Null-terminate
     return as_r_string(static_cast<const char *>(buffer));
-  } else if constexpr (is<T, r_cplx>){
+  } else if constexpr (ComplexType<T>){
     if (is_na(x)){
       return na_value<r_str>();
     }
-    double re = x.re() + 0.0;
-    double im = x.im() + 0.0;
+    double re = static_cast<double>(unwrap(x).real()) + 0.0;
+    double im = static_cast<double>(unwrap(x).imag()) + 0.0;
 
     char buffer[96];
     if (im >= 0){
@@ -159,9 +171,8 @@ inline r_str as_r_string(T x){
     if (Rf_length(x) != 1){
       abort("`x` is a non-scalar vector and cannot be converted to an `r_str` in %s", __func__);
     }
-    r_sexp str = r_sexp(Rf_coerceVector(x, STRSXP));
-    r_str out = r_str(STRING_ELT(str, 0));
-    return out;
+    r_sexp str = r_sexp(cpp11::safe[Rf_coerceVector](x, STRSXP));
+    return r_str(STRING_ELT(str, 0));
   } else {
     static_assert(always_false<T>, "Unsupported type for `as_r_string`");
   }
