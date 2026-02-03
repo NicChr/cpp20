@@ -7,7 +7,7 @@ namespace cpp20 {
 
 template<typename T, typename U>
 requires (RVector<T> || RVector<U>)
-inline auto operator+(const T& lhs, const U& rhs) { 
+inline auto operator+(const T& lhs, const U& rhs) {
     if constexpr (RVector<T> && RVector<U>){
         r_size_t lhs_size = lhs.length();
         r_size_t rhs_size = rhs.length();
@@ -31,9 +31,9 @@ inline auto operator+(const T& lhs, const U& rhs) {
             }
             using common_t = common_r_math_t<typename T::data_type, typename U::data_type>;
             r_vec<common_t> out(n);
-            for (r_size_t i = 0, lhsi = 0, rhsi = 0; i < n; 
+            for (r_size_t i = 0, lhsi = 0, rhsi = 0; i < n;
                 recycle_index(lhsi, lhs_size),
-                recycle_index(rhsi, rhs_size), 
+                recycle_index(rhsi, rhs_size),
                 ++i){
                 out.set(i, lhs.get(lhsi) + rhs.get(rhsi));
             }
@@ -62,7 +62,7 @@ inline auto operator+(const T& lhs, const U& rhs) {
 
 template<typename T, typename U>
 requires (RVector<T> || RVector<U>)
-inline auto operator-(const T& lhs, const U& rhs) { 
+inline auto operator-(const T& lhs, const U& rhs) {
     if constexpr (RVector<T> && RVector<U>){
         r_size_t lhs_size = lhs.length();
         r_size_t rhs_size = rhs.length();
@@ -86,9 +86,9 @@ inline auto operator-(const T& lhs, const U& rhs) {
             }
             using common_t = common_r_math_t<typename T::data_type, typename U::data_type>;
             r_vec<common_t> out(n);
-            for (r_size_t i = 0, lhsi = 0, rhsi = 0; i < n; 
+            for (r_size_t i = 0, lhsi = 0, rhsi = 0; i < n;
                 recycle_index(lhsi, lhs_size),
-                recycle_index(rhsi, rhs_size), 
+                recycle_index(rhsi, rhs_size),
                 ++i){
                 out.set(i, lhs.get(lhsi) - rhs.get(rhsi));
             }
@@ -117,7 +117,7 @@ inline auto operator-(const T& lhs, const U& rhs) {
 
 template<typename T, typename U>
 requires (RVector<T> || RVector<U>)
-inline auto operator*(const T& lhs, const U& rhs) { 
+inline auto operator*(const T& lhs, const U& rhs) {
     if constexpr (RVector<T> && RVector<U>){
         r_size_t lhs_size = lhs.length();
         r_size_t rhs_size = rhs.length();
@@ -141,9 +141,9 @@ inline auto operator*(const T& lhs, const U& rhs) {
             }
             using common_t = common_r_math_t<typename T::data_type, typename U::data_type>;
             r_vec<common_t> out(n);
-            for (r_size_t i = 0, lhsi = 0, rhsi = 0; i < n; 
+            for (r_size_t i = 0, lhsi = 0, rhsi = 0; i < n;
                 recycle_index(lhsi, lhs_size),
-                recycle_index(rhsi, rhs_size), 
+                recycle_index(rhsi, rhs_size),
                 ++i){
                 out.set(i, lhs.get(lhsi) * rhs.get(rhsi));
             }
@@ -196,9 +196,9 @@ inline r_vec<r_dbl> operator/(const T& lhs, const U& rhs) {
                 n = 0;
             }
             r_vec<r_dbl> out(n);
-            for (r_size_t i = 0, lhsi = 0, rhsi = 0; i < n; 
+            for (r_size_t i = 0, lhsi = 0, rhsi = 0; i < n;
                 recycle_index(lhsi, lhs_size),
-                recycle_index(rhsi, rhs_size), 
+                recycle_index(rhsi, rhs_size),
                 ++i){
                 out.set(i, lhs.get(lhsi) / rhs.get(rhsi));
             }
@@ -223,59 +223,53 @@ inline r_vec<r_dbl> operator/(const T& lhs, const U& rhs) {
     }
 }
 
-#define CPP20_BINARY_OP_IN_PLACE(OP)            \
-if constexpr (RVector<T> && RVector<U>){        \
-    r_size_t lhs_size = lhs.length();        \
-    r_size_t rhs_size = rhs.length();        \
-    if (rhs_size == 1){        \
-        return lhs OP##= rhs.get(0);        \
-    } else if (lhs_size == rhs_size){        \
-        OMP_SIMD        \
-        for (r_size_t i = 0; i < lhs_size; ++i){        \
-            lhs.set(i, lhs.get(i) OP rhs.get(i));        \
-        }        \
-        return lhs;        \
-    } else {        \
-        r_size_t n = lhs_size;        \
-        for (r_size_t i = 0, rhsi = 0; i < n;         \
-            recycle_index(rhsi, rhs_size),         \
-            ++i){        \
-                lhs.set(i, lhs.get(i) OP rhs.get(rhsi));        \
-        }        \
-        return lhs;        \
-    }        \
-} else if constexpr (RVector<T>){        \
-    r_size_t n = lhs.length();        \
-    OMP_SIMD        \
-    for (r_size_t i = 0; i < n; ++i){        \
-        lhs.set(i, lhs.get(i) OP rhs);        \
-    }        \
-    return lhs;        \
-} else {        \
-    static_assert(always_false<T>, "`lhs` must be a vector");        \
+#define CPP20_BINARY_OP_IN_PLACE(OP)                  \
+r_size_t lhs_size = lhs.length();                     \
+if constexpr (RVector<U>){                            \
+  r_size_t rhs_size = rhs.length();                   \
+  if (rhs_size == 1){                                 \
+    return lhs OP##= rhs.get(0);                      \
+  } else if (lhs_size == rhs_size){                   \
+    OMP_SIMD                                          \
+    for (r_size_t i = 0; i < lhs_size; ++i){          \
+      lhs.set(i, lhs.get(i) OP rhs.get(i));           \
+    }                                                 \
+    return lhs;                                       \
+  } else {                                            \
+    r_size_t n = lhs_size;                            \
+    for (r_size_t i = 0, rhsi = 0; i < n;             \
+    recycle_index(rhsi, rhs_size),                    \
+    ++i){                                             \
+      lhs.set(i, lhs.get(i) OP rhs.get(rhsi));        \
+    }                                                 \
+    return lhs;                                       \
+  }                                                   \
+} else {                                              \
+  r_size_t n = lhs_size;                              \
+  OMP_SIMD                                            \
+  for (r_size_t i = 0; i < n; ++i){                   \
+    lhs.set(i, lhs.get(i) OP rhs);                    \
+  }                                                   \
+  return lhs;                                         \
 }
 
 
-template<typename T, typename U>
-requires (RVector<T> || RVector<U>)
+template<RVector T, typename U>
 inline T& operator+=(T& lhs, const U& rhs) {
     CPP20_BINARY_OP_IN_PLACE(+);
 }
 
-template<typename T, typename U>
-requires (RVector<T> || RVector<U>)
-inline T& operator-=(T& lhs, const U& rhs) { 
+template<RVector T, typename U>
+inline T& operator-=(T& lhs, const U& rhs) {
     CPP20_BINARY_OP_IN_PLACE(-);
 }
 
-template<typename T, typename U>
-requires (RVector<T> || RVector<U>)
-inline T& operator*=(T& lhs, const U& rhs) { 
+template<RVector T, typename U>
+inline T& operator*=(T& lhs, const U& rhs) {
     CPP20_BINARY_OP_IN_PLACE(*);
 }
 
-template<typename T, typename U>
-requires (RVector<T> || RVector<U>)
+template<RVector T, typename U>
 inline T& operator/=(T& lhs, const U& rhs) {
     CPP20_BINARY_OP_IN_PLACE(/);
 }
@@ -302,7 +296,7 @@ T gcd(const r_vec<T> &x, bool na_rm = false, T tol = r_limits<T>::tolerance()){
   }
   return out;
 }
- 
+
 template<RMathType T>
 T gcd(const r_vec<T> &x, bool na_rm = false, T tol = r_limits<T>::tolerance()){
   if (tol < 0 || tol >= 1){
@@ -360,7 +354,7 @@ inline r_lgl all_whole_numbers(r_vec<T> x, bool na_rm = false, r_dbl tol = r_lim
     if constexpr (RIntegerType<T>){
         return r_true;
     } else if constexpr (RFloatType<T>){
-        
+
         r_size_t n = x.length();
 
         r_lgl out = r_true;
