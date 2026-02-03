@@ -18,6 +18,10 @@ inline r_dbl round_to_even(r_dbl x){
 
 }
 
+template <MathType T, MathType U>
+inline constexpr r_lgl between(T x, U lo, U hi){
+  return x >= lo && x <= hi;
+}
 
 template<MathType T, MathType U>
 requires (AtLeastOneRMathType<T, U>)

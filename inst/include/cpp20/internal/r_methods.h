@@ -373,11 +373,6 @@ inline constexpr r_dbl operator-(r_dbl x) {
   return r_dbl{-unwrap(x)};
 }
 
-template <MathType T, MathType U>
-inline constexpr r_lgl between(T x, U lo, U hi){
-  return x >= lo && x <= hi;
-}
-
 }
 
 #endif
