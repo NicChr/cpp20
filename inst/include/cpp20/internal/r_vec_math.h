@@ -274,6 +274,11 @@ inline T& operator/=(T& lhs, const U& rhs) {
     CPP20_BINARY_OP_IN_PLACE(/);
 }
 
+template<RVector T, typename U>
+inline T& operator%=(T& lhs, const U& rhs) {
+    CPP20_BINARY_OP_IN_PLACE(%);
+}
+
 template<RIntegerType T>
 T gcd(const r_vec<T> &x, bool na_rm = false, T tol = r_limits<T>::tolerance()){
   if (tol < 0 || tol >= 1){

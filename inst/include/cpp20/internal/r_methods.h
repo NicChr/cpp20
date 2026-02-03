@@ -352,6 +352,18 @@ inline constexpr r_dbl& operator/=(r_dbl &lhs, r_dbl rhs) {
   return lhs;
 }
 
+template<MathType T, MathType U>
+requires (is<unwrap_t<T>, unwrap_t<U>>)
+inline constexpr T& operator%=(T &lhs, U rhs) {
+  auto res = lhs % rhs;
+  if constexpr (RMathType<T>){
+    lhs.value = static_cast<unwrap_t<T>>(unwrap(res));
+  } else {
+    lhs = static_cast<unwrap_t<T>>(unwrap(res));
+  }
+  return lhs;
+}
+
 template<RMathType T>
 inline constexpr T operator-(T x) {
   return is_na(x) ? x : T{-unwrap(x)};
