@@ -784,6 +784,13 @@ extern "C" SEXP _cpp20_foo_remainder() {
     return cpp11::as_sexp(foo_remainder());
   END_CPP11
 }
+// test.cpp
+SEXP foo_between(SEXP x, SEXP lo, SEXP hi);
+extern "C" SEXP _cpp20_foo_between(SEXP x, SEXP lo, SEXP hi) {
+  BEGIN_CPP11
+    return cpp11::as_sexp(foo_between(cpp11::as_cpp<cpp11::decay_t<SEXP>>(x), cpp11::as_cpp<cpp11::decay_t<SEXP>>(lo), cpp11::as_cpp<cpp11::decay_t<SEXP>>(hi)));
+  END_CPP11
+}
 
 extern "C" {
 static const R_CallMethodDef CallEntries[] = {
@@ -848,6 +855,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"_cpp20_foo_add1",             (DL_FUNC) &_cpp20_foo_add1,             2},
     {"_cpp20_foo_all_whole",        (DL_FUNC) &_cpp20_foo_all_whole,        1},
     {"_cpp20_foo_as_str",           (DL_FUNC) &_cpp20_foo_as_str,           1},
+    {"_cpp20_foo_between",          (DL_FUNC) &_cpp20_foo_between,          3},
     {"_cpp20_foo_copy",             (DL_FUNC) &_cpp20_foo_copy,             1},
     {"_cpp20_foo_copy2",            (DL_FUNC) &_cpp20_foo_copy2,            1},
     {"_cpp20_foo_copy_constructor", (DL_FUNC) &_cpp20_foo_copy_constructor, 1},

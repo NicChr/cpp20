@@ -438,6 +438,50 @@ inline r_lgl all_whole_numbers(r_vec<T> x, bool na_rm = false, r_dbl tol = r_lim
     }
 }
 
+template<RVector T, typename U>
+inline r_vec<r_lgl> between(const T& x, const U& lo, const U& hi) {
+
+    r_size_t x_size = x.length();
+
+    if constexpr (RVector<U>){
+        r_size_t lo_size = lo.length();
+        r_size_t hi_size = hi.length();
+        
+        if (lo_size == 1 && hi_size == 1){
+            return between(x, unwrap(lo.get(0)), unwrap(hi.get(0)));
+        } else if (x_size == lo_size && lo_size == hi_size){
+            r_vec<r_lgl> out(x_size);
+            OMP_SIMD
+            for (r_size_t i = 0; i < x_size; ++i){
+                out.set(i, between(x.get(i), unwrap(lo.get(i)), unwrap(hi.get(i))));
+            }
+            return out;
+        } else {
+            // Slower recycling approach
+            r_size_t n = std::max(std::max(x_size, lo_size), hi_size);
+            if (x_size == 0 || lo_size == 0 || hi_size == 0){
+                n = 0;
+            }
+            r_vec<r_lgl> out(n);
+            for (r_size_t i = 0, xi = 0, loi = 0, hii = 0; i < n;
+                recycle_index(xi, x_size),
+                recycle_index(loi, lo_size),
+                recycle_index(hii, hi_size),
+                ++i){
+                out.set(i, between(x.get(xi), unwrap(lo.get(loi)), unwrap(hi.get(hii))));
+            }
+            return out;
+        }
+    } else {
+        r_vec<r_lgl> out(x_size);
+        OMP_SIMD
+        for (r_size_t i = 0; i < x_size; ++i){
+            out.set(i, between(x.get(i), unwrap(lo), unwrap(hi)));
+        }
+        return out;
+    }
+}
+
 }
 
 

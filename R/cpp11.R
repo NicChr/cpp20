@@ -443,3 +443,7 @@ foo_group_starts <- function(x, n_groups, sorted) {
 foo_remainder <- function() {
   .Call(`_cpp20_foo_remainder`)
 }
+
+foo_between <- function(x, lo, hi) {
+  .Call(`_cpp20_foo_between`, x, lo, hi)
+}

@@ -1054,3 +1054,17 @@ SEXP foo_remainder(){
     r_limits<r_dbl>::max() % 2
   );
 }
+
+
+[[cpp11::register]]
+SEXP foo_between(SEXP x, SEXP lo, SEXP hi){
+  return internal::visit_vector(x, [&](auto xvec) -> SEXP {
+    using data_t = typename decltype(xvec)::data_type;
+    if constexpr (any<data_t, r_int, r_dbl>){
+      // return between(xvec, lo, hi);
+      return between(xvec, as<decltype(xvec)>(lo), as<decltype(xvec)>(hi));
+    } else {
+      return r_null;
+    }
+  });
+}
