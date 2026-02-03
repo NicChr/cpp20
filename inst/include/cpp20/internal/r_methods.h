@@ -210,6 +210,41 @@ inline constexpr r_dbl operator/(T lhs, U rhs) {
   return ( is_na(lhs) || is_na(rhs) ) ? na_value<r_dbl>() : r_dbl(static_cast<double>(unwrap(lhs)) / static_cast<double>(unwrap(rhs)));
 }
 
+template<MathType T, MathType U>
+  requires (RFloatType<T> || RFloatType<U>)
+inline constexpr r_dbl operator%(T lhs, U rhs) {
+  if (unwrap(rhs) == 0){
+    return r_dbl(R_NaN);
+  } else if (is_na(lhs) || is_na(rhs)){
+    return na_value<r_dbl>();
+  } else {
+    // Donald Knuth floor division
+    double a = static_cast<double>(lhs);
+    double b = static_cast<double>(rhs);
+    double q = std::floor(a / b);
+    return r_dbl(a - (b * q));
+  }
+}
+
+template<IntegerType T, IntegerType U>
+  requires (RIntegerType<T> || RIntegerType<U>)
+inline constexpr auto operator%(T lhs, U rhs) {
+  using out_t = common_r_math_t<T, U>;
+  using unwrapped_t = unwrap_t<out_t>;
+
+  if ( unwrap(rhs) == 0 || is_na(lhs) || is_na(rhs) ){
+    return na_value<out_t>();
+  } else {
+    unwrapped_t a = static_cast<unwrapped_t>(unwrap(lhs));
+    unwrapped_t b = static_cast<unwrapped_t>(unwrap(rhs));
+    unwrapped_t out = a % b;
+    if (out != 0 && ((a > 0) != (b > 0))) {
+      out += b;  // Adjust to match R's sign convention
+    }
+    return out_t(out);
+  }
+}
+
 template<RMathType T, RMathType U>
 inline constexpr T& operator-=(T &lhs, U rhs) {
   if (is_na(lhs) || is_na(rhs)) {

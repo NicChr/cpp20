@@ -423,3 +423,7 @@ foo_groups_sorted <- function(x) {
 foo_group_starts <- function(x, n_groups, sorted) {
   .Call(`_cpp20_foo_group_starts`, x, n_groups, sorted)
 }
+
+foo_remainder <- function() {
+  .Call(`_cpp20_foo_remainder`)
+}

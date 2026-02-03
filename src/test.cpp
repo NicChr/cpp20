@@ -1007,3 +1007,26 @@ SEXP foo_group_starts(SEXP x, int n_groups, bool sorted){
 //     }
 //   });
 // }
+
+
+[[cpp11::register]]
+SEXP foo_remainder(){
+  return make_vec<r_dbl>(
+    r_dbl(5) % 2.0, 
+    r_int(5) % 2, 
+    5 % 2, 
+    r_dbl(5) % r_int(2),
+    5 % r_int(2),
+    5 % r_dbl(2.2),
+    5.0 % r_dbl(2.2),
+    std::fmod(5, 2.2),
+    -r_dbl(5) % r_dbl(2.2),
+    r_dbl(5) % -r_dbl(2.2),
+    r_int(20) % -r_int(3),
+    -r_int(20) % r_int(3),
+    r_dbl(20) % -r_dbl(3),
+    r_int(1) % r_dbl(0.2),
+    r_dbl(1) % r_dbl(0.2),
+    r_limits<r_dbl>::max() % 2
+  );
+}

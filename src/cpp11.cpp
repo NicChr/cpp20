@@ -749,6 +749,13 @@ extern "C" SEXP _cpp20_foo_group_starts(SEXP x, SEXP n_groups, SEXP sorted) {
     return cpp11::as_sexp(foo_group_starts(cpp11::as_cpp<cpp11::decay_t<SEXP>>(x), cpp11::as_cpp<cpp11::decay_t<int>>(n_groups), cpp11::as_cpp<cpp11::decay_t<bool>>(sorted)));
   END_CPP11
 }
+// test.cpp
+SEXP foo_remainder();
+extern "C" SEXP _cpp20_foo_remainder() {
+  BEGIN_CPP11
+    return cpp11::as_sexp(foo_remainder());
+  END_CPP11
+}
 
 extern "C" {
 static const R_CallMethodDef CallEntries[] = {
@@ -835,6 +842,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"_cpp20_foo_range",            (DL_FUNC) &_cpp20_foo_range,            2},
     {"_cpp20_foo_range2",           (DL_FUNC) &_cpp20_foo_range2,           1},
     {"_cpp20_foo_range3",           (DL_FUNC) &_cpp20_foo_range3,           1},
+    {"_cpp20_foo_remainder",        (DL_FUNC) &_cpp20_foo_remainder,        0},
     {"_cpp20_foo_rep_len",          (DL_FUNC) &_cpp20_foo_rep_len,          2},
     {"_cpp20_foo_sset",             (DL_FUNC) &_cpp20_foo_sset,             2},
     {"_cpp20_foo_sum",              (DL_FUNC) &_cpp20_foo_sum,              2},
