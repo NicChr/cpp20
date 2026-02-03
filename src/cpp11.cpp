@@ -540,6 +540,34 @@ extern "C" SEXP _cpp20_foo_vec_add7(SEXP x) {
   END_CPP11
 }
 // test.cpp
+SEXP foo_vec_mod(SEXP x);
+extern "C" SEXP _cpp20_foo_vec_mod(SEXP x) {
+  BEGIN_CPP11
+    return cpp11::as_sexp(foo_vec_mod(cpp11::as_cpp<cpp11::decay_t<SEXP>>(x)));
+  END_CPP11
+}
+// test.cpp
+SEXP foo_vec_mod2(SEXP x);
+extern "C" SEXP _cpp20_foo_vec_mod2(SEXP x) {
+  BEGIN_CPP11
+    return cpp11::as_sexp(foo_vec_mod2(cpp11::as_cpp<cpp11::decay_t<SEXP>>(x)));
+  END_CPP11
+}
+// test.cpp
+SEXP foo_vec_mod3(SEXP x);
+extern "C" SEXP _cpp20_foo_vec_mod3(SEXP x) {
+  BEGIN_CPP11
+    return cpp11::as_sexp(foo_vec_mod3(cpp11::as_cpp<cpp11::decay_t<SEXP>>(x)));
+  END_CPP11
+}
+// test.cpp
+SEXP foo_vec_mod4(SEXP x);
+extern "C" SEXP _cpp20_foo_vec_mod4(SEXP x) {
+  BEGIN_CPP11
+    return cpp11::as_sexp(foo_vec_mod4(cpp11::as_cpp<cpp11::decay_t<SEXP>>(x)));
+  END_CPP11
+}
+// test.cpp
 SEXP foo_vec_subtract(SEXP x, SEXP y);
 extern "C" SEXP _cpp20_foo_vec_subtract(SEXP x, SEXP y) {
   BEGIN_CPP11
@@ -860,6 +888,10 @@ static const R_CallMethodDef CallEntries[] = {
     {"_cpp20_foo_vec_add6",         (DL_FUNC) &_cpp20_foo_vec_add6,         2},
     {"_cpp20_foo_vec_add7",         (DL_FUNC) &_cpp20_foo_vec_add7,         1},
     {"_cpp20_foo_vec_divide",       (DL_FUNC) &_cpp20_foo_vec_divide,       2},
+    {"_cpp20_foo_vec_mod",          (DL_FUNC) &_cpp20_foo_vec_mod,          1},
+    {"_cpp20_foo_vec_mod2",         (DL_FUNC) &_cpp20_foo_vec_mod2,         1},
+    {"_cpp20_foo_vec_mod3",         (DL_FUNC) &_cpp20_foo_vec_mod3,         1},
+    {"_cpp20_foo_vec_mod4",         (DL_FUNC) &_cpp20_foo_vec_mod4,         1},
     {"_cpp20_foo_vec_multiply",     (DL_FUNC) &_cpp20_foo_vec_multiply,     2},
     {"_cpp20_foo_vec_subtract",     (DL_FUNC) &_cpp20_foo_vec_subtract,     2},
     {"_cpp20_foobar",               (DL_FUNC) &_cpp20_foobar,               1},

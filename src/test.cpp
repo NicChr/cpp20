@@ -692,6 +692,30 @@ SEXP foo_vec_add7(SEXP x){
 }
 
 [[cpp11::register]]
+SEXP foo_vec_mod(SEXP x){
+  auto xvec = as<r_vec<r_int>>(x);
+  return xvec % 3;
+}
+
+[[cpp11::register]]
+SEXP foo_vec_mod2(SEXP x){
+  auto xvec = as<r_vec<r_int>>(x);
+  return xvec % xvec;
+}
+
+[[cpp11::register]]
+SEXP foo_vec_mod3(SEXP x){
+  auto xvec = as<r_vec<r_dbl>>(x);
+  return xvec % 3;
+}
+
+[[cpp11::register]]
+SEXP foo_vec_mod4(SEXP x){
+  auto xvec = as<r_vec<r_dbl>>(x);
+  return xvec % xvec;
+}
+
+[[cpp11::register]]
 SEXP foo_vec_subtract(SEXP x, SEXP y){
   auto xvec = as<r_vec<r_int>>(x);
   auto yvec = as<r_vec<r_int>>(y);

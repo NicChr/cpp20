@@ -304,6 +304,22 @@ foo_vec_add7 <- function(x) {
   .Call(`_cpp20_foo_vec_add7`, x)
 }
 
+foo_vec_mod <- function(x) {
+  .Call(`_cpp20_foo_vec_mod`, x)
+}
+
+foo_vec_mod2 <- function(x) {
+  .Call(`_cpp20_foo_vec_mod2`, x)
+}
+
+foo_vec_mod3 <- function(x) {
+  .Call(`_cpp20_foo_vec_mod3`, x)
+}
+
+foo_vec_mod4 <- function(x) {
+  .Call(`_cpp20_foo_vec_mod4`, x)
+}
+
 foo_vec_subtract <- function(x, y) {
   .Call(`_cpp20_foo_vec_subtract`, x, y)
 }
