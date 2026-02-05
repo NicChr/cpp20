@@ -26,14 +26,12 @@ struct r_vec {
   ptr_t m_ptr = nullptr;
 
   void initialise_ptr(){
-    if (!is_null()) {
-      if constexpr (RPtrWritableType<T>) {
-        m_ptr = internal::vector_ptr<T>(unwrap(sexp));
-      } else if constexpr (any<T, r_sexp, r_sym>) {
-        m_ptr = (const SEXP*) DATAPTR_RO(unwrap(sexp));
-      } else if constexpr (is<T, r_str>){
-        m_ptr = (const SEXP*) STRING_PTR_RO(unwrap(sexp));
-      }
+    if constexpr (RPtrWritableType<T>) {
+      m_ptr = internal::vector_ptr<T>(sexp);
+    } else if constexpr (any<T, r_sexp, r_sym>) {
+      m_ptr = (const SEXP*) DATAPTR_RO(sexp);
+    } else if constexpr (is<T, r_str>){
+      m_ptr = (const SEXP*) STRING_PTR_RO(sexp);
     }
   }
       
@@ -57,7 +55,9 @@ struct r_vec {
 
   // Constructors from existing r_sexp/SEXP
   explicit r_vec(r_sexp s) : sexp(std::move(s)) {
-    initialise_ptr();
+    if (!is_null()) {
+      initialise_ptr();
+    }
   }
 
   explicit r_vec(SEXP s) : r_vec(r_sexp(s)) {}
@@ -133,10 +133,6 @@ struct r_vec {
 
   bool is_bare() const {
     return !Rf_isObject(sexp);
-  }
-
-  bool is_altrep() const {
-    return static_cast<bool>(ALTREP(unwrap(sexp)));
   }
 
   // Get element (no bounds-check)
