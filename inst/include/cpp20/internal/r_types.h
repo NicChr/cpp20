@@ -15,31 +15,46 @@
 
 namespace cpp20 {
 
+namespace internal {
+  struct read_only_tag {};
+  }
+
 // General SEXP, reserved for everything except CHARSXP and SYMSXP
 // Wrapper around cpp11::sexp to benefit from automatic protection (cpp11-managed linked list)
 // All credits go to cpp11 authors/maintainers for `cpp11::sexp`
 struct r_sexp {
-  cpp11::sexp value;
-  using value_type = cpp11::sexp;
-  
+
+  SEXP value;
+  using value_type = SEXP;
+
+  private: 
+
+  cpp11::sexp protector;
+
+  public: 
+
   // Default constructor
-  r_sexp() : value(R_NilValue) {}
+  r_sexp() : value(R_NilValue), protector(R_NilValue) {}
 
   // Constructor from SEXP
-  explicit r_sexp(SEXP s) : value(s) {}
+  explicit r_sexp(SEXP s) : value(s), protector(s) {}
+
+  // Optimized constructor
+  // convert SEXP -> r_sexp directly without extra protection
+  explicit r_sexp(SEXP s, internal::read_only_tag) : value(s), protector(R_NilValue) {}
 
   // Implicit conversion to SEXP
-  operator SEXP() const { return value.data(); }
+  constexpr operator SEXP() const noexcept { return value; }
 
   r_size_t length() const noexcept {
-    return Rf_xlength(value.data());
+    return Rf_xlength(value);
   }
 
   r_size_t size() const noexcept {
     return length();
   }
 
-  bool is_null() const { return value.data() == R_NilValue; }
+  bool is_null() const { return value == R_NilValue; }
   
   r_str address() const;
 };
@@ -129,7 +144,7 @@ struct r_str {
   explicit r_str(r_sexp x) : value(std::move(x)) {}
   explicit r_str(const char *x) : value(Rf_mkCharCE(x, CE_UTF8)) {}
   // Implicit r_str -> SEXP 
-  operator SEXP() const { return value; }
+  constexpr operator SEXP() const noexcept { return value; }
 
   const char *c_str() const {
     return CHAR(value);
@@ -145,10 +160,10 @@ struct r_sym {
   r_sexp value;
   using value_type = r_sexp;
   r_sym() : value{R_MissingArg} {}
-  explicit r_sym(SEXP x) : value{x} {}
+  explicit r_sym(SEXP x) : value{x, internal::read_only_tag{}} {}
   explicit r_sym(r_sexp x) : value(std::move(x)) {} 
   explicit r_sym(const char *x) : value(Rf_installChar(r_str(x))) {}
-  operator SEXP() const { return value; }
+  constexpr operator SEXP() const noexcept { return value; }
 };
 
 
@@ -196,11 +211,6 @@ struct unwrapped_type {
     using type = T;
 };
 
-template <>
-struct unwrapped_type<cpp11::sexp> {
-    using type = SEXP;
-};
-
 template <RVal T>
 struct unwrapped_type<T> {
     // Recursively call unwrapped_type on the inner type
@@ -219,8 +229,6 @@ template <typename T>
 inline constexpr auto unwrap(const T& x){
 if constexpr (RVal<T>){
     return unwrap(x.value);
-  } else if constexpr (is<T, cpp11::sexp>){
-    return x.data();
   } else {
     return x;
   }

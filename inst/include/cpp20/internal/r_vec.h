@@ -60,47 +60,27 @@ struct r_vec {
     }
   }
 
+  explicit r_vec(const r_sexp& s, internal::read_only_tag) 
+    : sexp(s.value, internal::read_only_tag{}) 
+{
+    if (!is_null()) initialise_ptr();
+}
+
   explicit r_vec(SEXP s) : r_vec(r_sexp(s)) {}
 
-  // // Copy constructor - copy sexp and re-initialise pointer
-  // r_vec(const r_vec& other) : sexp(other.sexp) {
-  //   initialise_ptr();
-  // }
-
-  // // Move constructor - move both sexp and pointer
-  // r_vec(r_vec&& other) noexcept 
-  //   : sexp(std::move(other.sexp)), m_ptr(other.m_ptr) 
-  // {
-  //   other.m_ptr = nullptr;
-  // }
-
-  // // Copy assignment - copy sexp and re-initialise pointer
-  // r_vec& operator=(const r_vec& other) {
-  //   if (this != &other) {
-  //     sexp = other.sexp;
-  //     m_ptr = nullptr;
-  //     initialise_ptr();
-  //   }
-  //   return *this;
-  // }
-
-  // // Move assignment - move both sexp and pointer
-  // r_vec& operator=(r_vec&& other) noexcept {
-  //   if (this != &other) {
-  //     sexp = std::move(other.sexp);
-  //     m_ptr = other.m_ptr;
-  //     other.m_ptr = nullptr;
-  //   }
-  //   return *this;
-  // }
+  explicit r_vec(SEXP s, internal::read_only_tag) 
+  : sexp(s, internal::read_only_tag{}) 
+{
+  if (!is_null()) initialise_ptr();
+}
 
   // Implicit conversion to SEXP
-  operator SEXP() const {
-    return unwrap(sexp);
+  constexpr operator SEXP() const noexcept {
+    return sexp.value;
   }
 
   // Explicit conversion to r_sexp
-  constexpr explicit operator r_sexp() const {
+  constexpr explicit operator r_sexp() const noexcept {
     return sexp;
   }
 
@@ -143,7 +123,7 @@ struct r_vec {
 
   // Set element (no bounds-check) - We use flexible template to be able to coerce it to an RVal
   template <CppIntegerType U, typename V>
-  void set(U index, V val) {
+  void set(U index, V val) const {
       auto val2 = unwrap(cpp20::internal::as_r<T>(val));
       if constexpr (any<T, r_sexp, r_sym>){
         SET_VECTOR_ELT(sexp, index, val2);
@@ -455,6 +435,36 @@ decltype(auto) visit_maybe_vector(SEXP x, F&& f) {
   case VECSXP:          return f(r_vec<r_sexp>(x));
   case CPLXSXP:         return f(r_vec<r_cplx>(x));
   case RAWSXP:          return f(r_vec<r_raw>(x));
+  default:              return f(nullptr);
+  }
+}
+
+// Overloads for r_sexp (avoid re-protecting)
+template <class F>
+decltype(auto) visit_vector(const r_sexp& x, F&& f) {
+  switch (CPP20_TYPEOF(x)) {
+  case LGLSXP:          return f(r_vec<r_lgl>(x, internal::read_only_tag{}));
+  case INTSXP:          return f(r_vec<r_int>(x, internal::read_only_tag{}));
+  case CPP20_INT64SXP: return f(r_vec<r_int64>(x, internal::read_only_tag{}));
+  case REALSXP:         return f(r_vec<r_dbl>(x, internal::read_only_tag{}));
+  case STRSXP:          return f(r_vec<r_str>(x, internal::read_only_tag{}));
+  case VECSXP:          return f(r_vec<r_sexp>(x, internal::read_only_tag{}));
+  case CPLXSXP:         return f(r_vec<r_cplx>(x, internal::read_only_tag{}));
+  case RAWSXP:          return f(r_vec<r_raw>(x, internal::read_only_tag{}));
+  default:              abort("`x` must be a vector");
+  }
+}
+template <class F>
+decltype(auto) visit_maybe_vector(const r_sexp& x, F&& f) {
+  switch (CPP20_TYPEOF(x)) {
+  case LGLSXP:          return f(r_vec<r_lgl>(x, internal::read_only_tag{}));
+  case INTSXP:          return f(r_vec<r_int>(x, internal::read_only_tag{}));
+  case CPP20_INT64SXP: return f(r_vec<r_int64>(x, internal::read_only_tag{}));
+  case REALSXP:         return f(r_vec<r_dbl>(x, internal::read_only_tag{}));
+  case STRSXP:          return f(r_vec<r_str>(x, internal::read_only_tag{}));
+  case VECSXP:          return f(r_vec<r_sexp>(x, internal::read_only_tag{}));
+  case CPLXSXP:         return f(r_vec<r_cplx>(x, internal::read_only_tag{}));
+  case RAWSXP:          return f(r_vec<r_raw>(x, internal::read_only_tag{}));
   default:              return f(nullptr);
   }
 }
