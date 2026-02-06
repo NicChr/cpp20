@@ -6,7 +6,7 @@
 
 namespace cpp20 {
 
-inline r_sexp shallow_copy(r_sexp x){
+inline r_sexp shallow_copy(const r_sexp& x){
     return r_sexp(Rf_shallow_duplicate(x)); 
 }
 

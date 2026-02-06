@@ -6,7 +6,7 @@
 namespace cpp20 {
 
 template <RScalar T>
-r_vec<T> unique(r_vec<T> x) {
+r_vec<T> unique(const r_vec<T>& x) {
   r_size_t n = x.length();
   
   // Hash set for O(n) de-duplication
@@ -41,7 +41,8 @@ r_vec<T> unique(r_vec<T> x) {
 }
 
 // Specialisation for strings
-r_vec<r_str> unique(r_vec<r_str> x) {
+template <>
+r_vec<r_str> unique(const r_vec<r_str>& x) {
   r_size_t n = x.length();
   
   // Hash set for O(n) de-duplication
