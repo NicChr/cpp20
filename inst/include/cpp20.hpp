@@ -21,7 +21,6 @@
 #include <cpp20/internal/r_attrs.h>
 #include <cpp20/internal/r_copy.h>
 #include <cpp20/internal/r_factor.h>
-#include <cpp20/internal/r_list.h>
 #include <cpp20/internal/r_coerce.h>
 #include <cpp20/internal/r_make_vec.h>
 #include <cpp20/internal/r_df.h>
