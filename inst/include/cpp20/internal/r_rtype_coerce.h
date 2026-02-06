@@ -112,7 +112,7 @@ template<typename T>
 inline r_str as_r_string(T x){
   if constexpr (is<T, r_str>){
     return x;
-  } else if constexpr (is<T, const char *>){
+  } else if constexpr (std::is_convertible_v<T, const char*>){
     return r_str(x);
   } else if constexpr (is<T, std::string>){
     return r_str(x.c_str());

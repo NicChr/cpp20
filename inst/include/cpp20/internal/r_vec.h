@@ -118,7 +118,7 @@ struct r_vec {
   // Set element (no bounds-check) - We use flexible template to be able to coerce it to an RVal
   template <CppIntegerType U, typename V>
   void set(U index, const V& val) const {
-    // Avoid copies (especially of r_sexp/r_str)
+    // Avoid copies and extra protections (especially of r_sexp/r_str)
     if constexpr (is<T, V>){
       if constexpr (any<T, r_sexp, r_sym>){
         SET_VECTOR_ELT(sexp, index, unwrap(val));
@@ -331,7 +331,7 @@ struct r_vec {
 
 template <typename U>
 requires (any<U, r_int, r_int64>)
-r_vec<U> exclude_locs(r_vec<U> exclude, unwrap_t<U> xn) {
+r_vec<U> exclude_locs(const r_vec<U>& exclude, unwrap_t<U> xn) {
 
   using int_t = unwrap_t<U>;
 
@@ -477,7 +477,7 @@ decltype(auto) visit_maybe_vector(const r_sexp& x, F&& f) {
 
 
 template <RVal T>
-inline void r_copy_n(r_vec<T> &target, r_vec<T> &source, r_size_t target_offset, r_size_t n){
+inline void r_copy_n(const r_vec<T> &target, const r_vec<T> &source, r_size_t target_offset, r_size_t n){
 
   if constexpr (RPtrWritableType<T>){
     auto *p_source = source.data();

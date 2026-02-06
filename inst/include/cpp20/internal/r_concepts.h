@@ -89,6 +89,11 @@ concept RScalar = RMathType<T> || any<T, r_cplx, r_str, r_raw, r_sym>;
 template <typename T>
 concept RVal = RScalar<T> || is<T, r_sexp>;
 
+
+// template <typename T>
+// using arg_t = std::conditional_t<MathType<T> || is<T, const char*>, T, const T&>;
+
+
 // A `SEXP` which we can write data to directly via a pointer
 template <typename T>
 concept RPtrWritableType = RMathType<T> || any<T, r_cplx, r_raw>;
@@ -140,6 +145,12 @@ concept Scalar = CppScalar<T> || RScalar<T>;
 
 template <typename T>
 inline constexpr bool is_sexp = any<T, SEXP, r_sexp>;
+
+// If T is a small type (e.g. int/r_int) then pass-by-value
+// If it's a large type (e.g. r_str) then pass-by-reference
+// This avoids the copy overhead for large types and passes small types in CPU registers
+template <typename T>
+concept SmallType = CppScalar<T> || RMathType<T>;
 
 namespace internal {
 

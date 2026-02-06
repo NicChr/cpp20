@@ -11,7 +11,7 @@ inline r_sexp shallow_copy(const r_sexp& x){
 }
 
 template <RVal T>
-inline r_vec<T> deep_copy(r_vec<T> x){
+inline r_vec<T> deep_copy(const r_vec<T>& x){
     
     r_vec<T> out(r_null);
     r_size_t n = x.length();
@@ -37,7 +37,7 @@ inline r_vec<T> deep_copy(r_vec<T> x){
     return out;
 }
 
-inline r_sexp deep_copy(r_sexp x){
+inline r_sexp deep_copy(const r_sexp& x){
     return internal::visit_maybe_vector(x, [&](auto vec) -> r_sexp {
         if constexpr (!std::is_null_pointer_v<decltype(vec)>){
             return deep_copy(vec).sexp;
