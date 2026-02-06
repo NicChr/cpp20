@@ -68,12 +68,6 @@ struct r_vec {
 
   explicit r_vec(SEXP s) : r_vec(r_sexp(s)) {}
 
-  explicit r_vec(SEXP s, internal::read_only_tag) 
-  : sexp(s, internal::read_only_tag{}) 
-{
-  if (!is_null()) initialise_ptr();
-}
-
   // Implicit conversion to SEXP
   constexpr operator SEXP() const noexcept {
     return sexp.value;

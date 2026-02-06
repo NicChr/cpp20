@@ -142,6 +142,7 @@ struct r_str {
   // Explicit SEXP/const char* -> r_str
   explicit r_str(SEXP x) : value{x} {}
   explicit r_str(r_sexp x) : value(std::move(x)) {}
+  explicit r_str(const r_sexp& x, internal::read_only_tag) : value(x.value, internal::read_only_tag{}) {}
   explicit r_str(const char *x) : value(Rf_mkCharCE(x, CE_UTF8)) {}
   // Implicit r_str -> SEXP 
   constexpr operator SEXP() const noexcept { return value; }
@@ -160,8 +161,9 @@ struct r_sym {
   r_sexp value;
   using value_type = r_sexp;
   r_sym() : value{R_MissingArg} {}
-  explicit r_sym(SEXP x) : value{x, internal::read_only_tag{}} {}
+  explicit r_sym(SEXP x) : value{x} {}
   explicit r_sym(r_sexp x) : value(std::move(x)) {} 
+  explicit r_sym(const r_sexp& x, internal::read_only_tag) : value(x.value, internal::read_only_tag{}) {}
   explicit r_sym(const char *x) : value(Rf_installChar(r_str(x))) {}
   constexpr operator SEXP() const noexcept { return value; }
 };
