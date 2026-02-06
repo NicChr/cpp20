@@ -123,15 +123,25 @@ struct r_vec {
 
   // Set element (no bounds-check) - We use flexible template to be able to coerce it to an RVal
   template <CppIntegerType U, typename V>
-  void set(U index, V val) const {
-      auto val2 = unwrap(cpp20::internal::as_r<T>(val));
+  void set(U index, const V& val) const {
+    // Avoid copies (especially of r_sexp/r_str)
+    if constexpr (is<T, V>){
       if constexpr (any<T, r_sexp, r_sym>){
-        SET_VECTOR_ELT(sexp, index, val2);
+        SET_VECTOR_ELT(sexp, index, unwrap(val));
       } else if constexpr (is<T, r_str>){
-        SET_STRING_ELT(sexp, index, val2);
+        SET_STRING_ELT(sexp, index, unwrap(val));
       } else {
-        m_ptr[index] = val2;
+        m_ptr[index] = unwrap(val);
       }
+    } else {
+      if constexpr (any<T, r_sexp, r_sym>){
+        SET_VECTOR_ELT(sexp, index, unwrap(cpp20::internal::as_r<T>(val)));
+      } else if constexpr (is<T, r_str>){
+        SET_STRING_ELT(sexp, index, unwrap(cpp20::internal::as_r<T>(val)));
+      } else {
+        m_ptr[index] = unwrap(cpp20::internal::as_r<T>(val));
+      }
+    }
   }
 
   template <typename U>
