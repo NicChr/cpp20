@@ -10,7 +10,7 @@ namespace cpp20 {
 namespace attr {
 
 template <RObject T>
-inline bool can_have_attributes(T x){
+inline bool can_have_attributes(const T& x){
   if constexpr (any<T, r_factors, r_df> || RVector<T>){
     return true; 
   } else if constexpr (is_sexp<T>){
@@ -43,7 +43,7 @@ inline bool can_have_attributes(T x){
 }
 
 template <RObject T>
-inline bool can_have_names(T x){
+inline bool can_have_names(const T& x){
   if constexpr (any<T, r_factors, r_df> || RVector<T>){
     return true; 
   } else if constexpr (is_sexp<T>){
@@ -71,13 +71,13 @@ inline bool can_have_names(T x){
 }
 
 template <RObject T>
-inline bool inherits1(T x, const char *r_cls){
+inline bool inherits1(const T& x, const char *r_cls){
   return Rf_inherits(x, r_cls);
 }
 
 // Attributes of x as a list
 template <RObject T>
-inline r_vec<r_sexp> get_attrs(T x){
+inline r_vec<r_sexp> get_attrs(const T& x){
   r_sexp attrs = r_sexp(ATTRIB(x)); // Pairlist
   r_size_t n = attrs.length();
   if (n == 0){
@@ -97,21 +97,21 @@ inline r_vec<r_sexp> get_attrs(T x){
   return out;
 }
 template <RObject T>
-inline bool has_attrs(T x){
+inline bool has_attrs(const T& x){
   return !get_attrs(x).is_null();
 }
 template <RObject T>
-inline r_sexp get_attr(T x, r_sym sym){
+inline r_sexp get_attr(const T& x, const r_sym& sym){
   return r_sexp(Rf_getAttrib(x, sym));
 }
 template <RObject T, RObject U> 
-inline void set_attr(T x, r_sym sym, U value){
+inline void set_attr(const T& x, const r_sym& sym, const U& value){
   if (can_have_attributes(x)){
     Rf_setAttrib(x, sym, value); 
   }
 }
 template <RObject T>
-inline void set_old_names(T x, r_vec<r_str> names){
+inline void set_old_names(const T& x, const r_vec<r_str>& names){
   if (x.is_null()){
     return;
   } else if (names.is_null()){
@@ -125,25 +125,25 @@ inline void set_old_names(T x, r_vec<r_str> names){
   }
 }
 template <RObject T>
-inline r_vec<r_str> get_old_names(T x){
+inline r_vec<r_str> get_old_names(const T& x){
   return r_vec<r_str>(get_attr(x, symbol::names_sym));
 }
 template <RObject T>
-inline bool has_r_names(T x){
+inline bool has_r_names(const T& x){
   return !get_old_names(x).is_null();
 }
 template <RObject T>
-inline r_vec<r_str> get_old_class(T x){
+inline r_vec<r_str> get_old_class(const T& x){
   return r_vec<r_str>(get_attr(x, symbol::class_sym));
 }
 template <RObject T>
-inline void set_old_class(T x, r_vec<r_str> cls){
+inline void set_old_class(const T& x, const r_vec<r_str>& cls){
   if (can_have_attributes(x)){
     Rf_classgets(x, cls);
   }
 }
 template <RObject T>
-inline bool inherits_any(T x, r_vec<r_str> classes){
+inline bool inherits_any(const T& x, const r_vec<r_str>& classes){
   r_size_t n = classes.length();
   for (r_size_t i = 0; i < n; ++i) {
     if (inherits1(x, classes.get(i).c_str())){
@@ -153,7 +153,7 @@ inline bool inherits_any(T x, r_vec<r_str> classes){
   return false;
 }
 template <RObject T>
-inline bool inherits_all(T x, r_vec<r_str> classes){
+inline bool inherits_all(const T& x, const r_vec<r_str>& classes){
   r_size_t n = classes.length();
   for (r_size_t i = 0; i < n; ++i) {
     if (!inherits1(x, classes.get(i).c_str())){
@@ -163,7 +163,7 @@ inline bool inherits_all(T x, r_vec<r_str> classes){
   return true;
 }
 template <RObject T>
-inline void clear_attrs(T x){
+inline void clear_attrs(const T& x){
 
   auto attrs = get_attrs(x);
 
@@ -185,7 +185,7 @@ inline void clear_attrs(T x){
 namespace internal {
 
 template <RObject T>
-inline void modify_attrs_impl(T x, r_vec<r_sexp> attrs) {
+inline void modify_attrs_impl(const T& x, const r_vec<r_sexp>& attrs) {
 
   if (x.is_null()){
     abort("Cannot add attributes to `NULL`");
@@ -224,7 +224,7 @@ inline void modify_attrs_impl(T x, r_vec<r_sexp> attrs) {
 namespace attr {
 
 template <RObject T>
-inline void set_attrs(T x, r_vec<r_sexp> attrs){
+inline void set_attrs(const T& x, const r_vec<r_sexp>& attrs){
   clear_attrs(x);
   internal::modify_attrs_impl(x, attrs);
 }
