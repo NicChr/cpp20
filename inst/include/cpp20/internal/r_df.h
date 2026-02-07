@@ -6,6 +6,7 @@
 namespace cpp20 {
 
 namespace internal {
+
 r_vec<r_sexp> new_df_impl(r_vec<r_sexp> cols){
 
     int n = cols.length();
@@ -55,7 +56,7 @@ r_vec<r_sexp> new_df_impl(int nrows){
 }
 
 // Forward declare to allow r_df to contain r_df cols
-struct r_df; 
+struct r_df;
 
 struct r_df {
 
@@ -81,7 +82,7 @@ struct r_df {
 //         : sexp(internal::new_df_impl(n_rows, n_cols)) {}
 
     // Implicit conversion to SEXP
-    operator SEXP() const { return sexp; }
+    operator SEXP() const { return unwrap(sexp); }
 
     bool is_null() const { return sexp.is_null(); }
 
