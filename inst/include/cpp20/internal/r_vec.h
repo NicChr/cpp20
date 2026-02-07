@@ -477,7 +477,7 @@ decltype(auto) visit_maybe_vector(const r_sexp& x, F&& f) {
 
 
 template <RVal T>
-inline void r_copy_n(const r_vec<T> &target, const r_vec<T> &source, r_size_t target_offset, r_size_t n){
+inline void r_copy_n(const r_vec<T>& target, const r_vec<T>& source, r_size_t target_offset, r_size_t n){
 
   if constexpr (RPtrWritableType<T>){
     auto *p_source = source.data();

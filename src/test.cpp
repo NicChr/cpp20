@@ -1003,12 +1003,7 @@ SEXP foo_copy_constructor(SEXP x){
 [[cpp11::register]]
 SEXP foo_group_id(SEXP x){
   return internal::visit_vector(x, [&](auto xvec) -> SEXP {
-    using data_t = typename decltype(xvec)::data_type;
-    if constexpr (is<data_t, r_sexp>){
-      return r_null;
-    } else {
-      return make_groups(xvec).ids;
-    }
+    return make_groups(xvec).ids;
   });
 }
 

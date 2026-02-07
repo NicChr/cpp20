@@ -2,6 +2,7 @@
 #define CPP20_R_GROUPS_H
 
 #include <cpp20/internal/r_vec.h>
+#include <cpp20/internal/r_vec_hash.h>
 
 // In some header like r_group.h
 namespace cpp20 {
@@ -33,6 +34,51 @@ inline groups make_groups(const r_vec<T>& x) {
   if (n == 0) return g;
 
   ankerl::unordered_dense::map<key_type, int> lookup;
+  lookup.reserve(n);
+
+  auto* RESTRICT p_x = x.data();
+  auto* RESTRICT p_id = g.ids.data();
+
+  int next_id = 0;
+  int last_id = 0;
+  int id;
+
+  for (r_size_t i = 0; i < n; ++i) {
+    key_type key = p_x[i];
+    auto [it, inserted] = lookup.try_emplace(key, next_id);
+    if (inserted) {
+      id = next_id++;
+    } else {
+      id = it->second;
+    }
+    p_id[i] = id;
+
+    // check if group IDs are sorted
+    // Since g.sorted was set to true by default, once it's set to false we don't need to set again
+    if (g.sorted && id < last_id){
+      g.sorted = false;
+    }
+    last_id = id;
+  }
+
+  g.n_groups = next_id;
+  return g;
+}
+
+inline groups make_groups(const r_vec<r_sexp>& x) {
+
+
+  using key_type = SEXP;
+
+  r_size_t n = x.length();
+  groups g;
+  g.ids = r_vec<r_int>(n);
+  g.n_groups = 0;
+  g.sorted = true;
+
+  if (n == 0) return g;
+
+  ankerl::unordered_dense::map<key_type, int, internal::r_vec_hash<r_sexp>, internal::sexp_equal> lookup;
   lookup.reserve(n);
 
   auto* RESTRICT p_x = x.data();
