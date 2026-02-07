@@ -149,9 +149,8 @@ SEXP foo10(SEXP x){
 
 
 [[cpp11::register]]
-SEXP foo11(SEXP x){
-  auto y = r_vec<r_int>(x);
-  return attr::get_attrs(y.sexp);
+SEXP foo_attrs(SEXP x){
+  return attr::get_attrs(r_sexp(x));
 }
 
 
@@ -268,6 +267,28 @@ SEXP foo28(SEXP x, SEXP y){
   int n = x_.length();
   for (int i = 0; i < n; ++i){
     x_.set(i, r_sexp(y_));
+  }
+  return x_;
+}
+
+[[cpp11::register]]
+SEXP foo28a(SEXP x, SEXP y){
+  r_vec<r_sexp> x_ = r_vec<r_sexp>(x);
+  r_sexp y_ = r_sexp(y);
+  int n = x_.length();
+  for (int i = 0; i < n; ++i){
+    SET_VECTOR_ELT(x_, i, y);
+  }
+  return x_;
+}
+
+[[cpp11::register]]
+SEXP foo28b(SEXP x, SEXP y){
+  r_vec<r_sexp> x_ = r_vec<r_sexp>(x);
+  r_sexp y_ = r_sexp(y);
+  int n = x_.length();
+  for (int i = 0; i < n; ++i){
+    x_.set(i, y_);
   }
   return x_;
 }
@@ -931,11 +952,7 @@ SEXP foo_match_unique(SEXP x) {
 [[cpp11::register]]
 SEXP foo_match(SEXP x, SEXP table) {
   return internal::visit_vector(x, [&](auto xvec) -> SEXP {
-    if constexpr (any<decltype(xvec), r_vec<r_sexp>>){
-      return r_null;
-    } else {
-      return match(xvec, as<decltype(xvec)>(table));
-    }
+    return match(xvec, as<decltype(xvec)>(table));
   });
 }
 
@@ -1067,4 +1084,21 @@ SEXP foo_between(SEXP x, SEXP lo, SEXP hi){
       return r_null;
     }
   });
+  
+}
+
+[[cpp11::register]]
+SEXP foo_make_vec_test(){
+  return make_vec<r_int>(make_vec<r_int>(1, 2, 3));
+}
+
+[[cpp11::register]]
+SEXP foo_test3(SEXP x, SEXP y){
+  auto a = r_vec<r_int>(x);
+  auto b = r_vec<r_int>(y);
+  int n = a.length();
+  for (int i = 0; i < n; ++i){
+    a.set(i, b.get(i));
+  }
+  return a;
 }

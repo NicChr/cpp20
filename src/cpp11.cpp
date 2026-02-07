@@ -120,10 +120,10 @@ extern "C" SEXP _cpp20_foo10(SEXP x) {
   END_CPP11
 }
 // test.cpp
-SEXP foo11(SEXP x);
-extern "C" SEXP _cpp20_foo11(SEXP x) {
+SEXP foo_attrs(SEXP x);
+extern "C" SEXP _cpp20_foo_attrs(SEXP x) {
   BEGIN_CPP11
-    return cpp11::as_sexp(foo11(cpp11::as_cpp<cpp11::decay_t<SEXP>>(x)));
+    return cpp11::as_sexp(foo_attrs(cpp11::as_cpp<cpp11::decay_t<SEXP>>(x)));
   END_CPP11
 }
 // test.cpp
@@ -236,6 +236,20 @@ SEXP foo28(SEXP x, SEXP y);
 extern "C" SEXP _cpp20_foo28(SEXP x, SEXP y) {
   BEGIN_CPP11
     return cpp11::as_sexp(foo28(cpp11::as_cpp<cpp11::decay_t<SEXP>>(x), cpp11::as_cpp<cpp11::decay_t<SEXP>>(y)));
+  END_CPP11
+}
+// test.cpp
+SEXP foo28a(SEXP x, SEXP y);
+extern "C" SEXP _cpp20_foo28a(SEXP x, SEXP y) {
+  BEGIN_CPP11
+    return cpp11::as_sexp(foo28a(cpp11::as_cpp<cpp11::decay_t<SEXP>>(x), cpp11::as_cpp<cpp11::decay_t<SEXP>>(y)));
+  END_CPP11
+}
+// test.cpp
+SEXP foo28b(SEXP x, SEXP y);
+extern "C" SEXP _cpp20_foo28b(SEXP x, SEXP y) {
+  BEGIN_CPP11
+    return cpp11::as_sexp(foo28b(cpp11::as_cpp<cpp11::decay_t<SEXP>>(x), cpp11::as_cpp<cpp11::decay_t<SEXP>>(y)));
   END_CPP11
 }
 // test.cpp
@@ -791,6 +805,20 @@ extern "C" SEXP _cpp20_foo_between(SEXP x, SEXP lo, SEXP hi) {
     return cpp11::as_sexp(foo_between(cpp11::as_cpp<cpp11::decay_t<SEXP>>(x), cpp11::as_cpp<cpp11::decay_t<SEXP>>(lo), cpp11::as_cpp<cpp11::decay_t<SEXP>>(hi)));
   END_CPP11
 }
+// test.cpp
+SEXP foo_make_vec_test();
+extern "C" SEXP _cpp20_foo_make_vec_test() {
+  BEGIN_CPP11
+    return cpp11::as_sexp(foo_make_vec_test());
+  END_CPP11
+}
+// test.cpp
+SEXP foo_test3(SEXP x, SEXP y);
+extern "C" SEXP _cpp20_foo_test3(SEXP x, SEXP y) {
+  BEGIN_CPP11
+    return cpp11::as_sexp(foo_test3(cpp11::as_cpp<cpp11::decay_t<SEXP>>(x), cpp11::as_cpp<cpp11::decay_t<SEXP>>(y)));
+  END_CPP11
+}
 
 extern "C" {
 static const R_CallMethodDef CallEntries[] = {
@@ -799,7 +827,6 @@ static const R_CallMethodDef CallEntries[] = {
     {"_cpp20_dummy",                (DL_FUNC) &_cpp20_dummy,                0},
     {"_cpp20_foo",                  (DL_FUNC) &_cpp20_foo,                  1},
     {"_cpp20_foo10",                (DL_FUNC) &_cpp20_foo10,                1},
-    {"_cpp20_foo11",                (DL_FUNC) &_cpp20_foo11,                1},
     {"_cpp20_foo12",                (DL_FUNC) &_cpp20_foo12,                2},
     {"_cpp20_foo13",                (DL_FUNC) &_cpp20_foo13,                1},
     {"_cpp20_foo14",                (DL_FUNC) &_cpp20_foo14,                0},
@@ -817,6 +844,8 @@ static const R_CallMethodDef CallEntries[] = {
     {"_cpp20_foo26",                (DL_FUNC) &_cpp20_foo26,                0},
     {"_cpp20_foo27",                (DL_FUNC) &_cpp20_foo27,                1},
     {"_cpp20_foo28",                (DL_FUNC) &_cpp20_foo28,                2},
+    {"_cpp20_foo28a",               (DL_FUNC) &_cpp20_foo28a,               2},
+    {"_cpp20_foo28b",               (DL_FUNC) &_cpp20_foo28b,               2},
     {"_cpp20_foo29",                (DL_FUNC) &_cpp20_foo29,                1},
     {"_cpp20_foo30",                (DL_FUNC) &_cpp20_foo30,                0},
     {"_cpp20_foo31",                (DL_FUNC) &_cpp20_foo31,                0},
@@ -855,6 +884,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"_cpp20_foo_add1",             (DL_FUNC) &_cpp20_foo_add1,             2},
     {"_cpp20_foo_all_whole",        (DL_FUNC) &_cpp20_foo_all_whole,        1},
     {"_cpp20_foo_as_str",           (DL_FUNC) &_cpp20_foo_as_str,           1},
+    {"_cpp20_foo_attrs",            (DL_FUNC) &_cpp20_foo_attrs,            1},
     {"_cpp20_foo_between",          (DL_FUNC) &_cpp20_foo_between,          3},
     {"_cpp20_foo_copy",             (DL_FUNC) &_cpp20_foo_copy,             1},
     {"_cpp20_foo_copy2",            (DL_FUNC) &_cpp20_foo_copy2,            1},
@@ -870,6 +900,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"_cpp20_foo_lgl",              (DL_FUNC) &_cpp20_foo_lgl,              0},
     {"_cpp20_foo_make_list",        (DL_FUNC) &_cpp20_foo_make_list,        0},
     {"_cpp20_foo_make_list2",       (DL_FUNC) &_cpp20_foo_make_list2,       0},
+    {"_cpp20_foo_make_vec_test",    (DL_FUNC) &_cpp20_foo_make_vec_test,    0},
     {"_cpp20_foo_match",            (DL_FUNC) &_cpp20_foo_match,            2},
     {"_cpp20_foo_match_unique",     (DL_FUNC) &_cpp20_foo_match_unique,     1},
     {"_cpp20_foo_n_groups",         (DL_FUNC) &_cpp20_foo_n_groups,         1},
@@ -885,6 +916,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"_cpp20_foo_sum_int",          (DL_FUNC) &_cpp20_foo_sum_int,          2},
     {"_cpp20_foo_test",             (DL_FUNC) &_cpp20_foo_test,             0},
     {"_cpp20_foo_test2",            (DL_FUNC) &_cpp20_foo_test2,            0},
+    {"_cpp20_foo_test3",            (DL_FUNC) &_cpp20_foo_test3,            2},
     {"_cpp20_foo_unique",           (DL_FUNC) &_cpp20_foo_unique,           1},
     {"_cpp20_foo_unique2",          (DL_FUNC) &_cpp20_foo_unique2,          1},
     {"_cpp20_foo_unique_strs",      (DL_FUNC) &_cpp20_foo_unique_strs,      1},

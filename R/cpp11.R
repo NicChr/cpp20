@@ -64,8 +64,8 @@ foo10 <- function(x) {
   .Call(`_cpp20_foo10`, x)
 }
 
-foo11 <- function(x) {
-  .Call(`_cpp20_foo11`, x)
+foo_attrs <- function(x) {
+  .Call(`_cpp20_foo_attrs`, x)
 }
 
 foo12 <- function(x, attrs) {
@@ -130,6 +130,14 @@ foo27 <- function(cols) {
 
 foo28 <- function(x, y) {
   .Call(`_cpp20_foo28`, x, y)
+}
+
+foo28a <- function(x, y) {
+  .Call(`_cpp20_foo28a`, x, y)
+}
+
+foo28b <- function(x, y) {
+  .Call(`_cpp20_foo28b`, x, y)
 }
 
 foo29 <- function(x) {
@@ -446,4 +454,12 @@ foo_remainder <- function() {
 
 foo_between <- function(x, lo, hi) {
   .Call(`_cpp20_foo_between`, x, lo, hi)
+}
+
+foo_make_vec_test <- function() {
+  .Call(`_cpp20_foo_make_vec_test`)
+}
+
+foo_test3 <- function(x, y) {
+  .Call(`_cpp20_foo_test3`, x, y)
 }
