@@ -138,6 +138,7 @@ struct r_int64 {
 struct r_str {
   r_sexp value;
   using value_type = r_sexp;
+  // r_str() : value{internal::blank_string_constant, internal::view_tag{}} {}
   r_str() : value{R_BlankString, internal::view_tag{}} {}
   // Explicit SEXP/const char* -> r_str
   explicit r_str(SEXP x) : value{x} {}
@@ -160,6 +161,7 @@ struct r_str {
 struct r_sym {
   r_sexp value;
   using value_type = r_sexp;
+  // r_sym() : value{internal::missing_arg_constant, internal::view_tag{}} {}
   r_sym() : value{R_MissingArg, internal::view_tag{}} {}
   explicit r_sym(SEXP x) : value{x} {}
   explicit r_sym(SEXP x, internal::view_tag) : value(x, internal::view_tag{}) {}
@@ -242,6 +244,12 @@ if constexpr (RVal<T>){
 inline const r_sexp r_null = r_sexp();
 // Blank string ''
 inline const r_str blank_r_string = r_str();
+
+// // Lazy loaded version
+// // R C NULL constant
+// inline const r_sexp& r_null() { static const r_sexp s; return s; }
+// // Blank string ''
+// inline const r_str& r_blank_string() { static const r_str s; return s; };
   
 // Coerce to an R type based on the C type (useful for RVal templates)
 template<typename T>

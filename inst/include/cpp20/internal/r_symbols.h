@@ -21,43 +21,87 @@ inline SEXP r_as_list = NULL;
 
 namespace symbol {
 
-inline const r_sym class_sym = r_sym(R_ClassSymbol);
-inline const r_sym names_sym = r_sym(R_NamesSymbol);
-inline const r_sym dim_sym = r_sym(R_DimSymbol);
-inline const r_sym dim_names_sym = r_sym(R_DimNamesSymbol);
-inline const r_sym row_names_sym = r_sym(R_RowNamesSymbol);
-inline const r_sym levels_sym = r_sym(R_LevelsSymbol);
-inline const r_sym double_colon_sym = r_sym(R_DoubleColonSymbol);
-inline const r_sym triple_colon_sym = r_sym(R_TripleColonSymbol);
-inline const r_sym dollar_sym = r_sym(R_DollarSymbol);
-inline const r_sym bracket_sym = r_sym(R_BracketSymbol);
-inline const r_sym double_brackets_sym = r_sym(R_Bracket2Symbol);
-inline const r_sym brace_sym = r_sym(R_BraceSymbol);
-inline const r_sym dots_sym = r_sym(R_DotsSymbol);
-inline const r_sym tsp_sym = r_sym(R_TspSymbol);
-inline const r_sym name_sym = r_sym(R_NameSymbol);
-inline const r_sym base_sym = r_sym(R_BaseSymbol);
-inline const r_sym quote_sym = r_sym(R_QuoteSymbol);
-inline const r_sym function_sym = r_sym(R_FunctionSymbol);
-inline const r_sym namespace_env_sym = r_sym(R_NamespaceEnvSymbol);
-inline const r_sym package_sym = r_sym(R_PackageSymbol);
-inline const r_sym seeds_sym = r_sym(R_SeedsSymbol);
-inline const r_sym na_rm_sym = r_sym(R_NaRmSymbol);
-inline const r_sym source_sym = r_sym(R_SourceSymbol);
-inline const r_sym mode_sym = r_sym(R_ModeSymbol);
-inline const r_sym device_sym = r_sym(R_DeviceSymbol);
-inline const r_sym last_value_sym = r_sym(R_LastvalueSymbol);
-inline const r_sym spec_sym = r_sym(R_SpecSymbol);
-inline const r_sym previous_sym = r_sym(R_PreviousSymbol);
-inline const r_sym sort_list_sym = r_sym(R_SortListSymbol);
-inline const r_sym eval_sym = r_sym(R_EvalSymbol);
-inline const r_sym drop_sym = r_sym(R_DropSymbol);
-inline const r_sym missing_arg = r_sym(R_MissingArg);
-inline const r_sym unbound_value = r_sym(R_UnboundValue);
+inline const r_sym class_sym = r_sym(R_ClassSymbol, internal::view_tag{});
+inline const r_sym names_sym = r_sym(R_NamesSymbol, internal::view_tag{});
+inline const r_sym dim_sym = r_sym(R_DimSymbol, internal::view_tag{});
+inline const r_sym dim_names_sym = r_sym(R_DimNamesSymbol, internal::view_tag{});
+inline const r_sym row_names_sym = r_sym(R_RowNamesSymbol, internal::view_tag{});
+inline const r_sym levels_sym = r_sym(R_LevelsSymbol, internal::view_tag{});
+inline const r_sym double_colon_sym = r_sym(R_DoubleColonSymbol, internal::view_tag{});
+inline const r_sym triple_colon_sym = r_sym(R_TripleColonSymbol, internal::view_tag{});
+inline const r_sym dollar_sym = r_sym(R_DollarSymbol, internal::view_tag{});
+inline const r_sym bracket_sym = r_sym(R_BracketSymbol, internal::view_tag{});
+inline const r_sym double_brackets_sym = r_sym(R_Bracket2Symbol, internal::view_tag{});
+inline const r_sym brace_sym = r_sym(R_BraceSymbol, internal::view_tag{});
+inline const r_sym dots_sym = r_sym(R_DotsSymbol, internal::view_tag{});
+inline const r_sym tsp_sym = r_sym(R_TspSymbol, internal::view_tag{});
+inline const r_sym name_sym = r_sym(R_NameSymbol, internal::view_tag{});
+inline const r_sym base_sym = r_sym(R_BaseSymbol, internal::view_tag{});
+inline const r_sym quote_sym = r_sym(R_QuoteSymbol, internal::view_tag{});
+inline const r_sym function_sym = r_sym(R_FunctionSymbol, internal::view_tag{});
+inline const r_sym namespace_env_sym = r_sym(R_NamespaceEnvSymbol, internal::view_tag{});
+inline const r_sym package_sym = r_sym(R_PackageSymbol, internal::view_tag{});
+inline const r_sym seeds_sym = r_sym(R_SeedsSymbol, internal::view_tag{});
+inline const r_sym na_rm_sym = r_sym(R_NaRmSymbol, internal::view_tag{});
+inline const r_sym source_sym = r_sym(R_SourceSymbol, internal::view_tag{});
+inline const r_sym mode_sym = r_sym(R_ModeSymbol, internal::view_tag{});
+inline const r_sym device_sym = r_sym(R_DeviceSymbol, internal::view_tag{});
+inline const r_sym last_value_sym = r_sym(R_LastvalueSymbol, internal::view_tag{});
+inline const r_sym spec_sym = r_sym(R_SpecSymbol, internal::view_tag{});
+inline const r_sym previous_sym = r_sym(R_PreviousSymbol, internal::view_tag{});
+inline const r_sym sort_list_sym = r_sym(R_SortListSymbol, internal::view_tag{});
+inline const r_sym eval_sym = r_sym(R_EvalSymbol, internal::view_tag{});
+inline const r_sym drop_sym = r_sym(R_DropSymbol, internal::view_tag{});
+inline const r_sym missing_arg = r_sym(R_MissingArg, internal::view_tag{});
+inline const r_sym unbound_value = r_sym(R_UnboundValue, internal::view_tag{});
 
 inline r_sym tag(SEXP x){
   return r_sym(TAG(x));
 }
+
+
+// If we find out eager initialisation of R symbols is a problem, use the method below
+
+// Lazy loading (Meyers Singleton method)
+// template <SEXP* sym_ptr>
+// inline const r_sym& lazy_get_global_sym() {
+//     static const r_sym s(*sym_ptr, internal::view_tag{});
+//     return s;
+// }
+
+// inline const r_sym& class_sym()           { return internal::lazy_get_global_sym<&R_ClassSymbol>(); }
+// inline const r_sym& names_sym()           { return internal::lazy_get_global_sym<&R_NamesSymbol>(); }
+// inline const r_sym& dim_sym()             { return internal::lazy_get_global_sym<&R_DimSymbol>(); }
+// inline const r_sym& dim_names_sym()       { return internal::lazy_get_global_sym<&R_DimNamesSymbol>(); }
+// inline const r_sym& row_names_sym()       { return internal::lazy_get_global_sym<&R_RowNamesSymbol>(); }
+// inline const r_sym& levels_sym()          { return internal::lazy_get_global_sym<&R_LevelsSymbol>(); }
+// inline const r_sym& double_colon_sym()    { return internal::lazy_get_global_sym<&R_DoubleColonSymbol>(); }
+// inline const r_sym& triple_colon_sym()    { return internal::lazy_get_global_sym<&R_TripleColonSymbol>(); }
+// inline const r_sym& dollar_sym()          { return internal::lazy_get_global_sym<&R_DollarSymbol>(); }
+// inline const r_sym& bracket_sym()         { return internal::lazy_get_global_sym<&R_BracketSymbol>(); }
+// inline const r_sym& double_brackets_sym() { return internal::lazy_get_global_sym<&R_Bracket2Symbol>(); }
+// inline const r_sym& brace_sym()           { return internal::lazy_get_global_sym<&R_BraceSymbol>(); }
+// inline const r_sym& dots_sym()            { return internal::lazy_get_global_sym<&R_DotsSymbol>(); }
+// inline const r_sym& tsp_sym()             { return internal::lazy_get_global_sym<&R_TspSymbol>(); }
+// inline const r_sym& name_sym()            { return internal::lazy_get_global_sym<&R_NameSymbol>(); }
+// inline const r_sym& base_sym()            { return internal::lazy_get_global_sym<&R_BaseSymbol>(); }
+// inline const r_sym& quote_sym()           { return internal::lazy_get_global_sym<&R_QuoteSymbol>(); }
+// inline const r_sym& function_sym()        { return internal::lazy_get_global_sym<&R_FunctionSymbol>(); }
+// inline const r_sym& namespace_env_sym()   { return internal::lazy_get_global_sym<&R_NamespaceEnvSymbol>(); }
+// inline const r_sym& package_sym()         { return internal::lazy_get_global_sym<&R_PackageSymbol>(); }
+// inline const r_sym& seeds_sym()           { return internal::lazy_get_global_sym<&R_SeedsSymbol>(); }
+// inline const r_sym& na_rm_sym()           { return internal::lazy_get_global_sym<&R_NaRmSymbol>(); }
+// inline const r_sym& source_sym()          { return internal::lazy_get_global_sym<&R_SourceSymbol>(); }
+// inline const r_sym& mode_sym()            { return internal::lazy_get_global_sym<&R_ModeSymbol>(); }
+// inline const r_sym& device_sym()          { return internal::lazy_get_global_sym<&R_DeviceSymbol>(); }
+// inline const r_sym& last_value_sym()      { return internal::lazy_get_global_sym<&R_LastvalueSymbol>(); }
+// inline const r_sym& spec_sym()            { return internal::lazy_get_global_sym<&R_SpecSymbol>(); }
+// inline const r_sym& previous_sym()        { return internal::lazy_get_global_sym<&R_PreviousSymbol>(); }
+// inline const r_sym& sort_list_sym()       { return internal::lazy_get_global_sym<&R_SortListSymbol>(); }
+// inline const r_sym& eval_sym()            { return internal::lazy_get_global_sym<&R_EvalSymbol>(); }
+// inline const r_sym& drop_sym()            { return internal::lazy_get_global_sym<&R_DropSymbol>(); }
+// inline const r_sym& missing_arg()         { return internal::lazy_get_global_sym<&R_MissingArg>(); }
+// inline const r_sym& unbound_value()       { return internal::lazy_get_global_sym<&R_UnboundValue>(); }
 
 }
 

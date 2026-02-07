@@ -60,8 +60,8 @@ inline SEXPTYPE CPP20_TYPEOF(SEXP x){
   return Rf_inherits(x, "integer64") ? internal::CPP20_INT64SXP : TYPEOF(x);
 }
 
-template<typename T>
-inline constexpr bool between_impl(const T x, const T lo, const T hi) {
+template<typename T, typename U>
+inline constexpr bool between_impl(const T x, const U lo, const U hi) {
   return x >= lo && x <= hi;
 }
 
@@ -98,6 +98,26 @@ internal::r_safe_impl(                                                          
       return F(std::forward<decltype(args)>(args)...);                                 \
     }                                                                                  \
 )
+
+
+// If we find out eager initialisation of R symbols is a problem, we can use the constants below
+// // Generic Lazy Loader for R Constants
+// // Ptr: A pointer to the global R variable (e.g., &R_NilValue)
+// template <typename T, T* Ptr>
+// struct lazy_r_constant {
+//     // Implicit conversion to SEXP (or whatever T is)
+//     operator T() const noexcept {
+//         return *Ptr;
+//     }
+    
+//     // Allow comparison directly
+//     bool operator==(T other) const noexcept { return *Ptr == other; }
+//     bool operator!=(T other) const noexcept { return *Ptr != other; }
+// };
+
+// // lazy constants (to be defined later)
+// inline constexpr lazy_r_constant<SEXP, &R_BlankString> blank_string_constant{};
+// inline constexpr lazy_r_constant<SEXP, &R_MissingArg> missing_arg_constant{};
 
 }
 
