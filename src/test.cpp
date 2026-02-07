@@ -688,9 +688,21 @@ SEXP foo_vec_add3(SEXP x){
 
 [[cpp11::register]]
 SEXP foo_vec_add4(SEXP x, SEXP y){
-  auto xvec = as<r_vec<r_int>>(x);
-  auto yvec = as<r_vec<r_int>>(y);
-  return xvec + yvec;
+  return internal::visit_vector(x, [&](auto xvec) -> SEXP {
+    using data_t = typename decltype(xvec)::data_type;
+    if constexpr (!RMathType<data_t>){
+      return r_null;
+    } else {
+      return internal::visit_vector(y, [&](auto yvec) -> SEXP {
+        using data_t = typename decltype(yvec)::data_type;
+        if constexpr (!RMathType<data_t>){
+          return r_null;
+        } else {
+          return xvec + yvec;
+        }
+      });
+    }
+  });
 }
 
 [[cpp11::register]]

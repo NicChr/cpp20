@@ -137,15 +137,25 @@ struct r_vec_hash<r_sexp> {
   // Hasher for the Map (Key = SEXP)
   // ---------------------------------------------------------
 
-  [[nodiscard]] size_t operator()(SEXP elem) const noexcept {
+  [[nodiscard]] size_t operator()(SEXP elem) const {
       r_sexp elem_ = r_sexp(elem, internal::read_only_tag{});
+
+      if (elem_.is_null()){
+        // return 0x3141592653589793ULL;
+        return 0;
+      }
+
       int type = TYPEOF(elem);
       
       // Recursively hash the element
-      size_t h = internal::visit_vector(elem_, [](auto vec) -> size_t {
+      size_t h = internal::visit_maybe_vector(elem_, [](auto vec) -> size_t {
+        if constexpr (is<decltype(vec), std::nullptr_t>){
+          abort("List contains non-vector element, current implementation can only hash vectors");
+        } else {
           using data_t = typename decltype(vec)::data_type;
           // Recursively call r_vec_hash<T> for the inner vector
           return r_vec_hash<data_t>{}(vec);
+        }
       });
 
       // Combine with type tag (e.g. to distinguish list(1) from list("1"))
@@ -175,7 +185,7 @@ struct sexp_equal {
   bool operator()(SEXP x, SEXP y) const noexcept {
     if (x == y) return true; // same pointer
     // 16 is the flag for default exactness (ignoring bytecode differences etc)
-    return R_compute_identical(x, y, 16); 
+    return static_cast<bool>(R_compute_identical(x, y, 16));
   }
 };
 
