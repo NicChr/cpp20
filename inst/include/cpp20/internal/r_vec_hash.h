@@ -14,6 +14,10 @@ inline void hash_combine(size_t& seed, size_t value) noexcept {
     seed ^= value + 0x9e3779b97f4a7c15ULL + (seed << 6) + (seed >> 2);
 }
 
+inline double normalise_double(double x) noexcept {
+  return x + 0.0;
+}
+
 template<RVal T>
 struct r_vec_hash {
   using is_avalanching = void;
@@ -22,6 +26,73 @@ struct r_vec_hash {
     r_size_t n = x.length();
     auto* RESTRICT data = x.data();
     return XXH3_64bits(data, n * sizeof(unwrap_t<T>));
+  }
+};
+
+// Specialisations for r_dbl/r_cplx
+// Normalise doubles to ensure -0.0 and 0.0 aren't hashed differently
+
+template<>
+struct r_vec_hash<r_dbl> {
+  using is_avalanching = void;
+
+  [[nodiscard]] size_t operator()(const r_vec<r_dbl>& x) const noexcept {
+    r_size_t n = x.length();
+    const double* data = x.data();
+
+    // Use streaming API to avoid allocating a full copy of the vector
+    XXH3_state_t* state = XXH3_createState();
+    XXH3_64bits_reset(state);
+
+    constexpr size_t CHUNK_SIZE = 1024; // 8KB buffer, fits in stack/L1
+    std::array<double, CHUNK_SIZE> buffer;
+
+    for (r_size_t i = 0; i < n; i += CHUNK_SIZE) {
+        size_t current_chunk = std::min<size_t>(CHUNK_SIZE, n - i);
+        
+        // Copy and normalise into stack buffer
+        for (size_t j = 0; j < current_chunk; ++j) {
+            buffer[j] = normalise_double(data[i + j]);
+        }
+        
+        XXH3_64bits_update(state, buffer.data(), current_chunk * sizeof(double));
+    }
+
+    size_t hash = XXH3_64bits_digest(state);
+    XXH3_freeState(state);
+    return hash;
+  }
+};
+
+template<>
+struct r_vec_hash<r_cplx> {
+  using is_avalanching = void;
+
+  [[nodiscard]] size_t operator()(const r_vec<r_cplx>& x) const noexcept {
+    r_size_t n = x.length();
+    const auto* data = x.data();
+
+    XXH3_state_t* state = XXH3_createState();
+    XXH3_64bits_reset(state);
+
+    constexpr size_t CHUNK_SIZE = 1024; 
+    std::array<std::complex<double>, CHUNK_SIZE> buffer;
+
+    for (r_size_t i = 0; i < n; i += CHUNK_SIZE) {
+        size_t current_chunk = std::min<size_t>(CHUNK_SIZE, n - i);
+        
+        for (size_t j = 0; j < current_chunk; ++j) {
+            double r = normalise_double(data[i + j].real());
+            double im = normalise_double(data[i + j].imag());
+            buffer[j] = std::complex<double>(r, im);
+        }
+        
+        XXH3_64bits_update(state, buffer.data(), current_chunk * sizeof(std::complex<double>));
+    }
+
+    size_t hash = XXH3_64bits_digest(state);
+    XXH3_freeState(state);
+    return hash;
   }
 };
 
