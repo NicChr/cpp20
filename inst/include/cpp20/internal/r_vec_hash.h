@@ -138,7 +138,7 @@ struct r_vec_hash<r_sexp> {
   // ---------------------------------------------------------
 
   [[nodiscard]] size_t operator()(SEXP elem) const {
-      r_sexp elem_ = r_sexp(elem, internal::read_only_tag{});
+      r_sexp elem_ = r_sexp(elem, internal::view_tag{});
 
       if (elem_.is_null()){
         // return 0x3141592653589793ULL;

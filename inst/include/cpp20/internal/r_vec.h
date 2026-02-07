@@ -60,8 +60,8 @@ struct r_vec {
     }
   }
 
-  explicit r_vec(const r_sexp& s, internal::read_only_tag) 
-    : sexp(s.value, internal::read_only_tag{}) 
+  explicit r_vec(const r_sexp& s, internal::view_tag) 
+    : sexp(s.value, internal::view_tag{}) 
 {
     if (!is_null()) initialise_ptr();
 }
@@ -447,28 +447,28 @@ decltype(auto) visit_maybe_vector(SEXP x, F&& f) {
 template <class F>
 decltype(auto) visit_vector(const r_sexp& x, F&& f) {
   switch (CPP20_TYPEOF(x)) {
-  case LGLSXP:          return f(r_vec<r_lgl>(x, internal::read_only_tag{}));
-  case INTSXP:          return f(r_vec<r_int>(x, internal::read_only_tag{}));
-  case CPP20_INT64SXP: return f(r_vec<r_int64>(x, internal::read_only_tag{}));
-  case REALSXP:         return f(r_vec<r_dbl>(x, internal::read_only_tag{}));
-  case STRSXP:          return f(r_vec<r_str>(x, internal::read_only_tag{}));
-  case VECSXP:          return f(r_vec<r_sexp>(x, internal::read_only_tag{}));
-  case CPLXSXP:         return f(r_vec<r_cplx>(x, internal::read_only_tag{}));
-  case RAWSXP:          return f(r_vec<r_raw>(x, internal::read_only_tag{}));
+  case LGLSXP:          return f(r_vec<r_lgl>(x, internal::view_tag{}));
+  case INTSXP:          return f(r_vec<r_int>(x, internal::view_tag{}));
+  case CPP20_INT64SXP: return f(r_vec<r_int64>(x, internal::view_tag{}));
+  case REALSXP:         return f(r_vec<r_dbl>(x, internal::view_tag{}));
+  case STRSXP:          return f(r_vec<r_str>(x, internal::view_tag{}));
+  case VECSXP:          return f(r_vec<r_sexp>(x, internal::view_tag{}));
+  case CPLXSXP:         return f(r_vec<r_cplx>(x, internal::view_tag{}));
+  case RAWSXP:          return f(r_vec<r_raw>(x, internal::view_tag{}));
   default:              abort("`x` must be a vector");
   }
 }
 template <class F>
 decltype(auto) visit_maybe_vector(const r_sexp& x, F&& f) {
   switch (CPP20_TYPEOF(x)) {
-  case LGLSXP:          return f(r_vec<r_lgl>(x, internal::read_only_tag{}));
-  case INTSXP:          return f(r_vec<r_int>(x, internal::read_only_tag{}));
-  case CPP20_INT64SXP: return f(r_vec<r_int64>(x, internal::read_only_tag{}));
-  case REALSXP:         return f(r_vec<r_dbl>(x, internal::read_only_tag{}));
-  case STRSXP:          return f(r_vec<r_str>(x, internal::read_only_tag{}));
-  case VECSXP:          return f(r_vec<r_sexp>(x, internal::read_only_tag{}));
-  case CPLXSXP:         return f(r_vec<r_cplx>(x, internal::read_only_tag{}));
-  case RAWSXP:          return f(r_vec<r_raw>(x, internal::read_only_tag{}));
+  case LGLSXP:          return f(r_vec<r_lgl>(x, internal::view_tag{}));
+  case INTSXP:          return f(r_vec<r_int>(x, internal::view_tag{}));
+  case CPP20_INT64SXP: return f(r_vec<r_int64>(x, internal::view_tag{}));
+  case REALSXP:         return f(r_vec<r_dbl>(x, internal::view_tag{}));
+  case STRSXP:          return f(r_vec<r_str>(x, internal::view_tag{}));
+  case VECSXP:          return f(r_vec<r_sexp>(x, internal::view_tag{}));
+  case CPLXSXP:         return f(r_vec<r_cplx>(x, internal::view_tag{}));
+  case RAWSXP:          return f(r_vec<r_raw>(x, internal::view_tag{}));
   default:              return f(nullptr);
   }
 }
