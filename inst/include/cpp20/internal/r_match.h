@@ -50,8 +50,8 @@ inline r_vec<r_int> match(r_vec<r_sexp> needles, r_vec<r_sexp> haystack) {
   using MapType = ankerl::unordered_dense::map<
       SEXP,              // Key type
       int,               // Value type
-      r_vec_hash<r_sexp>,
-      sexp_equal
+      internal::r_vec_hash<r_sexp>,
+      internal::sexp_equal
   >;
 
   MapType lookup;
