@@ -1,9 +1,8 @@
-#ifndef CHEAPR_R_VEC_HASH_H
-#define CHEAPR_R_VEC_HASH_H
+#ifndef CPP20_R_VEC_HASH_H
+#define CPP20_R_VEC_HASH_H
 
+#include <cpp20/internal/r_hash.h>
 #include <cpp20/internal/r_vec.h>
-#define XXH_INLINE_ALL
-#include <xxHash/xxhash.h>
 
 namespace cpp20 {
 

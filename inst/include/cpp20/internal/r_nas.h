@@ -9,12 +9,39 @@ namespace cpp20 {
     
 // NAs
 
+namespace internal {
+
 // Constructs R's NA_REAL: A Quiet NaN with the payload 1954 (0x7a2).
 // Hex: 0x7ff00000 (Exp/Quiet) << 32 | 0x7a2 (Payload).
 // Uses std::bit_cast for portable interpretation of the 64-bit pattern
 // no manual endianness swapping required
-consteval double make_na_real() {
+inline consteval double make_na_real() {
   return std::bit_cast<double>(0x7ff00000000007a2ULL);
+}
+
+inline consteval uint64_t na_real_bits(){
+  return std::bit_cast<uint64_t>(make_na_real());
+}
+
+inline constexpr bool is_na_real(double x){
+  return std::bit_cast<uint64_t>(x) == na_real_bits();
+}
+
+// Different NaN have different bit representations, so use with care
+inline consteval uint64_t nan_bits(){
+  return std::bit_cast<uint64_t>(std::numeric_limits<double>::quiet_NaN());
+}
+
+}
+
+
+template <typename T>
+inline constexpr bool is_nan(T x){
+  return false;
+}
+template <>
+inline constexpr bool is_nan(r_dbl x){
+  return std::isnan(unwrap(x));
 }
 
 namespace internal {

@@ -1114,3 +1114,9 @@ SEXP foo_test3(SEXP x, SEXP y){
 SEXP foo_na_real(){
   return as_vector(na<r_dbl>());
 }
+
+
+[[cpp11::register]]
+SEXP foofoofoo(){
+  return make_vec<r_lgl>(is_na(r_dbl(R_NaN)), is_na(r_dbl(NA_REAL)), is_nan(r_dbl(R_NaN)), is_nan(r_dbl(NA_REAL)));
+}

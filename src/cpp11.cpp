@@ -826,6 +826,13 @@ extern "C" SEXP _cpp20_foo_na_real() {
     return cpp11::as_sexp(foo_na_real());
   END_CPP11
 }
+// test.cpp
+SEXP foofoofoo();
+extern "C" SEXP _cpp20_foofoofoo() {
+  BEGIN_CPP11
+    return cpp11::as_sexp(foofoofoo());
+  END_CPP11
+}
 
 extern "C" {
 static const R_CallMethodDef CallEntries[] = {
@@ -944,6 +951,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"_cpp20_foo_vec_subtract",     (DL_FUNC) &_cpp20_foo_vec_subtract,     2},
     {"_cpp20_foobar",               (DL_FUNC) &_cpp20_foobar,               1},
     {"_cpp20_foofoo",               (DL_FUNC) &_cpp20_foofoo,               0},
+    {"_cpp20_foofoofoo",            (DL_FUNC) &_cpp20_foofoofoo,            0},
     {"_cpp20_ok",                   (DL_FUNC) &_cpp20_ok,                   0},
     {"_cpp20_yeah",                 (DL_FUNC) &_cpp20_yeah,                 1},
     {NULL, NULL, 0}

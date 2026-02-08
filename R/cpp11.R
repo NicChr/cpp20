@@ -467,3 +467,7 @@ foo_test3 <- function(x, y) {
 foo_na_real <- function() {
   .Call(`_cpp20_foo_na_real`)
 }
+
+foofoofoo <- function() {
+  .Call(`_cpp20_foofoofoo`)
+}
