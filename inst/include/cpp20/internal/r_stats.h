@@ -125,9 +125,17 @@ r_vec<T> range(const r_vec<T> &x, bool na_rm = false){
             lo_ = is_na(T(p_x[i])) ? lo_ : std::min(lo_, p_x[i]);
             // No need to ignore NA for max() because NA is defined as lowest representable value
             hi_ = std::max(hi_, p_x[i]);
-        }        
+        }
         lo = T(lo_);
         hi = T(hi_);
+
+        // If lo/hi are still the same values as when initialised, this either means the vector was full of NAs, or the range really is max/min int
+        // Either way, we check in this rare case
+        if (lo == max_val && hi == min_val && x.all_na()){
+            lo = na<T>();
+            hi = na<T>();
+        }
+
     } else {
         #pragma omp simd reduction(std::min:lo_) reduction(std::max:hi_)
         for (r_size_t i = 0; i < n; ++i){
