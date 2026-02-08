@@ -471,3 +471,7 @@ foo_na_real <- function() {
 foofoofoo <- function() {
   .Call(`_cpp20_foofoofoo`)
 }
+
+foo_subset <- function(x, i) {
+  .Call(`_cpp20_foo_subset`, x, i)
+}

@@ -1120,3 +1120,11 @@ SEXP foo_na_real(){
 SEXP foofoofoo(){
   return make_vec<r_lgl>(is_nan(r_dbl(R_NaN)), is_nan(r_dbl(NA_REAL)), is_nan(r_dbl(std::sqrt(-1.0))), is_nan(r_dbl(NA_REAL)));
 }
+
+
+[[cpp11::register]]
+SEXP foo_subset(SEXP x, SEXP i) {
+  return internal::visit_vector(x, [&](auto xvec) -> SEXP {
+    return xvec.subset(as<r_vec<r_int>>(i));
+  });
+}

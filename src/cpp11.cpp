@@ -833,6 +833,13 @@ extern "C" SEXP _cpp20_foofoofoo() {
     return cpp11::as_sexp(foofoofoo());
   END_CPP11
 }
+// test.cpp
+SEXP foo_subset(SEXP x, SEXP i);
+extern "C" SEXP _cpp20_foo_subset(SEXP x, SEXP i) {
+  BEGIN_CPP11
+    return cpp11::as_sexp(foo_subset(cpp11::as_cpp<cpp11::decay_t<SEXP>>(x), cpp11::as_cpp<cpp11::decay_t<SEXP>>(i)));
+  END_CPP11
+}
 
 extern "C" {
 static const R_CallMethodDef CallEntries[] = {
@@ -927,6 +934,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"_cpp20_foo_remainder",        (DL_FUNC) &_cpp20_foo_remainder,        0},
     {"_cpp20_foo_rep_len",          (DL_FUNC) &_cpp20_foo_rep_len,          2},
     {"_cpp20_foo_sset",             (DL_FUNC) &_cpp20_foo_sset,             2},
+    {"_cpp20_foo_subset",           (DL_FUNC) &_cpp20_foo_subset,           2},
     {"_cpp20_foo_sum",              (DL_FUNC) &_cpp20_foo_sum,              2},
     {"_cpp20_foo_sum_int",          (DL_FUNC) &_cpp20_foo_sum_int,          2},
     {"_cpp20_foo_test",             (DL_FUNC) &_cpp20_foo_test,             0},
