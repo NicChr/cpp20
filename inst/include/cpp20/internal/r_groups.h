@@ -4,7 +4,6 @@
 #include <cpp20/internal/r_vec.h>
 #include <cpp20/internal/r_hash.h>
 
-// In some header like r_group.h
 namespace cpp20 {
 
 // 0-indexed group IDs: [0, n - 1]
@@ -19,56 +18,137 @@ struct groups {
   explicit groups(r_vec<r_int> x, int ngroups, bool groups_sorted) : ids(std::move(x)), n_groups(ngroups), sorted(groups_sorted) {}
 };
 
-
-
 template <RScalar T>
 inline groups make_groups(const r_vec<T>& x) {
   using key_type = unwrap_t<T>;
+    using key_type = unwrap_t<T>;
+    r_size_t n = x.length();
+    groups g;
+    g.ids = r_vec<r_int>(n);
+    g.n_groups = 0;
+    g.sorted = true;
+    
+    if (n == 0) return groups();
 
-  r_size_t n = x.length();
-  groups g;
-  g.ids = r_vec<r_int>(n);
-  g.n_groups = 0;
-  g.sorted = true;
+    // Table Method (For int with small range)
+    if constexpr (is<key_type, int>) {
 
-  if (n == 0) return g;
+        r_vec<T> rng = range(x, /*na_rm=*/true);
+        
+        int min_val = unwrap(rng.get(0));
+        int max_val = unwrap(rng.get(1));
+        
+        // Check range results
+        // If x had only NAs, result would also be c(NA, NA)
+        
+        bool all_nas = is_na(min_val) && is_na(max_val);
+        int64_t range_span = 0;
+        
+        if (!all_nas) {
+             range_span = static_cast<int64_t>(max_val) - static_cast<int64_t>(min_val);
+        }
 
-  ankerl::unordered_dense::map<
-    key_type, 
-    int, 
-    internal::r_hash<T>, 
-    internal::r_hash_eq<T>
-  > lookup;
-  lookup.reserve(n);
+        // Table vs Hash Map
+        // Table is faster if range is reasonably small (e.g. < 20M)
+        constexpr int64_t MAX_TABLE_SIZE = 20000000; 
 
-  auto* RESTRICT p_x = x.data();
-  auto* RESTRICT p_id = g.ids.data();
 
-  int next_id = 0;
-  int last_id = 0;
-  int id;
+        if (all_nas) {
+          // If all NAs, just return all zeroes
+          g.ids.fill(0, n, 0);
+          g.n_groups = 1;
+          g.sorted = true;
+          return g;
+       }
 
-  for (r_size_t i = 0; i < n; ++i) {
-    key_type key = p_x[i];
-    auto [it, inserted] = lookup.try_emplace(key, next_id);
-    if (inserted) {
-      id = next_id++;
-    } else {
-      id = it->second;
-    }
-    p_id[i] = id;
+        if (!all_nas && range_span < MAX_TABLE_SIZE) {
+            
+            // --- FAST TABLE PATH ---
+            
+            // Table maps (value - min_val) -> group_id
+            // std::vector<int> table(range_span + 1, -1);
+            r_vec<r_int> table(range_span + 1, -1);
+            int na_group_id = -1; // Special slot for NA
+            
+            auto* RESTRICT p_x = x.data();
+            auto* RESTRICT p_id = g.ids.data();
+            auto* RESTRICT p_table = table.data();
+            
+            int next_id = 0;
+            int last_id = 0;
+            
+            for(r_size_t i = 0; i < n; ++i) {
+                int val = p_x[i];
+                
+                // Linear Scan Cache
+                if (i > 0 && val == p_x[i-1]) {
+                    p_id[i] = last_id;
+                    continue;
+                }
 
-    // check if group IDs are sorted
-    // Since g.sorted was set to true by default, once it's set to false we don't need to set again
-    if (g.sorted && id < last_id){
-      g.sorted = false;
-    }
-    last_id = id;
-  }
+                int id;
+                if (val == NA_INTEGER) {
+                    if (na_group_id == -1) {
+                        na_group_id = next_id++;
+                    }
+                    id = na_group_id;
+                } else {
+                    // Safe subtraction because we validated range
+                    size_t idx = static_cast<size_t>((long long)val - min_val);
+                  
+                    id = p_table[idx];
+                    if (id == -1) {
+                        id = next_id++;
+                        p_table[idx] = id;
+                    }
+                }
+                
+                p_id[i] = id;
+                if (g.sorted && id < last_id) g.sorted = false;
+                last_id = id;
+            }
+            g.n_groups = next_id;
+            return g;
+        }
+      }
 
-  g.n_groups = next_id;
-  return g;
+        ankerl::unordered_dense::map<
+        key_type, 
+        int, 
+        internal::r_hash<T>, 
+        internal::r_hash_eq<T>
+      > lookup;
+      lookup.reserve(n);
+    
+      auto* RESTRICT p_x = x.data();
+      auto* RESTRICT p_id = g.ids.data();
+    
+      int next_id = 0;
+      int last_id = 0;
+      int id;
+    
+      for (r_size_t i = 0; i < n; ++i) {
+        key_type key = p_x[i];
+        auto [it, inserted] = lookup.try_emplace(key, next_id);
+        if (inserted) {
+          id = next_id++;
+        } else {
+          id = it->second;
+        }
+        p_id[i] = id;
+    
+        // check if group IDs are sorted
+        // Since g.sorted was set to true by default, once it's set to false we don't need to set again
+        if (g.sorted && id < last_id){
+          g.sorted = false;
+        }
+        last_id = id;
+      }
+    
+      g.n_groups = next_id;
+      return g;
 }
+
 
 inline groups make_groups(const r_vec<r_sexp>& x) {
 
@@ -77,9 +157,8 @@ inline groups make_groups(const r_vec<r_sexp>& x) {
 
   r_size_t n = x.length();
   groups g;
-  g.ids = r_vec<r_int>(n);
-  g.n_groups = 0;
-  g.sorted = true;
+  r_vec<r_int> ids(n);
+  bool sorted = true;
 
   if (n == 0) return g;
 
@@ -87,7 +166,7 @@ inline groups make_groups(const r_vec<r_sexp>& x) {
   lookup.reserve(n);
 
   auto* RESTRICT p_x = x.data();
-  auto* RESTRICT p_id = g.ids.data();
+  auto* RESTRICT p_id = ids.data();
 
   int next_id = 0;
   int last_id = 0;
@@ -104,14 +183,16 @@ inline groups make_groups(const r_vec<r_sexp>& x) {
     p_id[i] = id;
 
     // check if group IDs are sorted
-    // Since g.sorted was set to true by default, once it's set to false we don't need to set again
-    if (g.sorted && id < last_id){
-      g.sorted = false;
+    // Since g_sorted was set to true by default, once it's set to false we don't need to set again
+    if (sorted && id < last_id){
+      sorted = false;
     }
     last_id = id;
   }
 
   g.n_groups = next_id;
+  g.sorted = sorted;
+  g.ids = ids;
   return g;
 }
 
