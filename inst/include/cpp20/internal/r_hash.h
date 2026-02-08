@@ -14,9 +14,19 @@ namespace cpp20 {
 namespace internal {
 
 // Hash combine helper
-inline void hash_combine(size_t& seed, size_t value) noexcept {
-    seed ^= value + 0x9e3779b97f4a7c15ULL + (seed << 6) + (seed >> 2);
-}    
+inline uint32_t hash_combine(uint64_t seed, uint64_t value) noexcept {
+    return seed ^ (value + 0x9e3779b97f4a7c15ULL + (seed << 6) + (seed >> 2));
+} 
+
+// High quality 64-bit mixer from murmurhash
+inline uint64_t mix_u64(uint64_t x) noexcept {
+    x ^= x >> 33;
+    x *= 0xff51afd7ed558ccdULL;
+    x ^= x >> 33;
+    x *= 0xc4ceb9fe1a85ec53ULL;
+    x ^= x >> 33;
+    return x;
+}
 
 struct xxh3_base {
     // Standard mixer: simply delegates to XXH3
@@ -42,10 +52,23 @@ struct r_hash_impl : xxh3_base {
     using is_avalanching = void;
 
     uint64_t operator()(const T& x) const noexcept {
-        return hash_bytes(&x, sizeof(x));
+        return XXH3_64bits(&x, sizeof(x));
     }
 };
-
+template <>
+struct r_hash_impl<int> {
+    using is_avalanching = void;
+    uint64_t operator()(int x) const noexcept {
+        return mix_u64(static_cast<uint64_t>(x));
+    }
+};
+template <>
+struct r_hash_impl<int64_t> {
+    using is_avalanching = void;
+    uint64_t operator()(int64_t x) const noexcept {
+        return mix_u64(static_cast<uint64_t>(x));
+    }
+};
 template <>
 struct r_hash_impl<double> : xxh3_base {
     using is_avalanching = void;
@@ -231,8 +254,7 @@ struct r_vec_hash_impl<r_sexp> {
         });
 
         // Combine with type tag (e.g. to distinguish list(1) from list("1"))
-        hash_combine(h, static_cast<size_t>(type));
-        return h;
+        return hash_combine(h, static_cast<size_t>(type));
     }
     
     // ---------------------------------------------------------
@@ -246,7 +268,7 @@ struct r_vec_hash_impl<r_sexp> {
         for (r_size_t i = 0; i < n; ++i) {
             // Call the SEXP overload we just defined above
             size_t elem_hash = (*this)(lst.get(i));
-            hash_combine(seed, elem_hash);
+            seed = hash_combine(seed, elem_hash);
         }
         return seed;
     }
