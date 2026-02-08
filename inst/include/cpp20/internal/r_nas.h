@@ -34,16 +34,6 @@ inline consteval uint64_t nan_bits(){
 
 }
 
-
-template <typename T>
-inline constexpr bool is_nan(T x){
-  return false;
-}
-template <>
-inline constexpr bool is_nan(r_dbl x){
-  return std::isnan(unwrap(x));
-}
-
 namespace internal {
 
 template<typename T>
@@ -146,6 +136,16 @@ inline bool is_na_impl<SEXP>(SEXP x){
 template<typename T>
 inline constexpr bool is_na(const T x) {
     return internal::is_na_impl<std::remove_cvref_t<T>>(x);
+}
+
+template <typename T>
+inline constexpr bool is_nan(T x){
+  return false;
+}
+// NaN but not NA_REAL
+template <>
+inline constexpr bool is_nan(r_dbl x){
+  return is_na(x) && !internal::is_na_real(unwrap(x));
 }
 
 }

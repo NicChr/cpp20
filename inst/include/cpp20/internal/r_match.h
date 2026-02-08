@@ -1,8 +1,7 @@
 #ifndef CPP20_R_MATCH_H
 #define CPP20_R_MATCH_H
 
-#include <cpp20/internal/r_vec.h>
-#include <cpp20/internal/r_vec_hash.h>
+#include <cpp20/internal/r_hash.h>
 
 namespace cpp20 {
 
@@ -51,7 +50,7 @@ inline r_vec<r_int> match(r_vec<r_sexp> needles, r_vec<r_sexp> haystack) {
       SEXP,              // Key type
       int,               // Value type
       internal::r_vec_hash<r_sexp>,
-      internal::sexp_equal
+      internal::r_hash_eq<r_sexp>
   >;
 
   MapType lookup;

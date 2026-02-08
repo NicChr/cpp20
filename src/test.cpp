@@ -1118,5 +1118,5 @@ SEXP foo_na_real(){
 
 [[cpp11::register]]
 SEXP foofoofoo(){
-  return make_vec<r_lgl>(is_na(r_dbl(R_NaN)), is_na(r_dbl(NA_REAL)), is_nan(r_dbl(R_NaN)), is_nan(r_dbl(NA_REAL)));
+  return make_vec<r_lgl>(is_nan(r_dbl(R_NaN)), is_nan(r_dbl(NA_REAL)), is_nan(r_dbl(std::sqrt(-1.0))), is_nan(r_dbl(NA_REAL)));
 }

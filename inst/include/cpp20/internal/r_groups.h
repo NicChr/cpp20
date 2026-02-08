@@ -1,9 +1,8 @@
 #ifndef CPP20_R_GROUPS_H
 #define CPP20_R_GROUPS_H
 
-#include <cpp20/internal/r_hash.h>
 #include <cpp20/internal/r_vec.h>
-#include <cpp20/internal/r_vec_hash.h>
+#include <cpp20/internal/r_hash.h>
 
 // In some header like r_group.h
 namespace cpp20 {
@@ -84,7 +83,7 @@ inline groups make_groups(const r_vec<r_sexp>& x) {
 
   if (n == 0) return g;
 
-  ankerl::unordered_dense::map<key_type, int, internal::r_vec_hash<r_sexp>, internal::sexp_equal> lookup;
+  ankerl::unordered_dense::map<key_type, int, internal::r_vec_hash<r_sexp>, internal::r_hash_eq<r_sexp>> lookup;
   lookup.reserve(n);
 
   auto* RESTRICT p_x = x.data();
