@@ -342,7 +342,7 @@ T gcd(const r_vec<T> &x, bool na_rm = false, T tol = r_limits<T>::tolerance()){
   r_size_t n = x.length();
 
   if (n == 0){
-    return na_value<T>();
+    return na<T>();
   }
 
   auto out = x.get(0);
@@ -365,7 +365,7 @@ T gcd(const r_vec<T> &x, bool na_rm = false, T tol = r_limits<T>::tolerance()){
   r_size_t n = x.length();
 
   if (n == 0){
-    return na_value<T>();
+    return na<T>();
   }
 
   auto out = x.get(0);
@@ -389,7 +389,7 @@ T lcm(const r_vec<T> &x, bool na_rm = false, T tol = r_limits<T>::tolerance()){
     }
     r_size_t n = x.length();
     if (n == 0){
-        return na_value<T>();
+        return na<T>();
     }
 
     // Initialise first value as lcm

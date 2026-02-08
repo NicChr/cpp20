@@ -237,7 +237,7 @@ struct r_val_mapping_impl<T> {
 }
 
 template <typename T>
-using as_r_val_t = typename internal::r_val_mapping_impl<std::decay_t<T>>::type;
+using as_r_val_t = typename internal::r_val_mapping_impl<std::remove_cvref_t<T>>::type;
 
 template <typename T>
 concept CastableToRVal = requires {

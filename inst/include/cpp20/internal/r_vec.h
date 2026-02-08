@@ -322,7 +322,7 @@ struct r_vec {
     }
       // If length > 0 but length(x) == 0 then fill with NA
     } else if (size == 0 && n > 0){
-      out.fill(0, n, na_value<T>());
+      out.fill(0, n, na<T>());
     }
     return out;
   }
@@ -378,7 +378,7 @@ inline r_vec<T> r_vec<T>::subset(const r_vec<U>& indices) const {
   xn = length(),
     n = indices.length(),
     k = 0,
-    na_val = unwrap(na_value<U>()),
+    na_val = unwrap(na<U>()),
     j;
 
   auto out = r_vec<T>(n);
@@ -393,7 +393,7 @@ inline r_vec<T> r_vec<T>::subset(const r_vec<U>& indices) const {
       return subset(exclude_locs(indices, xn));
     } 
     else if (j != 0U){
-      out.set(k++, na_value<T>());
+      out.set(k++, na<T>());
     }
   }
   return out.resize(k);

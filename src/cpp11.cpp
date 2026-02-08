@@ -819,6 +819,13 @@ extern "C" SEXP _cpp20_foo_test3(SEXP x, SEXP y) {
     return cpp11::as_sexp(foo_test3(cpp11::as_cpp<cpp11::decay_t<SEXP>>(x), cpp11::as_cpp<cpp11::decay_t<SEXP>>(y)));
   END_CPP11
 }
+// test.cpp
+SEXP foo_na_real();
+extern "C" SEXP _cpp20_foo_na_real() {
+  BEGIN_CPP11
+    return cpp11::as_sexp(foo_na_real());
+  END_CPP11
+}
 
 extern "C" {
 static const R_CallMethodDef CallEntries[] = {
@@ -905,6 +912,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"_cpp20_foo_match_unique",     (DL_FUNC) &_cpp20_foo_match_unique,     1},
     {"_cpp20_foo_n_groups",         (DL_FUNC) &_cpp20_foo_n_groups,         1},
     {"_cpp20_foo_na_count",         (DL_FUNC) &_cpp20_foo_na_count,         1},
+    {"_cpp20_foo_na_real",          (DL_FUNC) &_cpp20_foo_na_real,          0},
     {"_cpp20_foo_new_int",          (DL_FUNC) &_cpp20_foo_new_int,          1},
     {"_cpp20_foo_range",            (DL_FUNC) &_cpp20_foo_range,            2},
     {"_cpp20_foo_range2",           (DL_FUNC) &_cpp20_foo_range2,           1},

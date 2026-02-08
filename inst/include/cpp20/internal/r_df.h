@@ -33,7 +33,7 @@ r_vec<r_sexp> new_df_impl(r_vec<r_sexp> cols){
     r_vec<r_int> row_names;
 
     if (nrows != 0){ 
-        row_names = make_vec<r_int>(na::integer, -nrows);
+        row_names = make_vec<r_int>(na<r_int>(), -nrows);
     }
     out.set_names(names); 
     attr::set_attr(out, symbol::class_sym, r_vec<r_str>(1, r_str("data.frame")));
@@ -46,7 +46,7 @@ r_vec<r_sexp> new_df_impl(int nrows){
     r_vec<r_int> row_names;
 
     if (nrows != 0){
-        row_names = make_vec<r_int>(na::integer, -nrows);
+        row_names = make_vec<r_int>(na<r_int>(), -nrows);
     }
     out.set_names(r_vec<r_str>(1, blank_r_string));
     attr::set_attr(out, symbol::class_sym, r_vec<r_str>(1, r_str("data.frame")));

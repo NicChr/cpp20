@@ -5,8 +5,7 @@
 #include <cpp20/internal/r_limits.h>
 #include <cpp20/internal/r_coerce.h> 
 
-// R math fns
-// Propagate NA values correctly
+// R math functions that propagate NA values in the way R expects
 
 namespace cpp20 {
 
@@ -14,6 +13,13 @@ namespace internal {
 
 inline r_dbl round_to_even(r_dbl x){
   return x - r_dbl{std::remainder(unwrap(x), 1.0)};
+}
+
+// Constexpr version of std::abs
+template<typename T>
+requires (!RVal<T>)
+inline constexpr T cpp_abs(T v) {
+    return (v < 0) ? -v : v;
 }
 
 }
@@ -25,11 +31,11 @@ inline constexpr r_lgl between(T x, U lo, U hi){
 
 template<MathType T, MathType U>
 requires (AtLeastOneRMathType<T, U>)
-inline auto min(T x, U y){
+inline constexpr auto min(T x, U y){
   
   using common_t = common_r_math_t<T, U>;
 
-  return ( is_na(x) || is_na(y) ) ? na_value<common_t>() : 
+  return ( is_na(x) || is_na(y) ) ? na<common_t>() : 
   common_t(std::min(
     static_cast<unwrap_t<common_t>>(unwrap(x)), 
     static_cast<unwrap_t<common_t>>(unwrap(y))
@@ -38,11 +44,11 @@ inline auto min(T x, U y){
 
 template<MathType T, MathType U>
 requires (AtLeastOneRMathType<T, U>)
-inline auto max(T x, U y){
+inline constexpr auto max(T x, U y){
   
   using common_t = common_r_math_t<T, U>;
 
-  return ( is_na(x) || is_na(y) ) ? na_value<common_t>() : 
+  return ( is_na(x) || is_na(y) ) ? na<common_t>() : 
   common_t(std::max(
     static_cast<unwrap_t<common_t>>(unwrap(x)), 
     static_cast<unwrap_t<common_t>>(unwrap(y))
@@ -81,7 +87,7 @@ inline constexpr bool is_r_neg_inf<r_dbl>(const r_dbl x){
 
 template<RMathType T>
 inline constexpr T abs(T x){
-  return is_na(x) ? x : T{std::abs(unwrap(x))};
+  return is_na(x) ? x : T{internal::cpp_abs(unwrap(x))};
 }
 
 template<RMathType T>
@@ -93,7 +99,7 @@ inline r_dbl floor(r_dbl x){
   return r_dbl(std::floor(unwrap(x)));
 }
 template<RIntegerType T>
-inline T floor(T x){
+inline constexpr T floor(T x){
   return x;
 }
 
@@ -106,7 +112,7 @@ inline r_dbl ceiling(r_dbl x){
   return r_dbl(std::ceil(unwrap(x)));
 }
 template<RIntegerType T>
-inline T ceiling(T x){
+inline constexpr T ceiling(T x){
   return x;
 }
 
@@ -117,20 +123,20 @@ inline T trunc(T x){
 
 template <>
 inline r_dbl trunc(r_dbl x){
-  return r_dbl(std::trunc(unwrap(x)) + 0.0);
+  return r_dbl(std::trunc(unwrap(x)));
 }
 template<RIntegerType T>
-inline T trunc(T x){
+inline constexpr T trunc(T x){
   return x;
 }
 
 template <RMathType T>
-inline r_int sign(T x) {
-  return is_na(x) ? na_value<r_int>() : (T(0) < x) - (x < T(0));
+inline constexpr r_int sign(T x) {
+  return is_na(x) ? na<r_int>() : (T(0) < x) - (x < T(0));
 }
 
 template<RMathType T>
-inline T negate(T x){
+inline constexpr T negate(T x){
   return -x;
 }
 
@@ -186,7 +192,7 @@ inline r_dbl round(T x, const U digits){
   if (is_na(x)){
     return as<r_dbl>(x);
   } else if (is_na(digits)){
-    return na::real;
+    return na<r_dbl>();
   } else if (is_r_inf(x)){
     return x;
   } else if (is_r_neg_inf(digits)){
@@ -211,7 +217,7 @@ inline T round(T x){
 }
 
 template<RIntegerType T>
-inline T round(T x){
+inline constexpr T round(T x){
   return x;
 }
 
@@ -222,7 +228,7 @@ inline r_dbl signif(T x, const U digits){
   if (is_na(x)){
     return as<r_dbl>(x);
   } else if (is_na(new_digits)){
-    return na_value<r_dbl>();
+    return na<r_dbl>();
   } else if (is_r_pos_inf(digits)){
     return as<r_dbl>(x);
   } else {
@@ -234,12 +240,12 @@ inline r_dbl signif(T x, const U digits){
 
 template<MathType T, MathType U>
 requires (AtLeastOneRMathType<T, U>)
-inline T abs_diff(const T x, const U y){
+inline constexpr auto abs_diff(const T x, const U y){
   return abs(x - y);
 }
 
 inline r_lgl is_whole_number(const r_dbl x, const r_dbl tolerance){
-  return is_na(x) || is_na(tolerance) ? na::logical : r_lgl(abs_diff(x, round(x)) <= tolerance);
+  return is_na(x) || is_na(tolerance) ? na<r_lgl>() : r_lgl(abs_diff(x, round(x)) <= tolerance);
 }
 
 
@@ -254,7 +260,7 @@ inline T gcd(T x, T y, bool na_rm = false, T tol = r_limits<T>::tolerance()){
         return abs(x);
       }
     } else {
-      return na_value<T>();
+      return na<T>();
     }
   }
 
@@ -324,7 +330,7 @@ inline T lcm(T x, T y, bool na_rm = false, T tol = r_limits<T>::tolerance()){
         return x;
       }
     } else {
-      return na_value<T>();
+      return na<T>();
     }
   }
 
@@ -341,7 +347,7 @@ inline T lcm(T x, T y, bool na_rm = false, T tol = r_limits<T>::tolerance()){
     // We should always expect res to be an integer because the x is always divisible by gcd(x, y) exactly
     T res = T(unwrap(ax) / unwrap(gcd(x, y, na_rm)));
     if (y != 0 && (res > (r_limits<T>::max() / ay))){
-      return na_value<T>();
+      return na<T>();
     }
     return res * ay;
   } else {

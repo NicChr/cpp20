@@ -463,3 +463,7 @@ foo_make_vec_test <- function() {
 foo_test3 <- function(x, y) {
   .Call(`_cpp20_foo_test3`, x, y)
 }
+
+foo_na_real <- function() {
+  .Call(`_cpp20_foo_na_real`)
+}

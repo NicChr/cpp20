@@ -19,7 +19,7 @@ r_dbl sum(const r_vec<T> &x, bool na_rm = false){
     } else {
         for (r_size_t i = 0; i < n; ++i){
             if (is_na(T(p_x[i]))){
-                return na_value<r_dbl>();
+                return na<r_dbl>();
             }
             out_ += p_x[i];
         }
@@ -64,7 +64,7 @@ auto sum_int(const r_vec<T> &x, bool na_rm = false){
     } else {
         for (r_size_t i = 0; i < n; ++i){
             if (is_na(as_r_val(p_x[i]))){
-                return na_value<r_int64>();
+                return na<r_int64>();
             }
             out_ += p_x[i];
         }
@@ -142,8 +142,8 @@ r_vec<T> range(const r_vec<T> &x, bool na_rm = false){
         bool has_nas = is_na(lo);
 
         if (has_nas){
-            lo = na_value<T>();
-            hi = na_value<T>();
+            lo = na<T>();
+            hi = na<T>();
         }
     }
     return make_vec<T>(lo, hi);

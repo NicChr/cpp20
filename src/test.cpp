@@ -212,8 +212,8 @@ SEXP foo18(SEXP x){
 
 [[cpp11::register]]
 double foo20(){
-  int x = std::abs(na::integer);
-  return x == NA_INTEGER ? na::real : as<r_dbl>(x);
+  int x = std::abs(na<r_int>());
+  return x == NA_INTEGER ? na<r_dbl>() : as<r_dbl>(x);
 }
 
 [[cpp11::register]]
@@ -1108,4 +1108,9 @@ SEXP foo_test3(SEXP x, SEXP y){
     a.set(i, b.get(i));
   }
   return a;
+}
+
+[[cpp11::register]]
+SEXP foo_na_real(){
+  return as_vector(na<r_dbl>());
 }

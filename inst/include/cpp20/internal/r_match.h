@@ -30,7 +30,7 @@ r_vec<r_int> match(r_vec<T> needles, r_vec<T> haystack) {
   for (r_size_t i = 0; i < n_needles; ++i) {
     auto needle = unwrap(needles.get(i));
     auto it = lookup.find(needle);
-    out.set(i, it != lookup.end() ? r_int(it->second) : na_value<r_int>());
+    out.set(i, it != lookup.end() ? r_int(it->second) : na<r_int>());
   }
 
   return out;
@@ -74,7 +74,7 @@ inline r_vec<r_int> match(r_vec<r_sexp> needles, r_vec<r_sexp> haystack) {
     if (it != lookup.end()) {
         out.set(i, it->second);
     } else {
-        out.set(i, na_value<r_int>());
+        out.set(i, na<r_int>());
     }
   }
 

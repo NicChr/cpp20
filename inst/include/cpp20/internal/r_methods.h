@@ -127,7 +127,7 @@ inline constexpr r_lgl operator>=(T lhs, U rhs) {
 template<RMathType T, RMathType U>
 inline constexpr T& operator+=(T &lhs, U rhs) {
   if (is_na(lhs) || is_na(rhs)) {
-    lhs = na_value<T>();
+    lhs = na<T>();
   } else {
     lhs.value += unwrap(rhs);
   }
@@ -136,7 +136,7 @@ inline constexpr T& operator+=(T &lhs, U rhs) {
 template<RMathType T, CppMathType U>
 inline constexpr T& operator+=(T &lhs, U rhs) {
   if (is_na(lhs)) {
-    lhs = na_value<T>();
+    lhs = na<T>();
   } else {
     lhs.value += rhs;
   }
@@ -145,7 +145,7 @@ inline constexpr T& operator+=(T &lhs, U rhs) {
 template<CppMathType T, RMathType U>
 inline constexpr T& operator+=(T &lhs, U rhs) {
   if (is_na(rhs)) {
-    lhs = na_value<T>();
+    lhs = na<T>();
   } else {
     lhs += unwrap(rhs);
   }
@@ -169,7 +169,7 @@ inline constexpr auto operator+(T lhs, U rhs) {
     return r_dbl(static_cast<double>(unwrap(lhs)) + static_cast<double>(unwrap(rhs)));
   } else {
     return ( is_na(lhs) || is_na(rhs) ) ? 
-    na_value<common_math_t>() : 
+    na<common_math_t>() : 
     common_math_t(static_cast<unwrap_t<common_math_t>>(unwrap(lhs)) + static_cast<unwrap_t<common_math_t>>(unwrap(rhs)));
   }
 }
@@ -184,7 +184,7 @@ inline constexpr auto operator-(T lhs, U rhs) {
     return r_dbl(static_cast<double>(unwrap(lhs)) - static_cast<double>(unwrap(rhs)));
   } else {
     return ( is_na(lhs) || is_na(rhs) ) ? 
-    na_value<common_math_t>() : 
+    na<common_math_t>() : 
     common_math_t(static_cast<unwrap_t<common_math_t>>(unwrap(lhs)) - static_cast<unwrap_t<common_math_t>>(unwrap(rhs)));
   }
 }
@@ -199,7 +199,7 @@ inline constexpr auto operator*(T lhs, U rhs) {
     return r_dbl(static_cast<double>(unwrap(lhs)) * static_cast<double>(unwrap(rhs)));
   } else {
     return ( is_na(lhs) || is_na(rhs) ) ? 
-    na_value<common_math_t>() : 
+    na<common_math_t>() : 
     common_math_t(static_cast<unwrap_t<common_math_t>>(unwrap(lhs)) * static_cast<unwrap_t<common_math_t>>(unwrap(rhs)));
   }
 }
@@ -207,7 +207,7 @@ inline constexpr auto operator*(T lhs, U rhs) {
 template<MathType T, MathType U>
   requires (AtLeastOneRMathType<T, U>)
 inline constexpr r_dbl operator/(T lhs, U rhs) {
-  return ( is_na(lhs) || is_na(rhs) ) ? na_value<r_dbl>() : r_dbl(static_cast<double>(unwrap(lhs)) / static_cast<double>(unwrap(rhs)));
+  return ( is_na(lhs) || is_na(rhs) ) ? na<r_dbl>() : r_dbl(static_cast<double>(unwrap(lhs)) / static_cast<double>(unwrap(rhs)));
 }
 
 template<MathType T, MathType U>
@@ -216,7 +216,7 @@ inline constexpr r_dbl operator%(T lhs, U rhs) {
   if (unwrap(rhs) == 0){
     return r_dbl(R_NaN);
   } else if (is_na(lhs) || is_na(rhs)){
-    return na_value<r_dbl>();
+    return na<r_dbl>();
   } else {
     // Donald Knuth floor division
     double a = static_cast<double>(lhs);
@@ -233,7 +233,7 @@ inline constexpr auto operator%(T lhs, U rhs) {
   using unwrapped_t = unwrap_t<out_t>;
 
   if ( unwrap(rhs) == 0 || is_na(lhs) || is_na(rhs) ){
-    return na_value<out_t>();
+    return na<out_t>();
   } else {
     unwrapped_t a = static_cast<unwrapped_t>(unwrap(lhs));
     unwrapped_t b = static_cast<unwrapped_t>(unwrap(rhs));
@@ -248,7 +248,7 @@ inline constexpr auto operator%(T lhs, U rhs) {
 template<RMathType T, RMathType U>
 inline constexpr T& operator-=(T &lhs, U rhs) {
   if (is_na(lhs) || is_na(rhs)) {
-    lhs = na_value<T>();
+    lhs = na<T>();
   } else {
     lhs.value -= unwrap(rhs);
   }
@@ -258,7 +258,7 @@ inline constexpr T& operator-=(T &lhs, U rhs) {
 template<RMathType T, CppMathType U>
 inline constexpr T& operator-=(T &lhs, U rhs) {
   if (is_na(lhs)) {
-    lhs = na_value<T>();
+    lhs = na<T>();
   } else {
     lhs.value -= rhs;
   }
@@ -268,7 +268,7 @@ inline constexpr T& operator-=(T &lhs, U rhs) {
 template<CppMathType T, RMathType U>
 inline constexpr T& operator-=(T &lhs, U rhs) {
   if (is_na(rhs)) {
-    lhs = na_value<T>();
+    lhs = na<T>();
   } else {
     lhs -= unwrap(rhs);
   }
@@ -283,7 +283,7 @@ inline constexpr r_dbl& operator-=(r_dbl &lhs, r_dbl rhs) {
 template<RMathType T, RMathType U>
 inline constexpr T& operator*=(T &lhs, U rhs) {
   if (is_na(lhs) || is_na(rhs)) {
-    lhs = na_value<T>();
+    lhs = na<T>();
   } else {
     lhs.value *= unwrap(rhs);
   }
@@ -293,7 +293,7 @@ inline constexpr T& operator*=(T &lhs, U rhs) {
 template<RMathType T, CppMathType U>
 inline constexpr T& operator*=(T &lhs, U rhs) {
   if (is_na(lhs)) {
-    lhs = na_value<T>();
+    lhs = na<T>();
   } else {
     lhs.value *= rhs;
   }
@@ -303,7 +303,7 @@ inline constexpr T& operator*=(T &lhs, U rhs) {
 template<CppMathType T, RMathType U>
 inline constexpr T& operator*=(T &lhs, U rhs) {
   if (is_na(rhs)){
-    lhs = na_value<T>();
+    lhs = na<T>();
   } else {
     lhs *= unwrap(rhs);
   }
@@ -319,7 +319,7 @@ inline constexpr r_dbl& operator*=(r_dbl &lhs, r_dbl rhs) {
 template<RMathType T, RMathType U>
 inline constexpr T& operator/=(T &lhs, U rhs) {
   if (is_na(lhs) || is_na(rhs)) {
-    lhs = na_value<T>();
+    lhs = na<T>();
   } else {
     lhs.value /= unwrap(rhs);
   }
@@ -329,7 +329,7 @@ inline constexpr T& operator/=(T &lhs, U rhs) {
 template<RMathType T, CppMathType U>
 inline constexpr T& operator/=(T &lhs, U rhs) {
   if (is_na(lhs)) {
-    lhs = na_value<T>();
+    lhs = na<T>();
   } else {
     lhs.value /= rhs;
   }
@@ -339,7 +339,7 @@ inline constexpr T& operator/=(T &lhs, U rhs) {
 template<CppMathType T, RMathType U>
 inline constexpr T& operator/=(T &lhs, U rhs) {
   if (is_na(rhs)){
-    lhs = na_value<T>();
+    lhs = na<T>();
   } else {
     lhs /= unwrap(rhs);
   }

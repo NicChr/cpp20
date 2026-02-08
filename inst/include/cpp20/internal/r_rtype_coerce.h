@@ -49,9 +49,9 @@ inline r_lgl as_bool(T x){
   if constexpr (is<T, int> || is<T, r_lgl>){
     return r_lgl(unwrap(x));
   } else if constexpr (MathType<T>){
-    return is_na(x) ? na_value<r_lgl>() : r_lgl(static_cast<bool>(unwrap(x)));
+    return is_na(x) ? na<r_lgl>() : r_lgl(static_cast<bool>(unwrap(x)));
   } else {
-    return na_value<r_lgl>();
+    return na<r_lgl>();
   }
 }
 template<typename T>
@@ -59,9 +59,9 @@ inline r_int as_int(T x){
   if constexpr (is<T, int> || is<T, r_int>){
     return r_int(unwrap(x));
   } else if constexpr (MathType<T>){
-    return is_na(x) || !internal::can_be_int(x) ? na_value<r_int>() : r_int(static_cast<int>(unwrap(x)));
+    return is_na(x) || !internal::can_be_int(x) ? na<r_int>() : r_int(static_cast<int>(unwrap(x)));
   } else {
-    return na_value<r_int>();
+    return na<r_int>();
   }
 }
 template<typename T>
@@ -69,9 +69,9 @@ inline r_int64 as_int64(T x){
   if constexpr (is<T, int64_t> || is<T, r_int64>){
     return r_int64(unwrap(x));
   } else if constexpr (MathType<T>){
-    return is_na(x) || !internal::can_be_int64(x) ? na_value<r_int64>() : r_int64(static_cast<int64_t>(unwrap(x)));
+    return is_na(x) || !internal::can_be_int64(x) ? na<r_int64>() : r_int64(static_cast<int64_t>(unwrap(x)));
   } else {
-    return na_value<r_int64>();
+    return na<r_int64>();
   }
 }
 template<typename T>
@@ -79,9 +79,9 @@ inline r_dbl as_double(T x){
   if constexpr (is<T, double> || is<T, r_dbl>){
     return r_dbl(unwrap(x));
   } else if constexpr (MathType<T>){
-    return is_na(x) ? na_value<r_dbl>() : r_dbl(static_cast<double>(unwrap(x)));
+    return is_na(x) ? na<r_dbl>() : r_dbl(static_cast<double>(unwrap(x)));
   } else {
-    return na_value<r_dbl>();
+    return na<r_dbl>();
   }
 }
 template<typename T>
@@ -91,7 +91,7 @@ inline r_cplx as_complex(T x){
   } else if constexpr (MathType<T>){
     return r_cplx{as_double(x), r_dbl(0.0)};
   } else {
-    return na_value<r_cplx>();
+    return na<r_cplx>();
   }
 }
 template<typename T>
@@ -99,12 +99,12 @@ inline r_raw as_raw(T x){
   if constexpr (is<T, Rbyte> || is<T, r_raw>){
     return r_raw(unwrap(x));
   } else if constexpr (IntegerType<T> && sizeof(T) <= sizeof(int8_t)){
-    return is_na(x) || x < 0 ? na_value<r_raw>() : r_raw(static_cast<Rbyte>(unwrap(x)));
+    return is_na(x) || x < 0 ? na<r_raw>() : r_raw(static_cast<Rbyte>(unwrap(x)));
   } else if constexpr (MathType<T>){
     using r_t = unwrap_t<T>;
-    return is_na(x) || !internal::between_impl(unwrap(x), r_t(0), r_t(255)) ? na_value<r_raw>() : r_raw(static_cast<Rbyte>(unwrap(x)));
+    return is_na(x) || !internal::between_impl(unwrap(x), r_t(0), r_t(255)) ? na<r_raw>() : r_raw(static_cast<Rbyte>(unwrap(x)));
   } else {
-    return na_value<r_raw>();
+    return na<r_raw>();
   }
 }
 // As CHARSXP
@@ -120,7 +120,7 @@ inline r_str as_r_string(T x){
     return r_str(PRINTNAME(static_cast<SEXP>(x)));
   } else if constexpr (is<T, r_lgl>){
     if (is_na(x)){
-      return na_value<r_str>();
+      return na<r_str>();
     } else if (x == r_true){
       return as_r_string("TRUE");
     } else {
@@ -128,7 +128,7 @@ inline r_str as_r_string(T x){
     }
   } else if constexpr (IntegerType<T>){
     if (is_na(x)){
-      return na_value<r_str>();
+      return na<r_str>();
     }
     // return as_r_string(std::to_string(unwrap(x)).c_str()); // C++ one-liner
     char buffer[32];
@@ -140,7 +140,7 @@ inline r_str as_r_string(T x){
     return as_r_string(static_cast<const char *>(buffer));
   } else if constexpr (FloatType<T>){
     if (is_na(x)){
-      return na_value<r_str>();
+      return na<r_str>();
     }
     char buffer[48];
     auto result = std::to_chars(buffer, buffer + sizeof(buffer), unwrap(x) + unwrap_t<T>(0));
@@ -151,7 +151,7 @@ inline r_str as_r_string(T x){
     return as_r_string(static_cast<const char *>(buffer));
   } else if constexpr (ComplexType<T>){
     if (is_na(x)){
-      return na_value<r_str>();
+      return na<r_str>();
     }
     double re = static_cast<double>(unwrap(x).real()) + 0.0;
     double im = static_cast<double>(unwrap(x).imag()) + 0.0;

@@ -3,20 +3,18 @@
 
 #include <cpp20/internal/r_setup.h>
 #include <cpp20/internal/r_types.h>
+#include <bit>
 
 namespace cpp20 {
     
 // NAs
 
-namespace na {
-inline constexpr r_lgl logical = r_na;
-inline constexpr r_int integer = r_int{std::numeric_limits<int>::min()};
-inline constexpr r_int64 integer64 = r_int64(std::numeric_limits<int64_t>::min());
-inline const r_dbl real = r_dbl{NA_REAL};
-inline const r_cplx complex = r_cplx{real, real};
-inline constexpr r_raw raw = r_raw{0};
-inline const r_str string = r_str{NA_STRING};
-inline const r_sexp nil = r_null;
+// Constructs R's NA_REAL: A Quiet NaN with the payload 1954 (0x7a2).
+// Hex: 0x7ff00000 (Exp/Quiet) << 32 | 0x7a2 (Payload).
+// Uses std::bit_cast for portable interpretation of the 64-bit pattern
+// no manual endianness swapping required
+consteval double make_na_real() {
+  return std::bit_cast<double>(0x7ff00000000007a2ULL);
 }
 
 namespace internal {
@@ -25,34 +23,34 @@ template<typename T>
 inline constexpr T na_value_impl() {
   static_assert(
     always_false<T>,
-    "Unimplemented `na_value` specialisation"
+    "Unimplemented `na` specialisation"
   );
   return T{};
 }
 
 template<>
 inline constexpr r_lgl na_value_impl<r_lgl>(){
-  return na::logical;
+  return r_na;
 }
 
 template<>
 inline constexpr r_int na_value_impl<r_int>(){
-  return na::integer;
+  return r_int(std::numeric_limits<int>::min());
 }
 
 template<>
-inline r_dbl na_value_impl<r_dbl>(){
-  return na::real;
+inline constexpr r_dbl na_value_impl<r_dbl>(){
+  return r_dbl(make_na_real());
 }
 
 template<>
 inline constexpr r_int64 na_value_impl<r_int64>(){
-  return na::integer64;
+  return r_int64(std::numeric_limits<int64_t>::min());
 }
 
 template<>
-inline r_cplx na_value_impl<r_cplx>(){
-  return na::complex;
+inline constexpr r_cplx na_value_impl<r_cplx>(){
+  return r_cplx(std::complex<double>{make_na_real(), make_na_real()});
 }
 
 template<>
@@ -62,12 +60,7 @@ inline constexpr r_raw na_value_impl<r_raw>(){
 
 template<>
 inline r_str na_value_impl<r_str>(){
-  return na::string;
-}
-
-template<>
-inline SEXP na_value_impl<SEXP>(){
-  return r_null;
+  return r_str{NA_STRING};
 }
 
 template<>
@@ -78,7 +71,7 @@ inline r_sexp na_value_impl<r_sexp>(){
 }
 
 template<typename T>
-inline constexpr auto na_value() {
+inline constexpr auto na(){
   return internal::na_value_impl<std::remove_cvref_t<T>>();
 }
 
@@ -87,7 +80,7 @@ namespace internal {
 template<typename T>
 inline constexpr bool is_na_impl(T x) {
   if constexpr (RVal<T>){
-      return unwrap(x) == unwrap(na_value<T>());
+      return unwrap(x) == unwrap(na<T>());
   } else if constexpr (CastableToRVal<T>){
     return is_na_impl(as_r_val(x));
   } else {
