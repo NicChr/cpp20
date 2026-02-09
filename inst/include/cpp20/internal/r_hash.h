@@ -3,6 +3,7 @@
 
 #include <cpp20/internal/r_nas.h>
 #include <cpp20/internal/r_vec.h>
+#include <cpp20/internal/r_attrs.h>
 #include <bit>
 #define XXH_INLINE_ALL
 #include <xxHash/xxhash.h>
@@ -256,11 +257,12 @@ struct r_vec_hash_impl<r_sexp> {
         int type = TYPEOF(elem);
         
         // Recursively hash the element
-        size_t h = internal::visit_maybe_vector(elem_, [](auto vec) -> size_t {
-        if constexpr (is<decltype(vec), std::nullptr_t>){
+        size_t h = internal::visit_maybe_vector(elem_, [](const auto& vec) -> size_t {
+            using vec_t = std::remove_cvref_t<decltype(vec)>;
+        if constexpr (is<vec_t, std::nullptr_t>){
             abort("List contains non-vector element, current implementation can only hash vectors");
         } else {
-            using data_t = typename decltype(vec)::data_type;
+            using data_t = typename vec_t::data_type;
             // Recursively call r_hash<T> for the inner vector
             return r_vec_hash_impl<data_t>{}(vec);
         }
@@ -325,12 +327,48 @@ struct r_hash_eq_str_impl {
 };
 
 // Meant to be used for elements of lists
+// Since they are r_sexp we have to 'visit' the type of vector it is
 template<>
 struct r_hash_eq_impl<SEXP> {
-    bool operator()(SEXP x, SEXP y) const noexcept {
+    bool operator()(SEXP x, SEXP y) const {
     if (x == y) return true; // same pointer
-    // 16 is the flag for default exactness (ignoring bytecode differences etc)
-    return static_cast<bool>(R_compute_identical(x, y, 16));
+    if (Rf_xlength(x) != Rf_xlength(y)) return false;
+    if (TYPEOF(x) != TYPEOF(y)) return false;
+    
+    bool x_has_attrs = attr::has_attrs(r_sexp(x, internal::view_tag{}));
+    bool y_has_attrs = attr::has_attrs(r_sexp(y, internal::view_tag{}));
+    if (x_has_attrs != y_has_attrs) return false;
+    
+    if (x_has_attrs && y_has_attrs){
+        if (!r_hash_eq_impl<SEXP>{}(attr::get_attrs(r_sexp(x, internal::view_tag{})), attr::get_attrs(r_sexp(y, internal::view_tag{})))){
+            return false;
+        }
+    }
+
+    return internal::visit_maybe_vector(x, [y](auto vec) -> bool {
+        using vec_t = decltype(vec);
+
+        if constexpr (is<vec_t, std::nullptr_t>){
+            abort("List contains non-vector element, current implementation can only hash vectors");
+        } else {
+            using data_t = typename vec_t::data_type;
+            if constexpr (any<data_t, r_str, r_sym>){
+                // We already checked whether pointer addresses match in the first line
+                // Since they don't match, they aren't equal for strings & symbols
+                return false;
+            } else if constexpr (is<data_t, r_sexp>) {
+                r_size_t n = vec.length();
+                for (r_size_t i = 0; i < n; ++i){
+                    if (!r_hash_eq_impl<SEXP>{}(VECTOR_ELT(vec, i), VECTOR_ELT(y, i))){
+                        return false;
+                    }
+                }
+                return true;
+            } else {
+                return std::memcmp(DATAPTR_RO(vec), DATAPTR_RO(y), vec.size() * sizeof(unwrap_t<data_t>)) == 0; 
+            }
+        }
+        });
     }
 };
 

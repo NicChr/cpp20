@@ -20,7 +20,7 @@ struct groups {
 
 template <RVal T>
 inline groups make_groups(const r_vec<T>& x) {
-  using key_type = unwrap_t<T>;
+
     using key_type = unwrap_t<T>;
     r_size_t n = x.length();
     groups g;
@@ -115,7 +115,7 @@ inline groups make_groups(const r_vec<T>& x) {
         ankerl::unordered_dense::map<
         key_type, 
         int, 
-        internal::r_hash<T>, 
+        internal::r_hash<T>,
         internal::r_hash_eq<T>
       > lookup;
       lookup.reserve(n);
@@ -135,6 +135,7 @@ inline groups make_groups(const r_vec<T>& x) {
         } else {
           id = it->second;
         }
+
         p_id[i] = id;
     
         // check if group IDs are sorted

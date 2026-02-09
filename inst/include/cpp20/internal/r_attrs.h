@@ -89,7 +89,7 @@ inline r_vec<r_sexp> get_attrs(const T& x){
   SEXP current = unwrap(attrs);
 
   for (r_size_t i = 0; i < n; ++i){
-    out.set(i, r_sexp(CAR(current)));
+    out.set(i, r_sexp(CAR(current), internal::view_tag{}));
     names.set(i, internal::as_r<r_str>(symbol::tag(current)));
     current = CDR(current);
   }
@@ -98,7 +98,7 @@ inline r_vec<r_sexp> get_attrs(const T& x){
 }
 template <RObject T>
 inline bool has_attrs(const T& x){
-  return !get_attrs(x).is_null();
+  return Rf_length(ATTRIB(x)) != 0;
 }
 template <RObject T>
 inline r_sexp get_attr(const T& x, const r_sym& sym){
@@ -146,7 +146,7 @@ template <RObject T>
 inline bool inherits_any(const T& x, const r_vec<r_str>& classes){
   r_size_t n = classes.length();
   for (r_size_t i = 0; i < n; ++i) {
-    if (inherits1(x, classes.get(i).c_str())){
+    if (inherits1(x, classes.view(i).c_str())){
       return true;
     }
   }
@@ -156,7 +156,7 @@ template <RObject T>
 inline bool inherits_all(const T& x, const r_vec<r_str>& classes){
   r_size_t n = classes.length();
   for (r_size_t i = 0; i < n; ++i) {
-    if (!inherits1(x, classes.get(i).c_str())){
+    if (!inherits1(x, classes.view(i).c_str())){
       return false;
     }
   }
@@ -175,7 +175,7 @@ inline void clear_attrs(const T& x){
   int n = attrs.length();
 
   for (r_size_t i = 0; i < n; ++i){
-    r_sym target_sym = internal::as_r<r_sym>(names.get(i));
+    r_sym target_sym = internal::as_r<r_sym>(names.view(i));
     set_attr(x, target_sym, r_null);
   }
 }
@@ -206,14 +206,14 @@ inline void modify_attrs_impl(const T& x, const r_vec<r_sexp>& attrs) {
   int n = names.length();
 
   for (int i = 0; i < n; ++i){
-    if (!(names.get(i) == blank_r_string)){
-      attr_nm = internal::as_r<r_sym>(names.get(i));
+    if (names.view(i) != blank_r_string){
+      attr_nm = internal::as_r<r_sym>(names.view(i));
       // We can't add an object as its own attribute in-place (as this will crash R)
-      if (x.address() == attrs.get(i).address()){
-        r_sexp dup_attr = r_sexp(Rf_duplicate(attrs.get(i)));
+      if (x.address() == attrs.view(i).address()){
+        r_sexp dup_attr = r_sexp(Rf_duplicate(attrs.view(i)));
         attr::set_attr(x, attr_nm, dup_attr);
       } else {
-        attr::set_attr(x, attr_nm, attrs.get(i));
+        attr::set_attr(x, attr_nm, attrs.view(i));
       }
     }
   }
