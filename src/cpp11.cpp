@@ -840,6 +840,27 @@ extern "C" SEXP _cpp20_foo_subset(SEXP x, SEXP i) {
     return cpp11::as_sexp(foo_subset(cpp11::as_cpp<cpp11::decay_t<SEXP>>(x), cpp11::as_cpp<cpp11::decay_t<SEXP>>(i)));
   END_CPP11
 }
+// test.cpp
+SEXP foo_subset2(SEXP x, SEXP i);
+extern "C" SEXP _cpp20_foo_subset2(SEXP x, SEXP i) {
+  BEGIN_CPP11
+    return cpp11::as_sexp(foo_subset2(cpp11::as_cpp<cpp11::decay_t<SEXP>>(x), cpp11::as_cpp<cpp11::decay_t<SEXP>>(i)));
+  END_CPP11
+}
+// test.cpp
+SEXP foo_which(SEXP x);
+extern "C" SEXP _cpp20_foo_which(SEXP x) {
+  BEGIN_CPP11
+    return cpp11::as_sexp(foo_which(cpp11::as_cpp<cpp11::decay_t<SEXP>>(x)));
+  END_CPP11
+}
+// test.cpp
+SEXP foo_which_inverted(SEXP x);
+extern "C" SEXP _cpp20_foo_which_inverted(SEXP x) {
+  BEGIN_CPP11
+    return cpp11::as_sexp(foo_which_inverted(cpp11::as_cpp<cpp11::decay_t<SEXP>>(x)));
+  END_CPP11
+}
 
 extern "C" {
 static const R_CallMethodDef CallEntries[] = {
@@ -935,6 +956,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"_cpp20_foo_rep_len",          (DL_FUNC) &_cpp20_foo_rep_len,          2},
     {"_cpp20_foo_sset",             (DL_FUNC) &_cpp20_foo_sset,             2},
     {"_cpp20_foo_subset",           (DL_FUNC) &_cpp20_foo_subset,           2},
+    {"_cpp20_foo_subset2",          (DL_FUNC) &_cpp20_foo_subset2,          2},
     {"_cpp20_foo_sum",              (DL_FUNC) &_cpp20_foo_sum,              2},
     {"_cpp20_foo_sum_int",          (DL_FUNC) &_cpp20_foo_sum_int,          2},
     {"_cpp20_foo_test",             (DL_FUNC) &_cpp20_foo_test,             0},
@@ -957,6 +979,8 @@ static const R_CallMethodDef CallEntries[] = {
     {"_cpp20_foo_vec_mod4",         (DL_FUNC) &_cpp20_foo_vec_mod4,         1},
     {"_cpp20_foo_vec_multiply",     (DL_FUNC) &_cpp20_foo_vec_multiply,     2},
     {"_cpp20_foo_vec_subtract",     (DL_FUNC) &_cpp20_foo_vec_subtract,     2},
+    {"_cpp20_foo_which",            (DL_FUNC) &_cpp20_foo_which,            1},
+    {"_cpp20_foo_which_inverted",   (DL_FUNC) &_cpp20_foo_which_inverted,   1},
     {"_cpp20_foobar",               (DL_FUNC) &_cpp20_foobar,               1},
     {"_cpp20_foofoo",               (DL_FUNC) &_cpp20_foofoo,               0},
     {"_cpp20_foofoofoo",            (DL_FUNC) &_cpp20_foofoofoo,            0},

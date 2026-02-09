@@ -15,6 +15,7 @@
 #include <cpp20/internal/r_methods.h>
 #include <cpp20/internal/r_rtype_coerce.h>
 #include <cpp20/internal/r_vec.h>
+#include <cpp20/internal/r_hash.h>
 #include <cpp20/internal/r_groups.h>
 #include <cpp20/internal/r_unique.h>
 #include <cpp20/internal/r_match.h>

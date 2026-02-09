@@ -475,3 +475,15 @@ foofoofoo <- function() {
 foo_subset <- function(x, i) {
   .Call(`_cpp20_foo_subset`, x, i)
 }
+
+foo_subset2 <- function(x, i) {
+  .Call(`_cpp20_foo_subset2`, x, i)
+}
+
+foo_which <- function(x) {
+  .Call(`_cpp20_foo_which`, x)
+}
+
+foo_which_inverted <- function(x) {
+  .Call(`_cpp20_foo_which_inverted`, x)
+}
