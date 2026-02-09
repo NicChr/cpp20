@@ -18,7 +18,7 @@ struct groups {
   explicit groups(r_vec<r_int> x, int ngroups, bool groups_sorted) : ids(std::move(x)), n_groups(ngroups), sorted(groups_sorted) {}
 };
 
-template <RScalar T>
+template <RVal T>
 inline groups make_groups(const r_vec<T>& x) {
   using key_type = unwrap_t<T>;
     using key_type = unwrap_t<T>;
@@ -147,53 +147,6 @@ inline groups make_groups(const r_vec<T>& x) {
     
       g.n_groups = next_id;
       return g;
-}
-
-
-inline groups make_groups(const r_vec<r_sexp>& x) {
-
-
-  using key_type = SEXP;
-
-  r_size_t n = x.length();
-  groups g;
-  r_vec<r_int> ids(n);
-  bool sorted = true;
-
-  if (n == 0) return g;
-
-  ankerl::unordered_dense::map<key_type, int, internal::r_vec_hash<r_sexp>, internal::r_hash_eq<r_sexp>> lookup;
-  lookup.reserve(n);
-
-  auto* RESTRICT p_x = x.data();
-  auto* RESTRICT p_id = ids.data();
-
-  int next_id = 0;
-  int last_id = 0;
-  int id;
-
-  for (r_size_t i = 0; i < n; ++i) {
-    key_type key = p_x[i];
-    auto [it, inserted] = lookup.try_emplace(key, next_id);
-    if (inserted) {
-      id = next_id++;
-    } else {
-      id = it->second;
-    }
-    p_id[i] = id;
-
-    // check if group IDs are sorted
-    // Since g_sorted was set to true by default, once it's set to false we don't need to set again
-    if (sorted && id < last_id){
-      sorted = false;
-    }
-    last_id = id;
-  }
-
-  g.n_groups = next_id;
-  g.sorted = sorted;
-  g.ids = ids;
-  return g;
 }
 
 inline r_vec<r_int> group_starts(const groups& x){

@@ -267,7 +267,7 @@ struct r_vec_hash_impl<r_sexp> {
 
         for (r_size_t i = 0; i < n; ++i) {
             // Call the SEXP overload we just defined above
-            size_t elem_hash = (*this)(lst.get(i));
+            size_t elem_hash = (*this)(lst.view(i));
             seed = hash_combine(seed, elem_hash);
         }
         return seed;
@@ -314,10 +314,12 @@ struct r_hash_eq_impl<SEXP> {
     }
 };
 
-template <RScalar T>
+template <RVal T>
 struct r_hash : r_hash_impl<unwrap_t<T>> {};
 template <RVal T>
 struct r_vec_hash : r_vec_hash_impl<T> {}; 
+template <>
+struct r_hash<r_sexp> : r_vec_hash_impl<r_sexp> {};
 template <RVal T>
 struct r_hash_eq : r_hash_eq_impl<unwrap_t<T>> {};
 
