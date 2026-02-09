@@ -53,7 +53,7 @@ struct r_factors : public r_vec<r_int> {
       r_size_t n = levels.length();
       str_levels = r_vec<r_str>(n);
       for (r_size_t i = 0; i < n; ++i){
-        str_levels.set(i, internal::as_r<r_str>(levels.get(i)));
+        str_levels.set(i, internal::as_r<r_str>(levels.view(i)));
       }
     }
     init_factor_attrs(str_levels);

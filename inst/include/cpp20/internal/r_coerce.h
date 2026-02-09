@@ -41,11 +41,11 @@ inline T as(U x) {
     if constexpr (RPtrWritableType<data_t>){
       OMP_SIMD
       for (r_size_t i = 0; i < n; ++i){
-      out.set(i, internal::as_r<data_t>(x.get(i)));
+      out.set(i, internal::as_r<data_t>(x.view(i)));
       }
     } else {
       for (r_size_t i = 0; i < n; ++i){
-      out.set(i, internal::as_r<data_t>(x.get(i)));
+      out.set(i, internal::as_r<data_t>(x.view(i)));
       }
     }
     return out;

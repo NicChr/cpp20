@@ -904,11 +904,7 @@ SEXP foo_lgl(){
 [[cpp11::register]]
 SEXP foo_unique(SEXP x) {
   return internal::visit_vector(x, [&](auto xvec) -> SEXP {
-    if constexpr (any<decltype(xvec), r_vec<r_sexp>>){
-      return r_null;
-    } else {
-      return unique(xvec);
-    }
+    return unique(xvec);
   });
 }
 

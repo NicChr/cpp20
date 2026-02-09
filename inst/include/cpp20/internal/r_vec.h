@@ -438,7 +438,7 @@ inline void r_copy_n(const r_vec<T>& target, const r_vec<T>& source, r_size_t ta
     }
   } else {
     for (r_size_t i = 0; i < n; ++i) {
-      target.set(target_offset + i, source.get(i));
+      target.set(target_offset + i, source.view(i));
     }
   }
 }

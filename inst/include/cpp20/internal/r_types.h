@@ -277,7 +277,7 @@ inline constexpr auto as_r_scalar(T x) {
     
     // Only happens if x is a list
     if (!RScalar<decltype(out)>){
-      abort("`x` cannot be coereced to a scalar, first list-element is not a scalar");
+      abort("`x` cannot be coerced to a scalar, first list-element is not a scalar");
     }
     return out;
   }

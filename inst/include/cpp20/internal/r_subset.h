@@ -98,7 +98,7 @@ inline r_vec<T> r_vec<T>::subset(const r_vec<U>& indices) const {
   
     OMP_SIMD
     for (int i = 0; i < n; ++i){
-      out.set(i, get(unwrap(locs.get(i)) - 1));
+      out.set(i, view(unwrap(locs.get(i)) - 1));
     }
 
     return out;
@@ -130,7 +130,7 @@ inline r_vec<T> r_vec<T>::subset(const r_vec<U>& indices) const {
     for (unsigned_int_t i = 0; i < n; ++i){
       j = unwrap(indices.get(i));
       if (internal::between_impl<unsigned_int_t>(j, 1U, xn)){
-        out.set(k++, get(--j));
+        out.set(k++, view(--j));
       } 
       // If j > n_val then it is a negative signed integer
       else if (j > na_val){

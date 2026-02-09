@@ -27,7 +27,7 @@ r_vec<r_sexp> new_df_impl(r_vec<r_sexp> cols){
 
     // Copy cols to new list
     for (int i = 0; i < n; ++i){
-        out.set(i, cols.get(i));
+        out.set(i, cols.view(i));
     }
 
     r_vec<r_int> row_names;

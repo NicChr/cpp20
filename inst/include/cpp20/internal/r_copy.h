@@ -22,7 +22,7 @@ inline r_vec<T> deep_copy(const r_vec<T>& x){
         // If list, copy list elements
         if constexpr (is<T, r_sexp>){
         for (r_size_t i = 0; i < n; ++i){
-            out.set(i, deep_copy(x.get(i)));
+            out.set(i, deep_copy(x.view(i)));
         }
         } else {
             r_copy_n(out, x, 0, n);
@@ -30,7 +30,7 @@ inline r_vec<T> deep_copy(const r_vec<T>& x){
         auto attrs = attr::get_attrs(x);
         int n_attrs = attrs.length();
         for (int i = 0; i < n_attrs; ++i){
-        attrs.set(i, deep_copy(attrs.get(i)));
+        attrs.set(i, deep_copy(attrs.view(i)));
         }
         attr::set_attrs(out, attrs);
     }
