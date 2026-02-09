@@ -19,6 +19,7 @@
 #include <cpp20/internal/r_groups.h>
 #include <cpp20/internal/r_unique.h>
 #include <cpp20/internal/r_match.h>
+#include <cpp20/internal/r_subset.h>
 #include <cpp20/internal/r_attrs.h>
 #include <cpp20/internal/r_copy.h>
 #include <cpp20/internal/r_factor.h>

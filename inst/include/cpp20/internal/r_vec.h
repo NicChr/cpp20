@@ -11,7 +11,7 @@ template<RVal T>
 struct r_vec {
 
   r_sexp sexp = r_null;
-  using data_type = T;
+  using data_type = std::remove_cvref_t<T>;
 
   bool is_null() const noexcept {
     return sexp.is_null();
@@ -39,7 +39,7 @@ struct r_vec {
 
   // Constructor that wraps new_vec_impl<T>
   explicit r_vec(r_size_t n)
-    : sexp(internal::new_vec_impl<std::remove_cvref_t<T>>(n))
+    : sexp(internal::new_vec_impl<data_type>(n))
   {
     initialise_ptr();
   }
@@ -115,6 +115,18 @@ struct r_vec {
     return T(m_ptr[index]);
   }
 
+  // View element (like `get()` but copied elements must be short-lived)
+  // Element must not live after parent vector has been destroyed
+  // It is designed to be a simple view into the vector 
+  template <CppIntegerType U>
+  T view(U index) const {
+    if constexpr (std::is_constructible_v<data_type, unwrap_t<data_type>, internal::view_tag>) {
+      return T(m_ptr[index], internal::view_tag{});
+    } else {
+      return T(m_ptr[index]);
+    }
+  }
+
   // Set element (no bounds-check) - We use flexible template to be able to coerce it to an RVal
   template <CppIntegerType U, typename V>
   void set(U index, const V& val) const {
@@ -141,14 +153,14 @@ struct r_vec {
   // IMPORTANT - indices are 1-indexed
   // This has the benefit of allowing empty locations (0) and negative indexing
   template <typename U>
-  requires (any<U, r_lgl, r_int, r_int64>)
+  requires (any<U, r_lgl, r_int, r_int64, r_str>)
   r_vec<T> subset(const r_vec<U>& indices) const;
 
   r_vec<r_str> names() const {
     return r_vec<r_str>(Rf_getAttrib(sexp, symbol::names_sym));
   }
 
-  void set_names(r_vec<r_str> names){
+  void set_names(const r_vec<r_str>& names){
     if (names.is_null()){
       Rf_setAttrib(sexp, symbol::names_sym, r_null);
     } else if (names.length() != sexp.length()){
@@ -167,17 +179,17 @@ struct r_vec {
       if (n_threads > 1){
         OMP_PARALLEL_FOR_SIMD(n_threads)
         for (r_size_t i = 0; i < n; ++i){
-          out.set(i, cpp20::is_na(get(i)));
+          out.set(i, cpp20::is_na(view(i)));
         }
       } else {
         OMP_SIMD
         for (r_size_t i = 0; i < n; ++i){
-          out.set(i, cpp20::is_na(get(i)));
+          out.set(i, cpp20::is_na(view(i)));
         }
       }
     } else {
       for (r_size_t i = 0; i < n; ++i){
-        out.set(i, cpp20::is_na(get(i)));
+        out.set(i, cpp20::is_na(view(i)));
       }
     }
 
@@ -195,17 +207,17 @@ struct r_vec {
       if (n_threads > 1){
         #pragma omp parallel for simd num_threads(n_threads) reduction(+:out)
         for (r_size_t i = 0; i < n; ++i){
-          out += cpp20::is_na(get(i));
+          out += cpp20::is_na(view(i));
         }
       } else {
         #pragma omp simd reduction(+:out)
         for (r_size_t i = 0; i < n; ++i){
-          out += cpp20::is_na(get(i));
+          out += cpp20::is_na(view(i));
         }
       }
     } else {
       for (r_size_t i = 0; i < n; ++i){
-        out += cpp20::is_na(get(i));
+        out += cpp20::is_na(view(i));
       }
     }
 
@@ -270,7 +282,7 @@ struct r_vec {
       } else {
         for (r_size_t i = 0; i < n; ++i) {
           r_size_t idx = start + i;
-          if (get(idx) == old_val2){
+          if (view(idx) == old_val2){
             set(idx, new_val2);
           }
         }
@@ -290,7 +302,7 @@ struct r_vec {
         std::copy_n(this->begin(), n_to_copy, resized_vec.begin());
       } else {
         for (r_size_t i = 0; i < n_to_copy; ++i){
-          resized_vec.set(i, this->get(i)); 
+          resized_vec.set(i, view(i)); 
         }
       }
       return resized_vec;
@@ -308,7 +320,7 @@ struct r_vec {
     auto out = r_vec<T>(n);
 
     if (size == 1){
-      out.fill(0, n, get(0));
+      out.fill(0, n, view(0));
     } else if (n > 0 && size > 0){
       // Copy first block
       r_copy_n(out, *this, 0, std::min(size, n));
@@ -330,204 +342,6 @@ struct r_vec {
   }
 
 };
-
-// 0-indexed negative locations (can't do "everything but first location" with this approach)
-// template <typename U>
-// requires (any<U, r_int, r_int64>)
-// r_vec<U> exclude_locs(const r_vec<U>& exclude, unwrap_t<U> xn) {
-
-//   using int_t = unwrap_t<U>;
-
-//   int_t n = xn;
-//   int_t m = exclude.length();
-//   int_t out_size, idx;
-//   int_t exclude_count = 0;
-//   int_t i = 0, k = 0;
-
-//   // Which elements do we keep?
-//   std::vector<bool> keep(n, true);
-
-//   for (int_t j = 0; j < m; ++j) {
-//     if (is_na(exclude.get(j))) continue;
-//     if (exclude.get(j) > 0){
-//       abort("Cannot mix positive and negative subscripts");
-//     }
-//     idx = -exclude.get(j);
-//     // Check keep array for already assigned FALSE to avoid double counting
-//     if (idx < n && keep[idx]){
-//       keep[idx] = false;
-//       ++exclude_count;
-//     }
-//   }
-//   out_size = n - exclude_count;
-//   auto out = r_vec<r_int>(out_size);
-
-//   while(k != out_size){
-//     if (keep[i++]){
-//       out.set(k++, i - 1);
-//     }
-//   }
-//   return out;
-// }
-
-// // 0-indexed indices
-// template <RVal T>
-// template <typename U>
-// requires (any<U, r_int, r_int64>)
-// inline r_vec<T> r_vec<T>::subset(const r_vec<U>& indices) const {
-
-//   using unsigned_int_t = std::make_unsigned_t<unwrap_t<U>>;
-
-//   unsigned_int_t
-//   xn = length(),
-//     n = indices.length(),
-//     k = 0,
-//     na_val = unwrap(na<U>()),
-//     j;
-
-//   auto out = r_vec<T>(n);
-
-//   for (unsigned_int_t i = 0; i < n; ++i){
-//     j = unwrap(indices.get(i));
-//     if (j < xn){
-//       out.set(k++, get(j));
-//     } 
-//     // If j > n_val then it is a negative signed integer
-//     else if (j > na_val){
-//       return subset(exclude_locs(indices, xn));
-//     } 
-//     else {
-//       out.set(k++, na<T>());
-//     }
-//   }
-//   return out.resize(k);
-// }
-
-
-// 1-indexed equivalent to above
-template <typename U>
-requires (any<U, r_int, r_int64>)
-r_vec<U> exclude_locs(const r_vec<U>& exclude, unwrap_t<U> xn) {
-
-  using int_t = unwrap_t<U>;
-
-  int_t n = xn;
-  int_t m = exclude.length();
-  int_t out_size, idx;
-  int_t exclude_count = 0;
-  int_t i = 0, k = 0;
-
-  // Which elements do we keep?
-  std::vector<bool> keep(n, true);
-
-  for (int_t j = 0; j < m; ++j) {
-    if (is_na(exclude.get(j))) continue;
-    if (exclude.get(j) > 0){
-      abort("Cannot mix positive and negative subscripts");
-    }
-    idx = -exclude.get(j);
-    // Check keep array for already assigned FALSE to avoid double counting
-    if (idx > 0 && idx <= n && keep[idx - 1] == 1){
-      keep[idx - 1] = false;
-      ++exclude_count;
-    }
-  }
-  out_size = n - exclude_count;
-  auto out = r_vec<r_int>(out_size);
-
-  while(k != out_size){
-    if (keep[i++] == true){
-      out.set(k++, i);
-    }
-  }
-  return out;
-}
-
-namespace internal {
-
-r_size_t count_true(const r_vec<r_lgl>& x, const uint_fast64_t n){
-  uint_fast64_t size = 0;
-  auto* RESTRICT p_x = x.data();
-  #pragma omp simd reduction(+:size)
-  for (uint_fast64_t j = 0; j != n; ++j) size += (p_x[j] == 1);
-  return size;
-}
-
-}
-
-r_vec<r_int> which(const r_vec<r_lgl>& x, bool invert = false){
-  r_size_t n = x.length();
-  r_size_t true_count = internal::count_true(x, n);
-  int whichi = 0;
-  int i = 0; 
-
-  if (invert){
-      r_size_t out_size = n - true_count;
-      r_vec<r_int> out(out_size);
-      while (whichi < out_size){
-          out.set(whichi, i + 1);
-          whichi += static_cast<int>((x.get(i++) != r_true));
-      }
-      return out;
-  } else {
-      r_size_t out_size = true_count;
-      r_vec<r_int> out(out_size);
-      while (whichi < out_size){
-          out.set(whichi, i + 1);
-          whichi += static_cast<int>((x.get(i++) == r_true));
-      }
-      return out;
-  }
-}
-
-template <RVal T>
-template <typename U>
-requires (any<U, r_lgl, r_int, r_int64>)
-inline r_vec<T> r_vec<T>::subset(const r_vec<U>& indices) const {
-
-  if constexpr (is<U, r_lgl>){
-    auto locs = which(indices);
-    int n = locs.length();
-  
-    auto out = r_vec<T>(n);
-  
-    OMP_SIMD
-    for (int i = 0; i < n; ++i){
-      out.set(i, get(unwrap(locs.get(i)) - 1));
-    }
-
-    return out;
-
-  } else {
-
-    using unsigned_int_t = std::make_unsigned_t<unwrap_t<U>>;
-
-    unsigned_int_t
-    xn = length(),
-      n = indices.length(),
-      k = 0,
-      na_val = unwrap(na<U>()),
-      j;
-
-    auto out = r_vec<T>(n);
-
-    for (unsigned_int_t i = 0; i < n; ++i){
-      j = unwrap(indices.get(i));
-      if (internal::between_impl<unsigned_int_t>(j, 1U, xn)){
-        out.set(k++, get(--j));
-      } 
-      // If j > n_val then it is a negative signed integer
-      else if (j > na_val){
-        return subset(exclude_locs(indices, xn));
-      } 
-      else if (j != 0U){
-        out.set(k++, na<T>());
-      }
-    }
-
-    return out.resize(k);
-  }
-}
 
 namespace internal {
 

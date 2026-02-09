@@ -17,7 +17,7 @@ namespace cpp20 {
 
 namespace internal {
   struct view_tag {};
-  }
+}
 
 // General SEXP, reserved for everything except CHARSXP and SYMSXP
 // Wrapper around cpp11::sexp to benefit from automatic protection (cpp11-managed linked list)

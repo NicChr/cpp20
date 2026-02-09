@@ -1137,6 +1137,13 @@ SEXP foo_subset2(SEXP x, SEXP i) {
 }
 
 [[cpp11::register]]
+SEXP foo_subset3(SEXP x, SEXP i) {
+  return internal::visit_vector(x, [&](auto xvec) -> SEXP {
+    return xvec.subset(as<r_vec<r_str>>(i));
+  });
+}
+
+[[cpp11::register]]
 SEXP foo_which(SEXP x){
   return which(as<r_vec<r_lgl>>(x));
 }
