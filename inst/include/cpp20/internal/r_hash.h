@@ -46,32 +46,32 @@ struct xxh3_base {
     }
 };
 
-template <typename T>
+template <RVal T>
 struct r_hash_impl : xxh3_base {
     
     // This tells Ankerl map 'this hash is already high quality'
     using is_avalanching = void;
 
-    uint64_t operator()(const T& x) const noexcept {
+    uint64_t operator()(const unwrap_t<T>& x) const noexcept {
         return XXH3_64bits(&x, sizeof(x));
     }
 };
 template <>
-struct r_hash_impl<int> {
+struct r_hash_impl<r_int> {
     using is_avalanching = void;
     uint64_t operator()(int x) const noexcept {
         return mix_u64(static_cast<uint64_t>(x));
     }
 };
 template <>
-struct r_hash_impl<int64_t> {
+struct r_hash_impl<r_int64> {
     using is_avalanching = void;
     uint64_t operator()(int64_t x) const noexcept {
         return mix_u64(static_cast<uint64_t>(x));
     }
 };
 template <>
-struct r_hash_impl<double> : xxh3_base {
+struct r_hash_impl<r_dbl> : xxh3_base {
     using is_avalanching = void;
 
     uint64_t operator()(double x) const noexcept {
@@ -91,11 +91,11 @@ struct r_hash_impl<double> : xxh3_base {
 };
 
 template <>
-struct r_hash_impl<std::complex<double>> : xxh3_base {
+struct r_hash_impl<r_cplx> : xxh3_base {
     using is_avalanching = void;
 
     uint64_t operator()(std::complex<double> x) const noexcept {
-        r_hash_impl<double> hasher;
+        r_hash_impl<r_dbl> hasher;
         // Hash real and imag parts and mix
         uint64_t h1 = hasher(x.real());
         uint64_t h2 = hasher(x.imag());
@@ -103,8 +103,10 @@ struct r_hash_impl<std::complex<double>> : xxh3_base {
     }
 };
 
-struct r_hash_str_impl {
+template<>
+struct r_hash_impl<r_str> {
     using is_avalanching = void;
+
     auto operator()(SEXP x) const noexcept -> uint64_t {
         // Cast pointer to integer (uintptr_t)
         auto ptr_val = reinterpret_cast<uintptr_t>(x);
@@ -237,69 +239,61 @@ struct r_vec_hash_impl<r_str> {
     return hash;
   }
 };
-      
+
 // Specialization for lists
 template<>
-struct r_vec_hash_impl<r_sexp> {
+struct r_hash_impl<r_sexp> {
     using is_avalanching = void;
 
-    // ---------------------------------------------------------
-    // Hasher for the Map (Key = SEXP)
-    // ---------------------------------------------------------
+    [[nodiscard]] size_t operator()(SEXP x) const {
 
-    [[nodiscard]] size_t operator()(SEXP elem) const {
-        r_sexp elem_ = r_sexp(elem, internal::view_tag{});
+        auto x_ = r_sexp(x, internal::view_tag{});
 
-        if (elem_.is_null()){
-        return 0;
-        }
+        if (x_.is_null()) return 0;
 
-        int type = TYPEOF(elem);
+        size_t seed = 0;
+
+        int type = TYPEOF(x);
         
         // Recursively hash the element
-        size_t h = internal::visit_maybe_vector(elem_, [](const auto& vec) -> size_t {
+        size_t h = internal::visit_maybe_vector(x_, [this, seed](const auto& vec) -> size_t {
+
+            size_t seed_ = seed;
+
             using vec_t = std::remove_cvref_t<decltype(vec)>;
-        if constexpr (is<vec_t, std::nullptr_t>){
+            
+            if constexpr (is<vec_t, std::nullptr_t>){
             abort("List contains non-vector element, current implementation can only hash vectors");
         } else {
             using data_t = typename vec_t::data_type;
-            // Recursively call r_hash<T> for the inner vector
-            return r_vec_hash_impl<data_t>{}(vec);
+
+            if constexpr (is<data_t, r_sexp>){
+                r_size_t n = vec.length();
+                for (r_size_t i = 0; i < n; ++i) {
+                    size_t elem_hash = (*this)(vec.view(i));
+                    seed_ = hash_combine(seed_, elem_hash);
+                }
+                return seed_;
+            } else {
+                return r_vec_hash_impl<data_t>{}(vec);
+            }
         }
         });
-
-        // Combine with type tag (e.g. to distinguish list(1) from list("1"))
         return hash_combine(h, static_cast<size_t>(type));
-    }
-    
-    // ---------------------------------------------------------
-    // Hasher for the Wrapper (Key = r_vec<r_sexp>)
-    // ---------------------------------------------------------
-    // This iterates over the list and calls the SEXP hasher above
-    [[nodiscard]] size_t operator()(const r_vec<r_sexp>& lst) const noexcept {
-        size_t seed = 0;
-        r_size_t n = lst.length();
-
-        for (r_size_t i = 0; i < n; ++i) {
-            // Call the SEXP overload we just defined above
-            size_t elem_hash = (*this)(lst.view(i));
-            seed = hash_combine(seed, elem_hash);
-        }
-        return seed;
     }
 };
 
 
-template <typename T>
+template <RVal T>
 struct r_hash_eq_impl {
     using is_transparent = void;
-    bool operator()(const T& a, const T& b) const noexcept {
+    bool operator()(const unwrap_t<T>& a, const unwrap_t<T>& b) const noexcept {
         return a == b;
     }
 };
 
 template <>
-struct r_hash_eq_impl<double> {
+struct r_hash_eq_impl<r_dbl> {
     using is_transparent = void;
     bool operator()(double a, double b) const noexcept {
         if (std::isnan(a) && std::isnan(b)){
@@ -311,15 +305,16 @@ struct r_hash_eq_impl<double> {
 };
 
 template <>
-struct r_hash_eq_impl<std::complex<double>> {
+struct r_hash_eq_impl<r_cplx> {
     using is_transparent = void;
     bool operator()(std::complex<double> a, std::complex<double> b) const noexcept {
-        r_hash_eq_impl<double> eq;
+        r_hash_eq_impl<r_dbl> eq;
         return eq(a.real(), b.real()) && eq(a.imag(), b.imag());
     }
 };
 
-struct r_hash_eq_str_impl {
+template<>
+struct r_hash_eq_impl<r_str> {
     using is_transparent = void;
     bool operator()(SEXP a, SEXP b) const noexcept {
         return a == b;
@@ -329,7 +324,7 @@ struct r_hash_eq_str_impl {
 // Meant to be used for elements of lists
 // Since they are r_sexp we have to 'visit' the type of vector it is
 template<>
-struct r_hash_eq_impl<SEXP> {
+struct r_hash_eq_impl<r_sexp> {
     bool operator()(SEXP x, SEXP y) const {
     if (x == y) return true; // same pointer
     if (Rf_xlength(x) != Rf_xlength(y)) return false;
@@ -340,7 +335,7 @@ struct r_hash_eq_impl<SEXP> {
     if (x_has_attrs != y_has_attrs) return false;
     
     if (x_has_attrs && y_has_attrs){
-        if (!r_hash_eq_impl<SEXP>{}(attr::get_attrs(r_sexp(x, internal::view_tag{})), attr::get_attrs(r_sexp(y, internal::view_tag{})))){
+        if (!r_hash_eq_impl<r_sexp>{}(attr::get_attrs(r_sexp(x, internal::view_tag{})), attr::get_attrs(r_sexp(y, internal::view_tag{})))){
             return false;
         }
     }
@@ -359,7 +354,7 @@ struct r_hash_eq_impl<SEXP> {
             } else if constexpr (is<data_t, r_sexp>) {
                 r_size_t n = vec.length();
                 for (r_size_t i = 0; i < n; ++i){
-                    if (!r_hash_eq_impl<SEXP>{}(VECTOR_ELT(vec, i), VECTOR_ELT(y, i))){
+                    if (!r_hash_eq_impl<r_sexp>{}(VECTOR_ELT(vec, i), VECTOR_ELT(y, i))){
                         return false;
                     }
                 }
@@ -373,18 +368,9 @@ struct r_hash_eq_impl<SEXP> {
 };
 
 template <RVal T>
-struct r_hash : r_hash_impl<unwrap_t<T>> {};
-template <>
-struct r_hash<r_str> : r_hash_str_impl {};
+struct r_hash : r_hash_impl<std::remove_cvref_t<T>> {};
 template <RVal T>
-struct r_vec_hash : r_vec_hash_impl<T> {}; 
-template <>
-struct r_hash<r_sexp> : r_vec_hash_impl<r_sexp> {};
-template <RVal T>
-struct r_hash_eq : r_hash_eq_impl<unwrap_t<T>> {};
-template <>
-struct r_hash_eq<r_str> : r_hash_eq_str_impl {};
-
+struct r_hash_eq : r_hash_eq_impl<std::remove_cvref_t<T>> {};
 
 }
 
