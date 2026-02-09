@@ -101,6 +101,19 @@ struct r_hash_impl<std::complex<double>> : xxh3_base {
         return combine(h1, h2);
     }
 };
+
+struct r_hash_str_impl {
+    using is_avalanching = void;
+    auto operator()(SEXP x) const noexcept -> uint64_t {
+        // Cast pointer to integer (uintptr_t)
+        auto ptr_val = reinterpret_cast<uintptr_t>(x);
+        
+        // Scramble the bits
+        // We use ankerl's built-in wyhash mixer. It's just a multiply + XOR.
+        return ankerl::unordered_dense::detail::wyhash::hash(ptr_val);
+    }
+};
+
     
 inline double normalise_double(double x) noexcept {
     return x + 0.0;
@@ -304,6 +317,13 @@ struct r_hash_eq_impl<std::complex<double>> {
     }
 };
 
+struct r_hash_eq_str_impl {
+    using is_transparent = void;
+    bool operator()(SEXP a, SEXP b) const noexcept {
+        return a == b;
+    }
+};
+
 // Meant to be used for elements of lists
 template<>
 struct r_hash_eq_impl<SEXP> {
@@ -316,12 +336,16 @@ struct r_hash_eq_impl<SEXP> {
 
 template <RVal T>
 struct r_hash : r_hash_impl<unwrap_t<T>> {};
+template <>
+struct r_hash<r_str> : r_hash_str_impl {};
 template <RVal T>
 struct r_vec_hash : r_vec_hash_impl<T> {}; 
 template <>
 struct r_hash<r_sexp> : r_vec_hash_impl<r_sexp> {};
 template <RVal T>
 struct r_hash_eq : r_hash_eq_impl<unwrap_t<T>> {};
+template <>
+struct r_hash_eq<r_str> : r_hash_eq_str_impl {};
 
 
 }
