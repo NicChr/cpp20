@@ -142,6 +142,9 @@ concept Scalar = CppScalar<T> || RScalar<T>;
 template <typename T>
 inline constexpr bool is_sexp = any<T, SEXP, r_sexp>;
 
+template <typename T>
+concept RSortable = RMathType<T> || is<T, r_str>;
+
 
 // Wanted to use this as arg in templates but template type deduction then doesn't work (SAD)
 // template <typename T>
