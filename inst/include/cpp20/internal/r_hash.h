@@ -326,23 +326,27 @@ struct r_hash_eq_impl<r_sexp> {
         }
     }
 
-    return internal::visit_maybe_vector(x, [y](auto vec) -> bool {
-        using vec_t = decltype(vec);
+    return internal::visit_maybe_vector(x, [y](auto vec1) -> bool {
+        using vec_t = decltype(vec1);
 
         if constexpr (is<vec_t, std::nullptr_t>){
             abort("List contains non-vector element, current implementation can only hash vectors");
         } else {
+            
+            // View-only copy of y
+            auto vec2 = vec_t(y, internal::view_tag{});
+
             using data_t = typename vec_t::data_type;
             if constexpr (is<data_t, r_sexp>) {
-                r_size_t n = vec.length();
+                r_size_t n = vec1.length();
                 for (r_size_t i = 0; i < n; ++i){
-                    if (!r_hash_eq_impl<r_sexp>{}(VECTOR_ELT(vec, i), VECTOR_ELT(y, i))){
+                    if (!r_hash_eq_impl<r_sexp>{}(vec1.view(i), vec2.view(i))){
                         return false;
                     }
                 }
                 return true;
             } else {
-                return std::memcmp(DATAPTR_RO(vec), DATAPTR_RO(y), vec.size() * sizeof(unwrap_t<data_t>)) == 0; 
+                return std::memcmp(vec1.data(), vec2.data(), vec1.size() * sizeof(unwrap_t<data_t>)) == 0; 
             }
         }
         });
