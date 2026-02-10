@@ -15,7 +15,7 @@ namespace cpp20 {
 namespace internal {
 
 // Hash combine helper
-inline uint32_t hash_combine(uint64_t seed, uint64_t value) noexcept {
+inline uint64_t hash_combine(uint64_t seed, uint64_t value) noexcept {
     return seed ^ (value + 0x9e3779b97f4a7c15ULL + (seed << 6) + (seed >> 2));
 } 
 
