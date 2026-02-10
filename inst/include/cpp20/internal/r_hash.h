@@ -210,28 +210,14 @@ struct r_vec_hash_impl<r_str> {
 
   [[nodiscard]] size_t operator()(const r_vec<r_str>& x) const noexcept {
     r_size_t n = x.length();
-    const auto *p_x = x.data();
     
     // Create state once
     XXH3_state_t* state = XXH3_createState();
     XXH3_64bits_reset(state);
 
     for (r_size_t i = 0; i < n; ++i) {
-        SEXP str_elem = p_x[i];
-        
-        if (str_elem == NA_STRING) {
-            uint64_t na_marker = 0x2e06c11c82e66601ULL;
-            // Feed marker into stream
-            XXH3_64bits_update(state, &na_marker, sizeof(na_marker));
-        } else {
-            const char* cstr = CHAR(str_elem);
-            size_t len = Rf_xlength(str_elem);
-            // Feed the string bytes directly into the main stream
-            // But we need a delimiter to avoid "ab", "c" hashing same as "a", "bc"
-            // Update with length, then bytes
-            XXH3_64bits_update(state, &len, sizeof(len));
-            XXH3_64bits_update(state, cstr, len);
-        }
+        uint64_t mixed = r_hash_impl<r_str>{}(x.view(i));
+        XXH3_64bits_update(state, &mixed, sizeof(mixed));
     }
     
     size_t hash = XXH3_64bits_digest(state);
