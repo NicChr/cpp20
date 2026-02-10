@@ -148,6 +148,21 @@ inline constexpr bool is_nan(r_dbl x){
   return is_na(x) && !internal::is_na_real(unwrap(x));
 }
 
+// is a identical to b? returns true if both are NA
+template<RVal T, RVal U>
+inline bool identical(const T &a, const U &b) {
+  return unwrap(a) == unwrap(b);
+}
+template<>
+inline bool identical(const r_dbl &a, const r_dbl &b) {
+  // If both (NA or NaN)
+  if (is_na(a) && is_na(b)){
+    return internal::is_na_real(unwrap(a)) == internal::is_na_real(unwrap(b));
+} else {
+    return unwrap(a) == unwrap(b);
+}
+}
+
 }
 
 #endif
