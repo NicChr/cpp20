@@ -1149,3 +1149,9 @@ SEXP foo_which(SEXP x){
 SEXP foo_which_inverted(SEXP x){
   return which(as<r_vec<r_lgl>>(x), true);
 }
+
+
+[[cpp11::register]]
+SEXP foo_strs(){
+  return make_vec<r_lgl>(r_str("hi") == r_str("hi"), r_str("A") < r_str("a"), r_str("Aa") > r_str("aa"));
+}

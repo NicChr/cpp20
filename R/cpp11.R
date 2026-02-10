@@ -491,3 +491,7 @@ foo_which <- function(x) {
 foo_which_inverted <- function(x) {
   .Call(`_cpp20_foo_which_inverted`, x)
 }
+
+foo_strs <- function() {
+  .Call(`_cpp20_foo_strs`)
+}

@@ -3,6 +3,7 @@
 
 #include <type_traits>
 #include <ankerl/unordered_dense.h> // Unique + match
+#include <cstring> // For strcmp
 #include <complex>
 #include <limits>
 #include <vector>

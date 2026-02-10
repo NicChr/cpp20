@@ -868,6 +868,13 @@ extern "C" SEXP _cpp20_foo_which_inverted(SEXP x) {
     return cpp11::as_sexp(foo_which_inverted(cpp11::as_cpp<cpp11::decay_t<SEXP>>(x)));
   END_CPP11
 }
+// test.cpp
+SEXP foo_strs();
+extern "C" SEXP _cpp20_foo_strs() {
+  BEGIN_CPP11
+    return cpp11::as_sexp(foo_strs());
+  END_CPP11
+}
 
 extern "C" {
 static const R_CallMethodDef CallEntries[] = {
@@ -962,6 +969,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"_cpp20_foo_remainder",        (DL_FUNC) &_cpp20_foo_remainder,        0},
     {"_cpp20_foo_rep_len",          (DL_FUNC) &_cpp20_foo_rep_len,          2},
     {"_cpp20_foo_sset",             (DL_FUNC) &_cpp20_foo_sset,             2},
+    {"_cpp20_foo_strs",             (DL_FUNC) &_cpp20_foo_strs,             0},
     {"_cpp20_foo_subset",           (DL_FUNC) &_cpp20_foo_subset,           2},
     {"_cpp20_foo_subset2",          (DL_FUNC) &_cpp20_foo_subset2,          2},
     {"_cpp20_foo_subset3",          (DL_FUNC) &_cpp20_foo_subset3,          2},

@@ -40,6 +40,33 @@ inline constexpr r_lgl operator&&(r_lgl lhs, r_lgl rhs) {
     return (lhs.value | rhs.value) < 0 ? r_na : r_true;
 }
 
+// Operators for r_str
+
+inline r_lgl operator<(r_str lhs, r_str rhs) {
+  return is_na(lhs) || is_na(rhs) ? r_na : r_lgl{std::strcmp(lhs.c_str(), rhs.c_str()) < 0};
+}
+inline r_lgl operator<=(r_str lhs, r_str rhs) {
+  if (is_na(lhs) || is_na(rhs)){
+    return r_na;
+  } else if (unwrap(lhs) == unwrap(rhs)){
+    return r_true;
+  } else {
+    return r_lgl{std::strcmp(lhs.c_str(), rhs.c_str()) < 0};
+  }
+}
+inline r_lgl operator>(r_str lhs, r_str rhs) {
+  return is_na(lhs) || is_na(rhs) ? r_na : r_lgl{std::strcmp(lhs.c_str(), rhs.c_str()) > 0};
+}
+inline r_lgl operator>=(r_str lhs, r_str rhs) {
+  if (is_na(lhs) || is_na(rhs)){
+    return r_na;
+  } else if (unwrap(lhs) == unwrap(rhs)){
+    return r_true;
+  } else {
+    return r_lgl{std::strcmp(lhs.c_str(), rhs.c_str()) > 0};
+  }
+}
+
 template<RVal T, RVal U>
 inline constexpr r_lgl operator==(const T &lhs, const U &rhs) {
   return (is_na(lhs) || is_na(rhs)) ? r_na : r_lgl{unwrap(lhs) == unwrap(rhs)};
