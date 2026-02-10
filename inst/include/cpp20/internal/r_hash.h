@@ -333,11 +333,7 @@ struct r_hash_eq_impl<r_sexp> {
             abort("List contains non-vector element, current implementation can only hash vectors");
         } else {
             using data_t = typename vec_t::data_type;
-            if constexpr (any<data_t, r_str, r_sym>){
-                // We already checked whether pointer addresses match in the first line
-                // Since they don't match, they aren't equal for strings & symbols
-                return false;
-            } else if constexpr (is<data_t, r_sexp>) {
+            if constexpr (is<data_t, r_sexp>) {
                 r_size_t n = vec.length();
                 for (r_size_t i = 0; i < n; ++i){
                     if (!r_hash_eq_impl<r_sexp>{}(VECTOR_ELT(vec, i), VECTOR_ELT(y, i))){
