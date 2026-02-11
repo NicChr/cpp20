@@ -244,6 +244,7 @@ if constexpr (RVal<T>){
 inline const r_sexp r_null = r_sexp();
 // Blank string ''
 inline const r_str blank_r_string = r_str();
+inline const r_str na_str = r_str(NA_STRING);
 
 // // Lazy loaded version
 // // R C NULL constant

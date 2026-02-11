@@ -97,6 +97,12 @@ concept RVal = RScalar<T> || is<T, r_sexp>;
 template <typename T>
 concept RPtrWritableType = RMathType<T> || any<T, r_cplx, r_raw>;
 
+template <typename T>
+concept RConvertibleToSexp = std::is_convertible_v<T, SEXP>;
+
+template <typename T>
+concept RNotConvertibleToSexp = !RConvertibleToSexp<T>;
+
 // Forward declare structs to define concepts now
 template<RVal T>
 struct r_vec;
