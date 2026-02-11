@@ -9,7 +9,6 @@
 
 namespace cpp20 {
 
-
 // general order vector that sorts `x`
 // NAs are ordered last
 // Internal function to be used for low overhead sorting small vectors (n<500)
@@ -19,11 +18,13 @@ r_vec<r_int> cpp_order(const r_vec<T>& x) {
     r_vec<r_int> p(n);
     std::iota(p.begin(), p.end(), 0);
 
+    auto *p_x = x.data();
+
     if constexpr (RMathType<T>){
         std::sort(p.begin(), p.end(), [&](int i, int j) {
             if (is_na(x.view(i))) return false;
             if (is_na(x.view(j))) return true;
-            return unwrap(x.view(i)) < unwrap(x.view(j));
+            return p_x[i] < p_x[j];
         });
     } else {
         // Below works on strings
@@ -48,11 +49,13 @@ r_vec<r_int> cpp_stable_order(const r_vec<T>& x) {
     r_vec<r_int> p(n);
     std::iota(p.begin(), p.end(), 0);
 
+    auto *p_x = x.data();
+
     if constexpr (RMathType<T>){
         std::stable_sort(p.begin(), p.end(), [&](int i, int j) {
             if (is_na(x.view(i))) return false;
             if (is_na(x.view(j))) return true;
-            return unwrap(x.view(i)) < unwrap(x.view(j));
+            return p_x[i] < p_x[j];
         });
     } else {
         // Below works on strings
@@ -124,8 +127,8 @@ r_vec<r_int> stable_order(const r_vec<T>& x) {
         r_vec<r_int> p(n);
         auto* RESTRICT p_x = x.data();
 
-        struct DblPair { uint64_t key; int index; };
-        std::vector<DblPair> pairs(n);
+        struct key_index { uint64_t key; int index; };
+        std::vector<key_index> pairs(n);
 
         for (int i = 0; i < n; ++i) {
             double val = p_x[i];
@@ -138,8 +141,7 @@ r_vec<r_int> stable_order(const r_vec<T>& x) {
             pairs[i] = {key, i};
         }
 
-        // Sort struct using extractor
-        ska_sort(pairs.begin(), pairs.end(), [](const DblPair& k){ return k.key; });
+        ska_sort(pairs.begin(), pairs.end(), [](const key_index& k){ return k.key; });
 
         int* RESTRICT p_out = p.data();
         for (int i = 0; i < n; ++i) {

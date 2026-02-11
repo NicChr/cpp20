@@ -897,6 +897,13 @@ extern "C" SEXP _cpp20_foo_order(SEXP x) {
   END_CPP11
 }
 // test.cpp
+SEXP foo_stable_order(SEXP x);
+extern "C" SEXP _cpp20_foo_stable_order(SEXP x) {
+  BEGIN_CPP11
+    return cpp11::as_sexp(foo_stable_order(cpp11::as_cpp<cpp11::decay_t<SEXP>>(x)));
+  END_CPP11
+}
+// test.cpp
 SEXP foo_group_id2(SEXP x);
 extern "C" SEXP _cpp20_foo_group_id2(SEXP x) {
   BEGIN_CPP11
@@ -1009,6 +1016,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"_cpp20_foo_sorted",           (DL_FUNC) &_cpp20_foo_sorted,           1},
     {"_cpp20_foo_sorted_unique",    (DL_FUNC) &_cpp20_foo_sorted_unique,    1},
     {"_cpp20_foo_sset",             (DL_FUNC) &_cpp20_foo_sset,             2},
+    {"_cpp20_foo_stable_order",     (DL_FUNC) &_cpp20_foo_stable_order,     1},
     {"_cpp20_foo_strs",             (DL_FUNC) &_cpp20_foo_strs,             0},
     {"_cpp20_foo_subset",           (DL_FUNC) &_cpp20_foo_subset,           2},
     {"_cpp20_foo_subset2",          (DL_FUNC) &_cpp20_foo_subset2,          2},

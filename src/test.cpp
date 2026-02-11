@@ -1170,6 +1170,17 @@ SEXP foo_order(SEXP x){
   });
 }
 
+[[cpp11::register]]
+SEXP foo_stable_order(SEXP x){
+  return internal::visit_vector(x, [&](auto xvec) -> SEXP {
+    using T = typename decltype(xvec)::data_type;
+    if constexpr (RSortable<T>){
+      return stable_order(xvec);
+    } else {
+      return r_null;
+    }
+  });
+}
 
 [[cpp11::register]]
 SEXP foo_group_id2(SEXP x){
