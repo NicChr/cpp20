@@ -1,14 +1,13 @@
 #ifndef CPP20_R_HASH_H
 #define CPP20_R_HASH_H
 
+#include <ankerl/unordered_dense.h>
 #include <cpp20/internal/r_nas.h>
 #include <cpp20/internal/r_vec.h>
 #include <cpp20/internal/r_attrs.h>
 #include <bit>
-#define XXH_INLINE_ALL
-#include <xxHash/xxhash.h>
 
-// Defining hash functions + hash equality operators
+// Hash functions + hash equality operators for RVal and RVector
 
 namespace cpp20 {
 
@@ -20,7 +19,7 @@ inline uint64_t hash_combine(uint64_t seed, uint64_t value) noexcept {
 } 
 
 // High quality 64-bit mixer from murmurhash
-inline uint64_t mix_u64(uint64_t x) noexcept {
+inline constexpr uint64_t mix_u64(uint64_t x) noexcept {
     x ^= x >> 33;
     x *= 0xff51afd7ed558ccdULL;
     x ^= x >> 33;
@@ -29,69 +28,46 @@ inline uint64_t mix_u64(uint64_t x) noexcept {
     return x;
 }
 
-struct xxh3_base {
-    // Standard mixer: simply delegates to XXH3
-    static inline uint64_t hash_bytes(const void* data, size_t len) {
-        return XXH3_64bits(data, len);
-    }
-    
-    // Fast path for 64-bit primitives (like double/int64)
-    static inline uint64_t hash_u64(uint64_t k) {
-        return XXH3_64bits(&k, sizeof(k));
-    }
-
-    static inline uint64_t combine(uint64_t h1, uint64_t h2) {
-        uint64_t buffer[2] = {h1, h2};
-        return XXH3_64bits(buffer, sizeof(buffer));
-    }
-};
+inline consteval uint64_t na_real_hash(){
+    return mix_u64(na_real_bits());
+}
+inline consteval uint64_t nan_hash(){
+    return mix_u64(nan_bits());
+}
 
 template <RVal T>
-struct r_hash_impl : xxh3_base {
-    
+struct r_hash_impl {
     // This tells Ankerl map 'this hash is already high quality'
     using is_avalanching = void;
 
-    uint64_t operator()(const unwrap_t<T>& x) const noexcept {
-        return XXH3_64bits(&x, sizeof(x));
-    }
-};
-template <>
-struct r_hash_impl<r_int> {
-    using is_avalanching = void;
-    uint64_t operator()(int x) const noexcept {
-        return mix_u64(static_cast<uint64_t>(x));
-    }
-};
-template <>
-struct r_hash_impl<r_int64> {
-    using is_avalanching = void;
-    uint64_t operator()(int64_t x) const noexcept {
-        return mix_u64(static_cast<uint64_t>(x));
-    }
-};
-template <>
-struct r_hash_impl<r_dbl> : xxh3_base {
-    using is_avalanching = void;
+    uint64_t operator()(unwrap_t<T> x) const noexcept {
 
-    uint64_t operator()(double x) const noexcept {
-        // Checks that x matches exactly to R's NA_REAL
-        if (is_na_real(x)){
-            return hash_u64(na_real_bits());
-        // Checks all other NaN types
-        } else if (x != x){
-            return hash_u64(nan_bits());
+        if constexpr (RIntegerType<T>){
+            return mix_u64(static_cast<uint64_t>(x));
         } else {
-            // Hash normal double
-            // +0.0 to normalise -0.0 and 0.0 
-            // Standard XXH3 on bits would hash them differently.
-            return hash_u64(std::bit_cast<uint64_t>(x + 0.0));
+            return ankerl::unordered_dense::hash<unwrap_t<T>>{}(x);
         }
     }
 };
 
 template <>
-struct r_hash_impl<r_cplx> : xxh3_base {
+struct r_hash_impl<r_dbl> {
+    using is_avalanching = void;
+
+    uint64_t operator()(double x) const noexcept {
+        if (x != x){
+            // Checks that x matches exactly to R's NA_REAL
+            return is_na_real(x) ? na_real_hash() : nan_hash();
+        } else {
+            // Hash normal double
+            // +0.0 to normalise -0.0 and 0.0 
+            return mix_u64(std::bit_cast<uint64_t>(x + 0.0));
+        }
+    }
+};
+
+template <>
+struct r_hash_impl<r_cplx> {
     using is_avalanching = void;
 
     uint64_t operator()(std::complex<double> x) const noexcept {
@@ -99,7 +75,7 @@ struct r_hash_impl<r_cplx> : xxh3_base {
         // Hash real and imag parts and mix
         uint64_t h1 = hasher(x.real());
         uint64_t h2 = hasher(x.imag());
-        return combine(h1, h2);
+        return hash_combine(h1, h2);
     }
 };
 
@@ -128,102 +104,18 @@ inline double normalise_double(double x) noexcept {
 template<RVal T>
 struct r_vec_hash_impl {
     using is_avalanching = void;
-    
+
     [[nodiscard]] size_t operator()(const r_vec<T>& x) const noexcept {
-    r_size_t n = x.length();
-    auto* RESTRICT data = x.data();
-    return XXH3_64bits(data, n * sizeof(unwrap_t<T>));
-    }
-};
+        uint64_t seed = 0;
 
-// Specialisations for r_dbl/r_cplx
-// Normalise doubles to ensure -0.0 and 0.0 aren't hashed differently
+        r_size_t n = x.length();
+        const auto* p_x = x.data();
 
-template<>
-struct r_vec_hash_impl<r_dbl> {
-    using is_avalanching = void;
-
-    [[nodiscard]] size_t operator()(const r_vec<r_dbl>& x) const noexcept {
-    r_size_t n = x.length();
-    const double* data = x.data();
-
-    // Use streaming API to avoid allocating a full copy of the vector
-    XXH3_state_t* state = XXH3_createState();
-    XXH3_64bits_reset(state);
-
-    constexpr size_t CHUNK_SIZE = 1024; // 8KB buffer, fits in stack/L1
-    std::array<double, CHUNK_SIZE> buffer;
-
-    for (r_size_t i = 0; i < n; i += CHUNK_SIZE) {
-        size_t current_chunk = std::min<size_t>(CHUNK_SIZE, n - i);
-        
-        // Copy and normalise into stack buffer
-        for (size_t j = 0; j < current_chunk; ++j) {
-            buffer[j] = normalise_double(data[i + j]);
+        for (r_size_t i = 0; i < n; ++i) {
+            seed = hash_combine(seed, r_hash_impl<T>{}(p_x[i]));
         }
-        
-        XXH3_64bits_update(state, buffer.data(), current_chunk * sizeof(double));
+        return seed;
     }
-
-    size_t hash = XXH3_64bits_digest(state);
-    XXH3_freeState(state);
-    return hash;
-    }
-};
-
-template<>
-struct r_vec_hash_impl<r_cplx> {
-    using is_avalanching = void;
-
-    [[nodiscard]] size_t operator()(const r_vec<r_cplx>& x) const noexcept {
-    r_size_t n = x.length();
-    const auto* data = x.data();
-
-    XXH3_state_t* state = XXH3_createState();
-    XXH3_64bits_reset(state);
-
-    constexpr size_t CHUNK_SIZE = 1024; 
-    std::array<std::complex<double>, CHUNK_SIZE> buffer;
-
-    for (r_size_t i = 0; i < n; i += CHUNK_SIZE) {
-        size_t current_chunk = std::min<size_t>(CHUNK_SIZE, n - i);
-        
-        for (size_t j = 0; j < current_chunk; ++j) {
-            double r = normalise_double(data[i + j].real());
-            double im = normalise_double(data[i + j].imag());
-            buffer[j] = std::complex<double>(r, im);
-        }
-        
-        XXH3_64bits_update(state, buffer.data(), current_chunk * sizeof(std::complex<double>));
-    }
-
-    size_t hash = XXH3_64bits_digest(state);
-    XXH3_freeState(state);
-    return hash;
-    }
-};
-
-// String vector - hash each CHARSXP individually then combine
-template<>
-struct r_vec_hash_impl<r_str> {
-  using is_avalanching = void; 
-
-  [[nodiscard]] size_t operator()(const r_vec<r_str>& x) const noexcept {
-    r_size_t n = x.length();
-    
-    // Create state once
-    XXH3_state_t* state = XXH3_createState();
-    XXH3_64bits_reset(state);
-
-    for (r_size_t i = 0; i < n; ++i) {
-        uint64_t mixed = r_hash_impl<r_str>{}(x.view(i));
-        XXH3_64bits_update(state, &mixed, sizeof(mixed));
-    }
-    
-    size_t hash = XXH3_64bits_digest(state);
-    XXH3_freeState(state);
-    return hash;
-  }
 };
 
 // Specialization for lists
