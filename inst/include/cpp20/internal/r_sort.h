@@ -71,17 +71,6 @@ r_vec<r_int> cpp_stable_order(const r_vec<T>& x) {
     return p;
 }
 
-// Helper to cast double to uint64_t preserving sort order
-// inline uint64_t float_to_sortable_uint64(double d) {
-//     uint64_t u = std::bit_cast<uint64_t>(d);
-//     if (u & 0x8000000000000000ULL) {
-//         u = ~u;
-//     } else {
-//         u |= 0x8000000000000000ULL;
-//     }
-//     return u;
-// }
-
 // Stable order that preserves order of ties
 template <RSortable T>
 r_vec<r_int> stable_order(const r_vec<T>& x) {
@@ -109,7 +98,6 @@ r_vec<r_int> stable_order(const r_vec<T>& x) {
                 key = 0xFFFFFFFF; // Force NA last
             } else {
                 key = detail::to_unsigned_or_bool(val);
-                // key = static_cast<uint32_t>(val) ^ 0x80000000; // Signed mapping
             }
             // Pack: Key High, Index Low
             pairs[i] = (static_cast<uint64_t>(key) << 32) | static_cast<uint32_t>(i);
@@ -145,7 +133,6 @@ r_vec<r_int> stable_order(const r_vec<T>& x) {
             if (is_na(p_x[i])) { // Use your is_na check
                 key = 0xFFFFFFFFFFFFFFFFULL; // Force NA last
             } else {
-                // key = float_to_sortable_uint64(val);
                 key = detail::to_unsigned_or_bool(val);
             }
             pairs[i] = {key, i};
@@ -196,7 +183,6 @@ r_vec<r_int> order(const r_vec<T>& x) {
                 key = 0xFFFFFFFF; // NA Last
             } else {
                 key = detail::to_unsigned_or_bool(val);
-                // key = static_cast<uint32_t>(val) ^ 0x80000000; // Signed mapping
             }
             pairs[i] = {key, i};
         }
@@ -232,7 +218,6 @@ r_vec<r_int> order(const r_vec<T>& x) {
                 key = 0xFFFFFFFFFFFFFFFFULL; // Force NA last
             } else {
                 key = detail::to_unsigned_or_bool(val);
-                // key = float_to_sortable_uint64(val);
 
             }
             pairs[i] = {key, i};
