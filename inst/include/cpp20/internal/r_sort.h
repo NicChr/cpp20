@@ -144,6 +144,40 @@ r_vec<r_int> stable_order(const r_vec<T>& x) {
             p_out[i] = static_cast<int>(pairs[i].second);
         }
         return p;
+    } else if constexpr (RStringType<T>) {
+        r_vec<r_int> p(n);
+        
+        // Use pair for stable sorting: (string, index)
+        std::vector<std::pair<std::string, uint32_t>> non_na_pairs;
+        std::vector<uint32_t> na_indices;
+        
+        non_na_pairs.reserve(n);
+        na_indices.reserve(n / 3);
+        
+        for (int i = 0; i < n; ++i) {
+            if (is_na(x.view(i))) {
+                na_indices.push_back(i);
+            } else {
+                non_na_pairs.emplace_back(x.view(i).cpp_str(), static_cast<uint32_t>(i));
+            }
+        }
+        
+        // sorts by string first, then index for ties
+        ska_sort(non_na_pairs.begin(), non_na_pairs.end());
+        
+        // Write results: non-NA first, then NAs
+        int* RESTRICT p_out = p.data();
+        int pos = 0;
+        
+        for (const auto& pair : non_na_pairs) {
+            p_out[pos++] = static_cast<int>(pair.second);
+        }
+        
+        for (uint32_t na_idx : na_indices) {
+            p_out[pos++] = static_cast<int>(na_idx);
+        }
+        
+        return p;
     } else {
         return cpp_stable_order(x);
     }
