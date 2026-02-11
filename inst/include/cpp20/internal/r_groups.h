@@ -150,6 +150,7 @@ inline groups make_groups(const r_vec<T>& x) {
       return g;
 }
 
+
 inline r_vec<r_int> group_starts(const groups& x){
     
     const r_vec<r_int>& group_ids = x.ids;

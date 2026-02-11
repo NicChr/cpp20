@@ -909,6 +909,13 @@ SEXP foo_unique(SEXP x) {
 }
 
 [[cpp11::register]]
+SEXP foo_sorted_unique(SEXP x) {
+  return internal::visit_vector(x, [&](auto xvec) -> SEXP {
+    return sorted_unique(xvec);
+  });
+}
+
+[[cpp11::register]]
 SEXP foo_unique2(SEXP x) {
   return internal::visit_vector(x, [&](auto xvec) -> SEXP {
     if constexpr (any<decltype(xvec), r_vec<r_sexp>>){
@@ -1041,17 +1048,6 @@ SEXP foo_group_starts(SEXP x, int n_groups, bool sorted){
   });
 }
 
-// SEXP foo_group_id2(SEXP x){
-//   return internal::visit_vector(x, [&](auto xvec) -> SEXP {
-//     using data_t = typename decltype(xvec)::data_type;
-//     if constexpr (any<data_t, r_lgl, r_int, r_dbl>){
-//       return make_sorted_groups(xvec).ids;
-//     } else {
-//       return r_null;
-//     }
-//   });
-// }
-
 
 [[cpp11::register]]
 SEXP foo_remainder(){
@@ -1154,4 +1150,41 @@ SEXP foo_which_inverted(SEXP x){
 [[cpp11::register]]
 SEXP foo_strs(){
   return make_vec<r_lgl>(r_str("hi") == r_str("hi"), r_str("A") < r_str("a"), r_str("Aa") > r_str("aa"));
+}
+
+
+[[cpp11::register]]
+SEXP foo_asint64(SEXP x) {
+  return as<r_vec<r_int64>>(x);
+}
+
+[[cpp11::register]]
+SEXP foo_order(SEXP x){
+  return internal::visit_vector(x, [&](auto xvec) -> SEXP {
+    using T = typename decltype(xvec)::data_type;
+    if constexpr (RSortable<T>){
+      return order(xvec);
+    } else {
+      return r_null;
+    }
+  });
+}
+
+
+[[cpp11::register]]
+SEXP foo_group_id2(SEXP x){
+  return internal::visit_vector(x, [&](auto xvec) -> SEXP {
+    using T = typename decltype(xvec)::data_type;
+    if constexpr (RSortable<T>){
+      return make_groups_from_order(xvec, order(xvec)).ids;
+    } else {
+      return r_null;
+    }
+  });
+}
+
+
+[[cpp11::register]]
+bool foo_sorted(SEXP x){
+  return is_sorted(as<r_vec<r_int>>(x));
 }

@@ -392,6 +392,10 @@ foo_unique <- function(x) {
   .Call(`_cpp20_foo_unique`, x)
 }
 
+foo_sorted_unique <- function(x) {
+  .Call(`_cpp20_foo_sorted_unique`, x)
+}
+
 foo_unique2 <- function(x) {
   .Call(`_cpp20_foo_unique2`, x)
 }
@@ -494,4 +498,20 @@ foo_which_inverted <- function(x) {
 
 foo_strs <- function() {
   .Call(`_cpp20_foo_strs`)
+}
+
+foo_asint64 <- function(x) {
+  .Call(`_cpp20_foo_asint64`, x)
+}
+
+foo_order <- function(x) {
+  .Call(`_cpp20_foo_order`, x)
+}
+
+foo_group_id2 <- function(x) {
+  .Call(`_cpp20_foo_group_id2`, x)
+}
+
+foo_sorted <- function(x) {
+  .Call(`_cpp20_foo_sorted`, x)
 }

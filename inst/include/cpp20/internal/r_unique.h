@@ -1,6 +1,7 @@
 #ifndef CPP20_R_UNIQUE_H
 #define CPP20_R_UNIQUE_H
 
+#include <cpp20/internal/r_vec_math.h>
 #include <cpp20/internal/r_groups.h>
 
 namespace cpp20 {
