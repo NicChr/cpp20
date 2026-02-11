@@ -117,35 +117,31 @@ r_vec<r_int> stable_order(const r_vec<T>& x) {
     }
 
     // ----------------------------------------------------------------------
-    // Doubles (Stable Radix Sort on Pair<u64, int>)
+    // Doubles (Stable Radix Sort on Pair<u64, u32>)
     // ----------------------------------------------------------------------
-    // Note: Since double is 64-bit, we can't pack (Value+Index) into one 64-bit int.
-    // We must use a struct { uint64_t key; int index; } and sort that.
+    // Since double is 64-bit, we can't pack (Value+Index) into one 64-bit int.
+    // We use a vector of key-index pairs and sort that
 
     else if constexpr (RFloatType<T>) {
 
         r_vec<r_int> p(n);
         auto* RESTRICT p_x = x.data();
 
-        struct key_index { uint64_t key; int index; };
-        std::vector<key_index> pairs(n);
+        std::vector<std::pair<uint64_t, uint32_t>> pairs(n);
 
-        for (int i = 0; i < n; ++i) {
+        uint32_t vec_size = n;
+
+        for (uint32_t i = 0; i < vec_size; ++i) {
             double val = p_x[i];
-            uint64_t key;
-            if (is_na(p_x[i])) { // Use your is_na check
-                key = 0xFFFFFFFFFFFFFFFFULL; // Force NA last
-            } else {
-                key = detail::to_unsigned_or_bool(val);
-            }
+            uint64_t key = is_na(p_x[i]) ? 0xFFFFFFFFFFFFFFFFULL : detail::to_unsigned_or_bool(val);
             pairs[i] = {key, i};
         }
 
-        ska_sort(pairs.begin(), pairs.end(), [](const key_index& k){ return k.key; });
+        ska_sort(pairs.begin(), pairs.end());
 
         int* RESTRICT p_out = p.data();
         for (int i = 0; i < n; ++i) {
-            p_out[i] = pairs[i].index; // 0-based
+            p_out[i] = static_cast<int>(pairs[i].second);
         }
         return p;
     } else {
@@ -177,7 +173,6 @@ r_vec<r_int> order(const r_vec<T>& x) {
         };
         std::vector<key_index> pairs(n);
 
-        // 1. Pack (Key, Index)
         for (int i = 0; i < n; ++i) {
             int val = px[i];
             uint32_t key;
@@ -200,10 +195,10 @@ r_vec<r_int> order(const r_vec<T>& x) {
     }
 
     // ----------------------------------------------------------------------
-    // Doubles (Stable Radix Sort on Pair<u64, int>)
+    // Doubles (unstable Radix Sort on Pair<u64, int>)
     // ----------------------------------------------------------------------
-    // Note: Since double is 64-bit, we can't pack (Value+Index) into one 64-bit int.
-    // We must use a struct { uint64_t key; int index; } and sort that.
+    // Since double is 64-bit, we can't pack (Value+Index) into one 64-bit int.
+    // We must use a struct { uint64_t key; int index; } and sort that
 
     else if constexpr (RFloatType<T>) {
 
@@ -233,6 +228,11 @@ r_vec<r_int> order(const r_vec<T>& x) {
             p_out[i] = pairs[i].index;
         }
         return p;
+
+    // ----------------------------------------------------------------------
+    // Strings (unstable Radix Sort on trio<string, int, bool>
+    // ----------------------------------------------------------------------
+
     } else if constexpr (RStringType<T>) {
         r_vec<r_int> p(n);
     
