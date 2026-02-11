@@ -93,12 +93,6 @@ struct r_hash_impl<r_str> {
     }
 };
 
-    
-inline double normalise_double(double x) noexcept {
-    return x + 0.0;
-}
-
-
 // Vector hashing
 
 template<RVal T>
@@ -108,7 +102,12 @@ struct r_vec_hash_impl {
     [[nodiscard]] size_t operator()(const r_vec<T>& x) const noexcept {
         uint64_t seed = 0;
 
+        if (x.is_null()) return seed;
+
         r_size_t n = x.length();
+
+        if (n == 0) return r_hash_impl<r_int>{}(TYPEOF(x));
+
         const auto* p_x = x.data();
 
         for (r_size_t i = 0; i < n; ++i) {
