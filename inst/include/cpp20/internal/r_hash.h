@@ -83,7 +83,7 @@ template<>
 struct r_hash_impl<r_str> {
     using is_avalanching = void;
 
-    auto operator()(SEXP x) const noexcept -> uint64_t {
+    uint64_t operator()(SEXP x) const noexcept {
         // Cast pointer to integer (uintptr_t)
         auto ptr_val = reinterpret_cast<uintptr_t>(x);
         
