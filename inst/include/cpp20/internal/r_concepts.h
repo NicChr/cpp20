@@ -79,7 +79,7 @@ template <typename T>
 concept MathType = RMathType<T> || CppMathType<T>;
 
 template <typename T>
-concept RString = is<T, r_str>;
+concept RStringType = is<T, r_str>;
 
 template <typename T, typename U>
 concept AtLeastOneRMathType =

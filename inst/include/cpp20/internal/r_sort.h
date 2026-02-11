@@ -233,7 +233,7 @@ r_vec<r_int> order(const r_vec<T>& x) {
             p_out[i] = pairs[i].index;
         }
         return p;
-    } else if constexpr (RString<T>) {
+    } else if constexpr (RStringType<T>) {
         r_vec<r_int> p(n);
     
         struct key_index {
