@@ -173,7 +173,7 @@ template <>
 struct r_hash_eq_impl<r_dbl> {
     using is_transparent = void;
     bool operator()(double a, double b) const noexcept {
-        if (std::isnan(a) && std::isnan(b)){
+        if (is_na(a) && is_na(b)){
             return is_na_real(a) == is_na_real(b);
         } else {
             return a == b;
@@ -187,14 +187,6 @@ struct r_hash_eq_impl<r_cplx> {
     bool operator()(std::complex<double> a, std::complex<double> b) const noexcept {
         r_hash_eq_impl<r_dbl> eq;
         return eq(a.real(), b.real()) && eq(a.imag(), b.imag());
-    }
-};
-
-template<>
-struct r_hash_eq_impl<r_str> {
-    using is_transparent = void;
-    bool operator()(SEXP a, SEXP b) const noexcept {
-        return a == b;
     }
 };
 
