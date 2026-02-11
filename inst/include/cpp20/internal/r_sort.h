@@ -275,18 +275,23 @@ r_vec<r_int> order(const r_vec<T>& x) {
 }
 
 
-
+// Is x in a sorted order? i.e is x increasing but not necessarily monotonically?
+// To retrieve a bool result, use the `is_true` member function
 template <RSortable T>
-inline bool is_sorted(const r_vec<T>& x) {
+inline r_lgl is_sorted(const r_vec<T>& x) {
     
     r_size_t n = x.length();
 
     for (r_size_t i = 1; i < n; ++i) {
-        if ( !(x.view(i) < x.view(i - 1)).is_false() ){
-            return false;
+        
+        r_lgl is_increasing = x.view(i) >= x.view(i - 1);
+        
+        // If NA return NA, if false return false
+        if (!is_increasing.is_true()){
+            return is_increasing;
         }
     }
-    return true;
+    return r_true;
 }
 
 template <RSortable T>
@@ -319,7 +324,7 @@ inline groups make_groups_from_order(const r_vec<T>& x, const r_vec<r_int>& o) {
     }
 
     g.n_groups = current_group + 1;
-    g.sorted = is_sorted(g.ids);
+    g.sorted = is_sorted(g.ids).is_true();
 
     return g;
 }

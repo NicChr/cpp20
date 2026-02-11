@@ -1185,6 +1185,6 @@ SEXP foo_group_id2(SEXP x){
 
 
 [[cpp11::register]]
-bool foo_sorted(SEXP x){
-  return is_sorted(as<r_vec<r_int>>(x));
+SEXP foo_sorted(SEXP x){
+  return as<r_sexp>(is_sorted(as<r_vec<r_int>>(x)));
 }

@@ -904,7 +904,7 @@ extern "C" SEXP _cpp20_foo_group_id2(SEXP x) {
   END_CPP11
 }
 // test.cpp
-bool foo_sorted(SEXP x);
+SEXP foo_sorted(SEXP x);
 extern "C" SEXP _cpp20_foo_sorted(SEXP x) {
   BEGIN_CPP11
     return cpp11::as_sexp(foo_sorted(cpp11::as_cpp<cpp11::decay_t<SEXP>>(x)));
