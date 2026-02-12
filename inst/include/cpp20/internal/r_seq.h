@@ -3,112 +3,80 @@
 
 #include <cpp20/internal/r_vec.h>
 #include <cpp20/internal/r_coerce.h>
+#include <cpp20/internal/r_stats.h>
 
 namespace cpp20 {
 
-    // r_vec<r_sexp> sequences(r_vec<r_int> size, r_vec<r_int> from, r_vec<r_int> by){
+template <RMathType T, RMathType U>
+r_vec<r_sexp> sequences(r_vec<r_int> size, r_vec<T> from, r_vec<U> by){
 
-    //     int32_t NP = 0;
-      
-    //     int size_n = size.length();
-    //     int from_n = from.length();
-    //     int by_n = by.length();
-    //     if (size_n > 0 && (from_n <= 0 || by_n <= 0)){
-    //       stop("from and by must both have length > 0");
-    //     }
-      
-    //     double out_size = cpp_sum(size);
-    //     double min_size = cpp_min(size);
-    //     if (is_na(out_size)){
-    //       Rf_error("size must not contain NA values");
-    //     }
-    //     if (min_size < 0){
-    //       Rf_error("size must be a vector of non-negative integers");
-    //     }
-    //     R_xlen_t interrupt_counter = 0;
-    //     int start, increment, seq_size;
-    //     SEXP out = r_null;
-      
-      
-    //     if (as_list){
-      
-    //       out = SHIELD(new_list(size_n)); ++NP;
-    //       SEXP curr_seq;
-      
-    //       PROTECT_INDEX curr_seq_idx;
-    //       R_ProtectWithIndex(curr_seq = r_null, &curr_seq_idx); ++NP;
-      
-    //       if (size_n > 0){
-    //         const int *p_size = integer_ptr_ro(size);
-    //         const int *p_from = integer_ptr_ro(from);
-    //         const int *p_by = integer_ptr_ro(by);
-    //         for (int i = 0, bi = 0, fi = 0; i < size_n;
-    //           bi = (++bi == by_n) ? 0 : bi,
-    //           fi = (++fi == from_n) ? 0 : fi,
-    //           ++i){
-    //           seq_size = p_size[i];
-    //           R_Reprotect(curr_seq = vec::new_vector<int>(seq_size), curr_seq_idx);
-    //           int* RESTRICT p_curr_seq = integer_ptr(curr_seq);
-    //           start = p_from[fi];
-    //           increment = p_by[bi];
-    //           if (is_na(start)){
-    //             YIELD(NP);
-    //             Rf_error("from contains NA values");
-    //           }
-    //           if (is_na(increment)){
-    //             YIELD(NP);
-    //             Rf_error("by contains NA values");
-    //           }
-    //           for (int j = 0; j < seq_size; ++j, ++interrupt_counter, start += increment){
-    //             if (interrupt_counter == 100000000){
-    //               R_CheckUserInterrupt();
-    //               interrupt_counter = 0;
-    //             }
-    //             p_curr_seq[j] = start;
-    //           }
-    //           SET_VECTOR_ELT(out, i, curr_seq);
-    //         }
-    //       }
-      
-    //     } else {
-      
-    //       R_xlen_t index = 0;
-    //       out = SHIELD(vec::new_vector<int>(out_size)); ++NP;
-    //       int* RESTRICT p_out = integer_ptr(out);
-      
-    //       if (size_n > 0){
-    //         const int *p_size = integer_ptr_ro(size);
-    //         const int *p_from = integer_ptr_ro(from);
-    //         const int *p_by = integer_ptr_ro(by);
-    //         for (int i = 0, bi = 0, fi = 0; i < size_n;
-    //           bi = (++bi == by_n) ? 0 : bi,
-    //           fi = (++fi == from_n) ? 0 : fi,
-    //           ++i){
-    //           seq_size = p_size[i];
-    //           start = p_from[fi];
-    //           increment = p_by[bi];
-    //           if (is_na(start)){
-    //             YIELD(NP);
-    //             Rf_error("from contains NA values");
-    //           }
-    //           if (is_na(increment)){
-    //             YIELD(NP);
-    //             Rf_error("by contains NA values");
-    //           }
-    //           for (int j = 0; j < seq_size; ++j, ++index, ++interrupt_counter, start += increment){
-    //             if (interrupt_counter == 100000000){
-    //               R_CheckUserInterrupt();
-    //               interrupt_counter = 0;
-    //             }
-    //             p_out[index] = start;
-    //           }
-    //         }
-    //       }
-    //     }
-      
-    //     YIELD(NP);
-    //     return out;
-    //   }
+    using common_t = common_r_math_t<T, U>;
+    using commont_cpp_t = unwrap_t<common_t>;
+
+    int size_n = size.length();
+    int from_n = from.length();
+    int by_n = by.length();
+
+    if (size_n > 0 && (from_n <= 0 || by_n <= 0)){
+        abort("from and by must both have length > 0");
+    }
+    
+    double out_size = sum(size, /*na_rm=*/ false);
+    double min_size = min(size, /*na_rm=*/ false);
+
+    if (is_na(out_size)){
+        abort("size must not contain NA values");
+    }
+    if (min_size < 0){
+        abort("size must be a vector of non-negative integers");
+    }
+    r_size_t interrupt_counter = 0;
+    
+    r_vec<r_sexp> out(size_n);
+
+    if (size_n > 0){
+        
+        for (int i = 0, bi = 0, fi = 0; i < size_n;
+        recycle_index(bi, by_n),
+        recycle_index(fi, from_n),
+        ++i){
+            auto seq_size = unwrap(size.get(i));
+            auto curr_seq = r_vec<common_t>(seq_size);
+            auto start = unwrap(from.get(fi));
+            auto increment = unwrap(by.get(bi));
+            if (is_na(start)){
+                abort("from contains NA values");
+            }
+            if (is_na(increment)){
+                abort("by contains NA values");
+            }
+
+            commont_cpp_t current_val = start;
+
+            for (int j = 0; j < seq_size; ++j, ++interrupt_counter){
+                if (interrupt_counter == 100000000){
+                    cpp11::check_user_interrupt();
+                    interrupt_counter = 0;
+                }
+                if constexpr (RIntegerType<common_t>){
+                    curr_seq.set(j, current_val);
+        
+                    // Only add if we need the next value
+                    if (j < seq_size - 1) {
+                        if (__builtin_add_overflow(current_val, increment, &current_val)) { 
+                            abort("Integer overflow in sequence %d, please use doubles", i + 1); 
+                        }
+                    }
+                } else {
+                    curr_seq.set(j, ( start + (j * increment) ));
+                }
+
+            }
+            out.set(i, curr_seq.sexp);
+        }
+    }
+    return out;
+}
 
 }
 

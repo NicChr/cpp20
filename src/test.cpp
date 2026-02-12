@@ -1223,3 +1223,27 @@ SEXP foo_str_vectors(SEXP x){
   auto c = as<r_vec<r_str>>(b);
   return make_vec<r_sexp>(a, b, c);
 }
+
+[[cpp11::register]]
+SEXP foo_seqs(SEXP sizes, SEXP from, SEXP by){
+  return sequences(as<r_vec<r_int>>(sizes), as<r_vec<r_int>>(from), as<r_vec<r_int>>(by));
+}
+[[cpp11::register]]
+SEXP foo_seqs2(SEXP sizes, SEXP from, SEXP by){
+  // 1. Capture by value [=] to safely capture 'sizes' (SEXP pointer)
+  return internal::visit_vector(from, [=](auto fromvec) -> SEXP {
+    return internal::visit_vector(by, [=](auto byvec) -> SEXP {
+      // 2. Use remove_cvref_t to ensure we have the raw type
+      using FromType = typename std::remove_cvref_t<decltype(fromvec)>::data_type;
+      using ByType = typename std::remove_cvref_t<decltype(byvec)>::data_type;
+      
+      // 3. Check types
+      if constexpr (RMathType<FromType> && RMathType<ByType>){
+        return sequences(as<r_vec<r_int>>(sizes), fromvec, byvec);
+      } else {
+        return r_null;
+      }
+    });
+  });
+}
+

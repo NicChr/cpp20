@@ -531,3 +531,11 @@ test1 <- function() {
 foo_str_vectors <- function(x) {
   .Call(`_cpp20_foo_str_vectors`, x)
 }
+
+foo_seqs <- function(sizes, from, by) {
+  .Call(`_cpp20_foo_seqs`, sizes, from, by)
+}
+
+foo_seqs2 <- function(sizes, from, by) {
+  .Call(`_cpp20_foo_seqs2`, sizes, from, by)
+}

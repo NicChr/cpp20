@@ -32,5 +32,6 @@
 #include <cpp20/internal/r_fns.h>
 #include <cpp20/internal/r_math.h>
 #include <cpp20/internal/r_stats.h>
+#include <cpp20/internal/r_seq.h>
 
 #endif
