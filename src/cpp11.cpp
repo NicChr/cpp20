@@ -344,6 +344,13 @@ extern "C" SEXP _cpp20_foo_na_count(SEXP x) {
   END_CPP11
 }
 // test.cpp
+SEXP foo_is_na(SEXP x);
+extern "C" SEXP _cpp20_foo_is_na(SEXP x) {
+  BEGIN_CPP11
+    return cpp11::as_sexp(foo_is_na(cpp11::as_cpp<cpp11::decay_t<SEXP>>(x)));
+  END_CPP11
+}
+// test.cpp
 SEXP foo39(SEXP x, bool na_rm);
 extern "C" SEXP _cpp20_foo39(SEXP x, SEXP na_rm) {
   BEGIN_CPP11
@@ -1011,6 +1018,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"_cpp20_foo_group_id2",        (DL_FUNC) &_cpp20_foo_group_id2,        1},
     {"_cpp20_foo_group_starts",     (DL_FUNC) &_cpp20_foo_group_starts,     3},
     {"_cpp20_foo_groups_sorted",    (DL_FUNC) &_cpp20_foo_groups_sorted,    1},
+    {"_cpp20_foo_is_na",            (DL_FUNC) &_cpp20_foo_is_na,            1},
     {"_cpp20_foo_lcm",              (DL_FUNC) &_cpp20_foo_lcm,              2},
     {"_cpp20_foo_lgl",              (DL_FUNC) &_cpp20_foo_lgl,              0},
     {"_cpp20_foo_make_list",        (DL_FUNC) &_cpp20_foo_make_list,        0},

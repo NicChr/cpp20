@@ -389,6 +389,13 @@ SEXP foo_na_count(SEXP x) {
 
 
 [[cpp11::register]]
+SEXP foo_is_na(SEXP x) {
+  return internal::visit_vector(x, [&](auto xvec) -> SEXP {
+    return xvec.is_na();
+  });
+}
+
+[[cpp11::register]]
 SEXP foo39(SEXP x, bool na_rm){
   return internal::visit_vector(x, [&](auto xvec) -> SEXP {
     using t = decltype(xvec);

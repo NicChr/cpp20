@@ -192,6 +192,10 @@ foo_na_count <- function(x) {
   .Call(`_cpp20_foo_na_count`, x)
 }
 
+foo_is_na <- function(x) {
+  .Call(`_cpp20_foo_is_na`, x)
+}
+
 foo39 <- function(x, na_rm) {
   .Call(`_cpp20_foo39`, x, na_rm)
 }
