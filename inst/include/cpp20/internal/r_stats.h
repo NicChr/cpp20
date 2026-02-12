@@ -231,6 +231,11 @@ r_dbl var(const r_vec<T> &x, bool na_rm = false){
       return sum_sq_diff / N;
 }
 
+template <RMathType T>
+r_dbl sd(const r_vec<T> &x, bool na_rm = false){
+    return sqrt(var(x, na_rm));
+}
+
 } 
 
 #endif
