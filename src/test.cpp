@@ -21,7 +21,7 @@ SEXP foo(SEXP x) {
 // return as<r_vector_t<r_string_t>>(r_vector_t<r_lgl>(x));
 
   SEXP out = internal::visit_vector(x, [&](auto xvec) -> SEXP {
-    return as<r_vec<r_str>>(xvec);
+    return as<r_vec<r_str_view>>(xvec);
   });
   return out;
 
@@ -54,7 +54,7 @@ SEXP foobar(SEXP x) {
 SEXP foofoo() {
   auto out = r_posixcts(10);
   out.fill(0, out.length(), 0);
-  out.set_tzone(as<r_str>("UTC"));
+  out.set_tzone(as<r_str_view>("UTC"));
 
   return out;
 }
@@ -85,8 +85,8 @@ SEXP foo2() {
 
 [[cpp11::register]]
 SEXP foo4(SEXP x) {
-  auto out = internal::visit_vector(x, [&](auto xvec) -> r_vec<r_str> {
-    return as<r_vec<r_str>>(xvec);
+  auto out = internal::visit_vector(x, [&](auto xvec) -> r_vec<r_str_view> {
+    return as<r_vec<r_str_view>>(xvec);
   });
 
   return out;
@@ -95,7 +95,7 @@ SEXP foo4(SEXP x) {
 [[cpp11::register]]
 SEXP foo5(SEXP x) {
 
-  auto xvec = r_vec<r_str>(x);
+  auto xvec = r_vec<r_str_view>(x);
   auto out = as<r_vec<r_dbl>>(xvec);
 
   return out;
@@ -114,7 +114,7 @@ SEXP foo6(SEXP x){
 
 [[cpp11::register]]
 SEXP foo7(SEXP x){
-    auto out = internal::visit_vector(x, [&](auto xvec) -> r_vec<r_str> {
+    auto out = internal::visit_vector(x, [&](auto xvec) -> r_vec<r_str_view> {
     return xvec.names();
   });
 
@@ -125,7 +125,7 @@ SEXP foo7(SEXP x){
 [[cpp11::register]]
 SEXP foo8(){
   auto x = r_vec<r_sexp>(1);
-  auto y = r_vec<r_str>(3);
+  auto y = r_vec<r_str_view>(3);
   x.set(0, y);
 
   return x;
@@ -173,7 +173,7 @@ SEXP foo13(SEXP x){
 [[cpp11::register]]
 SEXP foo14(){
   r_sexp x = r_sexp(r_vec<r_int>(10));
-  auto out = as<r_vec<r_str>>(x);
+  auto out = as<r_vec<r_str_view>>(x);
 
   return out;
 }
@@ -181,7 +181,7 @@ SEXP foo14(){
 
 [[cpp11::register]]
 SEXP foo15(){
-  return r_vec<r_str>(10, "Hello");
+  return r_vec<r_str_view>(10, "Hello");
 }
 
 [[cpp11::register]]
@@ -230,7 +230,7 @@ SEXP foo22(SEXP cols){
 }
 [[cpp11::register]]
 SEXP foo23(){
-  return as<r_vec<r_str>>("data.frame");
+  return as<r_vec<r_str_view>>("data.frame");
 }
 
 [[cpp11::register]]
@@ -248,7 +248,7 @@ SEXP foo25(SEXP cols, SEXP x){
 
 [[cpp11::register]]
 SEXP foo26(){
-  return make_vec<r_sexp>(arg("r_sexp") = sizeof(r_sexp), arg ("SEXP") = sizeof(SEXP), arg("sexp") = sizeof(cpp11::sexp), arg("r_str") = sizeof(r_str),
+  return make_vec<r_sexp>(arg("r_sexp") = sizeof(r_sexp), arg ("SEXP") = sizeof(SEXP), arg("sexp") = sizeof(cpp11::sexp), arg("r_str_view") = sizeof(r_str_view),
 arg("r_dbl") = sizeof(r_dbl), arg("r_int") = sizeof(r_int), arg("r_lgl") = sizeof(r_lgl), arg("r_cplx") = sizeof(r_cplx),
   arg("r_sym") = sizeof(r_sym), arg("r_vec<r_int>") = sizeof(r_vec<r_int>));
 }
@@ -779,16 +779,12 @@ SEXP foo59(SEXP x){
 [[cpp11::register]]
 SEXP foo_factor(SEXP x){
   return internal::visit_vector(x, [&](auto xvec) -> SEXP {
-    if constexpr (RScalar<typename decltype(xvec)::data_type>){
-      return r_factors(xvec);
-    } else {
-      abort("e");
-    }
+    return r_factors(xvec);
   });
 }
 [[cpp11::register]]
 SEXP foo_factor2(SEXP x, SEXP levels){
-  return r_factors(as<r_vec<r_str>>(x), as<r_vec<r_str>>(levels));
+  return r_factors(as<r_vec<r_str_view>>(x), as<r_vec<r_str_view>>(levels));
 }
 [[cpp11::register]]
 SEXP foo_factor3(){
@@ -798,8 +794,8 @@ SEXP foo_factor3(){
 
 [[cpp11::register]]
 SEXP foo_test(){
-  r_str x = r_str("hi");
-  return r_vec<r_str>(1, x);
+  auto x = r_str("hi");
+  return r_vec<r_str_view>(1, x);
 }
 
 [[cpp11::register]]
@@ -936,7 +932,7 @@ SEXP foo_unique_strs(SEXP x) {
     if constexpr (any<decltype(xvec), r_vec<r_sexp>>){
       return r_null;
     } else {
-      return as<r_vec<r_str>>(unique(xvec));
+      return as<r_vec<r_str_view>>(unique(xvec));
     }
   });
 }
@@ -947,7 +943,7 @@ SEXP foo_as_str(SEXP x) {
     if constexpr (any<decltype(xvec), r_vec<r_sexp>>){
       return r_null;
     } else {
-      return as<r_vec<r_str>>(xvec);
+      return as<r_vec<r_str_view>>(xvec);
     }
   });
 }
@@ -1131,7 +1127,7 @@ SEXP foo_subset2(SEXP x, SEXP i) {
 [[cpp11::register]]
 SEXP foo_subset3(SEXP x, SEXP i) {
   return internal::visit_vector(x, [&](auto xvec) -> SEXP {
-    return xvec.subset(as<r_vec<r_str>>(i));
+    return xvec.subset(as<r_vec<r_str_view>>(i));
   });
 }
 
@@ -1189,7 +1185,7 @@ SEXP foo_group_id2(SEXP x){
     if constexpr (RSortable<T>){
       return make_groups_from_order(xvec, order(xvec)).ids;
     } else {
-      return r_null;
+      return foo_group_id(x);
     }
   });
 }
@@ -1198,4 +1194,25 @@ SEXP foo_group_id2(SEXP x){
 [[cpp11::register]]
 SEXP foo_sorted(SEXP x){
   return as<r_sexp>(is_sorted(as<r_vec<r_int>>(x)));
+}
+
+[[cpp11::register]]
+void test1(){
+  // internal::as_r<r_str_view>(r_null);
+  // std::string_view x = "ok";
+  // std::string y = x;
+  // std::string_view z = y;
+
+  // r_str_view a("ok");
+  // r_str b = a;
+  // r_str_view c = b;
+}
+
+
+[[cpp11::register]]
+SEXP foo_str_vectors(SEXP x){
+  auto a = r_vec<r_str>(x);
+  auto b = as<r_vec<r_str_view>>(a);
+  auto c = as<r_vec<r_str>>(b);
+  return make_vec<r_sexp>(a, b, c);
 }

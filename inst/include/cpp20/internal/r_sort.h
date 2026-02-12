@@ -283,7 +283,7 @@ r_vec<r_int> order(const r_vec<T>& x) {
                 // Use empty string for NA, mark with flag
                 pairs.push_back({"", i, true});
             } else {
-                pairs.push_back({x.view(i).cpp_str(), i, false});
+                pairs.push_back({x.view(i).c_str(), i, false});
             }
         }
     

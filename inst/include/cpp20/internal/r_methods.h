@@ -40,12 +40,12 @@ inline constexpr r_lgl operator&&(r_lgl lhs, r_lgl rhs) {
     return (lhs.value | rhs.value) < 0 ? r_na : r_true;
 }
 
-// Operators for r_str
+// Operators for r_str_view
 
-inline r_lgl operator<(r_str lhs, r_str rhs) {
+inline r_lgl operator<(r_str_view lhs, r_str_view rhs) {
   return is_na(lhs) || is_na(rhs) ? r_na : r_lgl{std::strcmp(lhs.c_str(), rhs.c_str()) < 0};
 }
-inline r_lgl operator<=(r_str lhs, r_str rhs) {
+inline r_lgl operator<=(r_str_view lhs, r_str_view rhs) {
   if (is_na(lhs) || is_na(rhs)){
     return r_na;
   } else if (unwrap(lhs) == unwrap(rhs)){
@@ -54,10 +54,10 @@ inline r_lgl operator<=(r_str lhs, r_str rhs) {
     return r_lgl{std::strcmp(lhs.c_str(), rhs.c_str()) < 0};
   }
 }
-inline r_lgl operator>(r_str lhs, r_str rhs) {
+inline r_lgl operator>(r_str_view lhs, r_str_view rhs) {
   return is_na(lhs) || is_na(rhs) ? r_na : r_lgl{std::strcmp(lhs.c_str(), rhs.c_str()) > 0};
 }
-inline r_lgl operator>=(r_str lhs, r_str rhs) {
+inline r_lgl operator>=(r_str_view lhs, r_str_view rhs) {
   if (is_na(lhs) || is_na(rhs)){
     return r_na;
   } else if (unwrap(lhs) == unwrap(rhs)){
@@ -65,6 +65,19 @@ inline r_lgl operator>=(r_str lhs, r_str rhs) {
   } else {
     return r_lgl{std::strcmp(lhs.c_str(), rhs.c_str()) > 0};
   }
+}
+
+inline r_lgl operator<(const r_str& lhs, const r_str& rhs) {
+  return static_cast<r_str_view>(lhs) < static_cast<r_str_view>(rhs);
+}
+inline r_lgl operator<=(const r_str& lhs, const r_str& rhs) {
+  return static_cast<r_str_view>(lhs) <= static_cast<r_str_view>(rhs);
+}
+inline r_lgl operator>(const r_str& lhs, const r_str& rhs) {
+  return static_cast<r_str_view>(lhs) > static_cast<r_str_view>(rhs);
+}
+inline r_lgl operator>=(const r_str& lhs, const r_str& rhs) {
+  return static_cast<r_str_view>(lhs) >= static_cast<r_str_view>(rhs);
 }
 
 template<RVal T, RVal U>

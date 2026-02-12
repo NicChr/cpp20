@@ -12,6 +12,7 @@ struct r_int;
 struct r_int64;
 struct r_dbl;
 struct r_str;
+struct r_str_view;
 struct r_cplx;
 struct r_raw;
 struct r_sym;
@@ -79,19 +80,18 @@ template <typename T>
 concept MathType = RMathType<T> || CppMathType<T>;
 
 template <typename T>
-concept RStringType = is<T, r_str>;
+concept RStringType = any<T, r_str, r_str_view>;
 
 template <typename T, typename U>
 concept AtLeastOneRMathType =
 (RMathType<T> || RMathType<U>) && (MathType<T> && MathType<U>);
 
 template <typename T>
-concept RScalar = RMathType<T> || any<T, r_cplx, r_str, r_raw, r_sym>;
+concept RScalar = RMathType<T> || any<T, r_cplx, r_str, r_str_view, r_raw, r_sym>;
 
 // RVal is anything that can be stored in `r_vec<>`
 template <typename T>
 concept RVal = RScalar<T> || is<T, r_sexp>;
-
 
 // A `SEXP` which we can write data to directly via a pointer
 template <typename T>
@@ -152,7 +152,7 @@ template <typename T>
 inline constexpr bool is_sexp = any<T, SEXP, r_sexp>;
 
 template <typename T>
-concept RSortable = RMathType<T> || is<T, r_str>;
+concept RSortable = RMathType<T> || RStringType<T>;
 
 
 // Wanted to use this as arg in templates but template type deduction then doesn't work (SAD)
@@ -161,7 +161,7 @@ concept RSortable = RMathType<T> || is<T, r_str>;
 
 // The below smalltype/largetype method is likely a bad idea as it would mean having to duplicate a lot of code with template overloads
 // If T is a small type (e.g. int/r_int) then pass-by-value
-// If it's a large type (e.g. r_str) then pass-by-reference
+// If it's a large type (e.g. r_str_view) then pass-by-reference
 // This avoids the copy overhead for large types and passes small types in CPU registers
 // template <typename T>
 // concept SmallType = CppScalar<std::decay_t<T>> || RMathType<std::decay_t<T>>;

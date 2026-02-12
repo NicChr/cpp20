@@ -55,7 +55,7 @@ r_vec<T> unique(const r_vec<T>& x) {
 
 // // Specialisation for strings
 // template <>
-// r_vec<r_str> unique(const r_vec<r_str>& x) {
+// r_vec<r_str_view> unique(const r_vec<r_str_view>& x) {
 //   r_size_t n = x.length();
   
 //   // Hash set for O(n) de-duplication
@@ -81,7 +81,7 @@ r_vec<T> unique(const r_vec<T>& x) {
 //       return x;
 //   }
   
-//   auto out = r_vec<r_str>(n_unique);
+//   auto out = r_vec<r_str_view>(n_unique);
 //   for (r_size_t i = 0; i < n_unique; ++i) {
 //       SET_STRING_ELT(out, i, uniques[i]);
 //   }

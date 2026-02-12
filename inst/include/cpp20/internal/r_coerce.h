@@ -35,22 +35,31 @@ inline T as(U x) {
     using data_t = typename T::data_type;
     return r_vec<data_t>(1, internal::as_r<data_t>(x));
   } else if constexpr (RVector<U> && RVector<T>){
+
+    using to_data_t = typename T::data_type;
+    using from_data_t = typename U::data_type;
+
+    // Special case: If both are (r_str/r_view) no need to do element conversions
+    if constexpr (RStringType<to_data_t> && RStringType<from_data_t>){
+      return T(unwrap(x));
+    } 
+
     r_size_t n = x.length();
     auto out = T(n);
-    using data_t = typename T::data_type;
-    if constexpr (RPtrWritableType<data_t>){
+
+    if constexpr (RPtrWritableType<to_data_t>){
       OMP_SIMD
       for (r_size_t i = 0; i < n; ++i){
-      out.set(i, internal::as_r<data_t>(x.view(i)));
+      out.set(i, internal::as_r<to_data_t>(x.view(i)));
       }
     } else {
       for (r_size_t i = 0; i < n; ++i){
-      out.set(i, internal::as_r<data_t>(x.view(i)));
+      out.set(i, internal::as_r<to_data_t>(x.view(i)));
       }
     }
     return out;
   } else if constexpr (is<T, r_factors>){
-    auto str_vec = as<r_vec<r_str>>(x);
+    auto str_vec = as<r_vec<r_str_view>>(x);
     auto out = r_factors(str_vec);
     return out; 
   } else if constexpr (RVal<T> && !RVector<U>) {

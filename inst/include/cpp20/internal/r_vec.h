@@ -20,7 +20,7 @@ struct r_vec {
   private:
 
   // Initialise read-only ptr to: 
-  // SEXP - If T is `r_sexp` or `r_str`
+  // SEXP - If T is `r_sexp` or `r_str_view`
   // T - Otherwise
   using ptr_t = std::conditional_t<RPtrWritableType<T>, unwrap_t<T>*, const SEXP*>;  
   ptr_t m_ptr = nullptr;
@@ -30,7 +30,7 @@ struct r_vec {
       m_ptr = internal::vector_ptr<T>(sexp);
     } else if constexpr (any<T, r_sexp, r_sym>) {
       m_ptr = (const SEXP*) DATAPTR_RO(sexp);
-    } else if constexpr (is<T, r_str>){
+    } else if constexpr (RStringType<T>){
       m_ptr = (const SEXP*) STRING_PTR_RO(sexp);
     }
   }
@@ -135,7 +135,7 @@ struct r_vec {
     if constexpr (is<T, V>){
       if constexpr (any<T, r_sexp, r_sym>){
         SET_VECTOR_ELT(sexp, index, unwrap(val));
-      } else if constexpr (is<T, r_str>){
+      } else if constexpr (RStringType<T>){
         SET_STRING_ELT(sexp, index, unwrap(val));
       } else {
         m_ptr[index] = unwrap(val);
@@ -143,7 +143,7 @@ struct r_vec {
     } else {
       if constexpr (any<T, r_sexp, r_sym>){
         SET_VECTOR_ELT(sexp, index, unwrap(cpp20::internal::as_r<T>(val)));
-      } else if constexpr (is<T, r_str>){
+      } else if constexpr (RStringType<T>){
         SET_STRING_ELT(sexp, index, unwrap(cpp20::internal::as_r<T>(val)));
       } else {
         m_ptr[index] = unwrap(cpp20::internal::as_r<T>(val));
@@ -154,14 +154,15 @@ struct r_vec {
   // IMPORTANT - indices are 1-indexed
   // This has the benefit of allowing empty locations (0) and negative indexing
   template <typename U>
-  requires (any<U, r_lgl, r_int, r_int64, r_str>)
+  requires (any<U, r_lgl, r_int, r_int64, r_str_view, r_str>)
   r_vec<T> subset(const r_vec<U>& indices) const;
 
-  r_vec<r_str> names() const {
-    return r_vec<r_str>(Rf_getAttrib(sexp, symbol::names_sym));
+  r_vec<r_str_view> names() const {
+    return r_vec<r_str_view>(Rf_getAttrib(sexp, symbol::names_sym));
   }
 
-  void set_names(const r_vec<r_str>& names){
+  template <RStringType U>
+  void set_names(const r_vec<U>& names){
     if (names.is_null()){
       Rf_setAttrib(sexp, symbol::names_sym, r_null);
     } else if (names.length() != sexp.length()){
@@ -364,7 +365,7 @@ decltype(auto) visit_vector(SEXP x, F&& f) {
   case INTSXP:          return f(r_vec<r_int>(x));
   case CPP20_INT64SXP: return f(r_vec<r_int64>(x));
   case REALSXP:         return f(r_vec<r_dbl>(x));
-  case STRSXP:          return f(r_vec<r_str>(x));
+  case STRSXP:          return f(r_vec<r_str_view>(x));
   case VECSXP:          return f(r_vec<r_sexp>(x));
   case CPLXSXP:         return f(r_vec<r_cplx>(x));
   case RAWSXP:          return f(r_vec<r_raw>(x));
@@ -380,7 +381,7 @@ decltype(auto) visit_maybe_vector(SEXP x, F&& f) {
   case INTSXP:          return f(r_vec<r_int>(x));
   case CPP20_INT64SXP: return f(r_vec<r_int64>(x));
   case REALSXP:         return f(r_vec<r_dbl>(x));
-  case STRSXP:          return f(r_vec<r_str>(x));
+  case STRSXP:          return f(r_vec<r_str_view>(x));
   case VECSXP:          return f(r_vec<r_sexp>(x));
   case CPLXSXP:         return f(r_vec<r_cplx>(x));
   case RAWSXP:          return f(r_vec<r_raw>(x));
@@ -396,7 +397,7 @@ decltype(auto) visit_vector(const r_sexp& x, F&& f) {
   case INTSXP:          return f(r_vec<r_int>(x, internal::view_tag{}));
   case CPP20_INT64SXP: return f(r_vec<r_int64>(x, internal::view_tag{}));
   case REALSXP:         return f(r_vec<r_dbl>(x, internal::view_tag{}));
-  case STRSXP:          return f(r_vec<r_str>(x, internal::view_tag{}));
+  case STRSXP:          return f(r_vec<r_str_view>(x, internal::view_tag{}));
   case VECSXP:          return f(r_vec<r_sexp>(x, internal::view_tag{}));
   case CPLXSXP:         return f(r_vec<r_cplx>(x, internal::view_tag{}));
   case RAWSXP:          return f(r_vec<r_raw>(x, internal::view_tag{}));
@@ -410,7 +411,7 @@ decltype(auto) visit_maybe_vector(const r_sexp& x, F&& f) {
   case INTSXP:          return f(r_vec<r_int>(x, internal::view_tag{}));
   case CPP20_INT64SXP: return f(r_vec<r_int64>(x, internal::view_tag{}));
   case REALSXP:         return f(r_vec<r_dbl>(x, internal::view_tag{}));
-  case STRSXP:          return f(r_vec<r_str>(x, internal::view_tag{}));
+  case STRSXP:          return f(r_vec<r_str_view>(x, internal::view_tag{}));
   case VECSXP:          return f(r_vec<r_sexp>(x, internal::view_tag{}));
   case CPLXSXP:         return f(r_vec<r_cplx>(x, internal::view_tag{}));
   case RAWSXP:          return f(r_vec<r_raw>(x, internal::view_tag{}));

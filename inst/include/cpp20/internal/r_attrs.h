@@ -84,13 +84,13 @@ inline r_vec<r_sexp> get_attrs(const T& x){
     return r_vec<r_sexp>(r_null);
   }
   r_vec<r_sexp> out(n);
-  r_vec<r_str> names(n);
+  r_vec<r_str_view> names(n);
 
   SEXP current = unwrap(attrs);
 
   for (r_size_t i = 0; i < n; ++i){
     out.set(i, r_sexp(CAR(current), internal::view_tag{}));
-    names.set(i, internal::as_r<r_str>(symbol::tag(current)));
+    names.set(i, internal::as_r<r_str_view>(symbol::tag(current)));
     current = CDR(current);
   }
   out.set_names(names);
@@ -110,8 +110,8 @@ inline void set_attr(const T& x, const r_sym& sym, const U& value){
     Rf_setAttrib(x, sym, value); 
   }
 }
-template <RObject T>
-inline void set_old_names(const T& x, const r_vec<r_str>& names){
+template <RObject T, RStringType U>
+inline void set_old_names(const T& x, const r_vec<U>& names){
   if (x.is_null()){
     return;
   } else if (names.is_null()){
@@ -125,25 +125,25 @@ inline void set_old_names(const T& x, const r_vec<r_str>& names){
   }
 }
 template <RObject T>
-inline r_vec<r_str> get_old_names(const T& x){
-  return r_vec<r_str>(get_attr(x, symbol::names_sym));
+inline r_vec<r_str_view> get_old_names(const T& x){
+  return r_vec<r_str_view>(get_attr(x, symbol::names_sym));
 }
 template <RObject T>
 inline bool has_r_names(const T& x){
   return !get_old_names(x).is_null();
 }
 template <RObject T>
-inline r_vec<r_str> get_old_class(const T& x){
-  return r_vec<r_str>(get_attr(x, symbol::class_sym));
+inline r_vec<r_str_view> get_old_class(const T& x){
+  return r_vec<r_str_view>(get_attr(x, symbol::class_sym));
 }
-template <RObject T>
-inline void set_old_class(const T& x, const r_vec<r_str>& cls){
+template <RObject T, RStringType U>
+inline void set_old_class(const T& x, const r_vec<U>& cls){
   if (can_have_attributes(x)){
     Rf_classgets(x, cls);
   }
 }
-template <RObject T>
-inline bool inherits_any(const T& x, const r_vec<r_str>& classes){
+template <RObject T, RStringType U>
+inline bool inherits_any(const T& x, const r_vec<U>& classes){
   r_size_t n = classes.length();
   for (r_size_t i = 0; i < n; ++i) {
     if (inherits1(x, classes.view(i).c_str())){
@@ -152,8 +152,8 @@ inline bool inherits_any(const T& x, const r_vec<r_str>& classes){
   }
   return false;
 }
-template <RObject T>
-inline bool inherits_all(const T& x, const r_vec<r_str>& classes){
+template <RObject T, RStringType U>
+inline bool inherits_all(const T& x, const r_vec<U>& classes){
   r_size_t n = classes.length();
   for (r_size_t i = 0; i < n; ++i) {
     if (!inherits1(x, classes.view(i).c_str())){

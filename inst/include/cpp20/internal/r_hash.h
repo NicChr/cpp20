@@ -80,7 +80,7 @@ struct r_hash_impl<r_cplx> {
 };
 
 template<>
-struct r_hash_impl<r_str> {
+struct r_hash_impl<r_str_view> {
     using is_avalanching = void;
 
     uint64_t operator()(SEXP x) const noexcept {
@@ -90,6 +90,15 @@ struct r_hash_impl<r_str> {
         // Scramble the bits
         // We use ankerl's built-in wyhash mixer. It's just a multiply + XOR.
         return ankerl::unordered_dense::detail::wyhash::hash(ptr_val);
+    }
+};
+
+template<>
+struct r_hash_impl<r_str> {
+    using is_avalanching = void;
+
+    uint64_t operator()(SEXP x) const noexcept {
+        return r_hash_impl<r_str_view>{}(x);
     }
 };
 

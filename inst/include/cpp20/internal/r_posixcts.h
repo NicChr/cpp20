@@ -11,8 +11,8 @@ struct r_posixcts : public r_vec<r_dbl> {
 
     private:
     void init_posixct_attrs() {
-        auto cls = r_vec<r_str>(2);
-        auto tz = r_vec<r_str>(1);
+        auto cls = r_vec<r_str_view>(2);
+        auto tz = r_vec<r_str_view>(1);
         cls.set(0, "POSIXct"); cls.set(1, "POSIXt");
         // Set class
         attr::set_old_class(*this, cls);
@@ -44,18 +44,18 @@ struct r_posixcts : public r_vec<r_dbl> {
     r_str tzone() const {
     auto tz = r_vec<r_str>(attr::get_attr(*this, internal::as_r<r_sym>("tzone")));
     if (tz.is_null() || tz.length() == 0){
-        return blank_r_string;
+        return r_str(blank_r_string, internal::view_tag{});
     } else {
         return tz.get(0);
     }
     }
 
-    void set_tzone(r_str tzone) {
-    auto tz = r_vec<r_str>(attr::get_attr(*this, internal::as_r<r_sym>("tzone")));
+    void set_tzone(r_str_view tzone) {
+    auto tz = r_vec<r_str_view>(attr::get_attr(*this, internal::as_r<r_sym>("tzone")));
     if (tz.length() != 0){
         tz.set(0, tzone);
     } else {
-        auto new_tz = r_vec<r_str>(1, tzone);
+        auto new_tz = r_vec<r_str_view>(1, tzone);
         attr::set_attr(*this, internal::as_r<r_sym>("tzone"), new_tz);
     }
     }

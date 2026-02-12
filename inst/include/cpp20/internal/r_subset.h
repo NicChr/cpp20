@@ -83,7 +83,7 @@ r_vec<r_int> which(const r_vec<r_lgl>& x, bool invert = false){
 
 template <RVal T>
 template <typename U>
-requires (any<U, r_lgl, r_int, r_int64, r_str>)
+requires (any<U, r_lgl, r_int, r_int64, r_str_view, r_str>)
 inline r_vec<T> r_vec<T>::subset(const r_vec<U>& indices) const {
 
   if (indices.is_null()){
@@ -103,7 +103,7 @@ inline r_vec<T> r_vec<T>::subset(const r_vec<U>& indices) const {
 
     return out;
 
-  } else if constexpr (is<U, r_str>){
+  } else if constexpr (RStringType<U>){
 
     auto vec_names = names();
 

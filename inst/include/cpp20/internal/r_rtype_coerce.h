@@ -109,18 +109,20 @@ inline r_raw as_raw(T x){
 }
 // As CHARSXP
 template<typename T>
-inline r_str as_r_string(T x){
-  if constexpr (is<T, r_str>){
+inline r_str_view as_r_string(T x){
+  if constexpr (is<T, r_str_view>){
     return x;
+  } else if constexpr (is<T, r_str>){
+    return r_str_view(unwrap(x));
   } else if constexpr (std::is_convertible_v<T, const char*>){
-    return r_str(x);
+    return r_str_view(Rf_mkCharCE(x, CE_UTF8));
   } else if constexpr (is<T, std::string>){
-    return r_str(x.c_str());
+    return r_str_view(x.c_str());
   } else if constexpr (is<T, r_sym>){
-    return r_str(PRINTNAME(static_cast<SEXP>(x)));
+    return r_str_view(PRINTNAME(static_cast<SEXP>(x)));
   } else if constexpr (is<T, r_lgl>){
     if (is_na(x)){
-      return na<r_str>();
+      return na<r_str_view>();
     } else if (x == r_true){
       return as_r_string("TRUE");
     } else {
@@ -128,7 +130,7 @@ inline r_str as_r_string(T x){
     }
   } else if constexpr (IntegerType<T>){
     if (is_na(x)){
-      return na<r_str>();
+      return na<r_str_view>();
     }
     // return as_r_string(std::to_string(unwrap(x)).c_str()); // C++ one-liner
     char buffer[32];
@@ -140,7 +142,7 @@ inline r_str as_r_string(T x){
     return as_r_string(static_cast<const char *>(buffer));
   } else if constexpr (FloatType<T>){
     if (is_na(x)){
-      return na<r_str>();
+      return na<r_str_view>();
     }
     char buffer[48];
     auto result = std::to_chars(buffer, buffer + sizeof(buffer), unwrap(x) + unwrap_t<T>(0));
@@ -151,7 +153,7 @@ inline r_str as_r_string(T x){
     return as_r_string(static_cast<const char *>(buffer));
   } else if constexpr (ComplexType<T>){
     if (is_na(x)){
-      return na<r_str>();
+      return na<r_str_view>();
     }
     double re = static_cast<double>(unwrap(x).real()) + 0.0;
     double im = static_cast<double>(unwrap(x).imag()) + 0.0;
@@ -169,10 +171,10 @@ inline r_str as_r_string(T x){
     return as_r_string(static_cast<const char *>(buffer));
   } else if constexpr (is<T, SEXP> || is<T, r_sexp>){
     if (Rf_length(x) != 1){
-      abort("`x` is a non-scalar vector and cannot be converted to an `r_str` in %s", __func__);
+      abort("`x` is a non-scalar vector and cannot be converted to an `r_str_view` in %s", __func__);
     }
     r_sexp str = r_sexp(cpp11::safe[Rf_coerceVector](x, STRSXP));
-    return r_str(STRING_ELT(str, 0));
+    return r_str_view(STRING_ELT(str, 0));
   } else {
     static_assert(always_false<T>, "Unsupported type for `as_r_string`");
   }
@@ -184,13 +186,12 @@ inline r_sym as_r_sym(T x){
   if constexpr (is<T, r_sym>){
     return x;
   } else if constexpr (is<T, const char *>){
-    return r_sym(Rf_install(x));
-  } else if constexpr (is<T, r_str>){
-    return r_sym(Rf_installChar(x));
+    return r_sym(x);
+  } else if constexpr (RStringType<T>){
+    return r_sym(x.c_str());
   } else {
-    r_str str = as_r_string(x);
-    r_sym out = as_r_sym(str);
-    return out;
+    r_str_view str = as_r_string(x);
+    return r_sym(str.c_str());
   }
 }
 
@@ -216,11 +217,15 @@ inline r_sexp as_sexp<bool>(bool x){
 }
 template<>
 inline r_sexp as_sexp<const char *>(const char *x){
-  return new_scalar_vec(r_str(x));
+  return new_scalar_vec(as_r_string(x));
 }
 template<>
 inline r_sexp as_sexp<r_sym>(r_sym x){
-  return x.value;
+  return r_sexp(x.value, internal::view_tag{});
+}
+template<>
+inline r_sexp as_sexp<r_str_view>(r_str_view x){
+  return r_sexp(static_cast<SEXP>(x));
 }
 template<>
 inline r_sexp as_sexp<r_str>(r_str x){
@@ -289,9 +294,17 @@ struct as_impl<r_raw, U> {
 };
 
 template<typename U>
+struct as_impl<r_str_view, U> {
+  static r_str_view cast(U x) {
+    return as_r_string(x);
+  }
+};
+
+template<typename U>
 struct as_impl<r_str, U> {
   static r_str cast(U x) {
-    return as_r_string(x);
+    r_str_view res = as_r_string(x);
+    return r_str(unwrap(res));
   }
 };
 

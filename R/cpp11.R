@@ -519,3 +519,11 @@ foo_group_id2 <- function(x) {
 foo_sorted <- function(x) {
   .Call(`_cpp20_foo_sorted`, x)
 }
+
+test1 <- function() {
+  invisible(.Call(`_cpp20_test1`))
+}
+
+foo_str_vectors <- function(x) {
+  .Call(`_cpp20_foo_str_vectors`, x)
+}

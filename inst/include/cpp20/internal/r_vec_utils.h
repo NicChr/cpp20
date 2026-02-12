@@ -104,9 +104,13 @@ inline r_sexp new_vec_impl<r_dbl>(r_size_t n){
 template <>
 inline r_sexp new_vec_impl<r_int64>(r_size_t n){
   r_sexp out = r_sexp(internal::new_vec(REALSXP, n));
-  r_sexp cls = r_sexp(Rf_ScalarString(r_str("integer64")));
+  r_sexp cls = r_sexp(Rf_ScalarString(Rf_mkCharCE("integer64", CE_UTF8)));
   Rf_setAttrib(out, R_ClassSymbol, cls);
   return out;
+}
+template <>
+inline r_sexp new_vec_impl<r_str_view>(r_size_t n){
+  return internal::new_vec(STRSXP, n);
 }
 template <>
 inline r_sexp new_vec_impl<r_str>(r_size_t n){
@@ -152,6 +156,10 @@ inline r_sexp new_scalar_vec<r_int64>(r_int64 default_value){
   r_sexp out = new_vec_impl<r_int64>(1);
   REAL(out.value)[0] = default_value;
   return out;
+}
+template <>
+inline r_sexp new_scalar_vec<r_str_view>(r_str_view default_value){
+  return r_sexp(Rf_ScalarString(unwrap(default_value)));
 }
 template <>
 inline r_sexp new_scalar_vec<r_str>(r_str default_value){

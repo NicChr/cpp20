@@ -132,7 +132,7 @@ struct r_int64 {
 };
 
 // Alias type for CHARSXP
-// r_str must never be converted to `SEXP`/`r_sexp`
+// r_str_view must never be converted to `SEXP`/`r_sexp`
 // all templates assume that `SEXP`/`r_sexp` is reserved for objects that can safely fit into an R list vector
 // Furthermore CHARSXP is a special case because it is essentially the only SEXP that already fits into a non-list vector: a character vector
 struct r_str {
@@ -148,6 +148,9 @@ struct r_str {
   // Implicit r_str -> SEXP 
   constexpr operator SEXP() const noexcept { return value; }
 
+  // Explicit r_str_view -> r_str
+  explicit r_str(r_str_view x);
+
   const char *c_str() const {
     return CHAR(value);
   }
@@ -157,16 +160,36 @@ struct r_str {
   }
 };
 
+// Unsafe (but fast) r_str type
+// Similar to std::string_view, it is a view of an r_str/CHARSXP whose lifetime must be shorter than the object it's viewing
+struct r_str_view {
+  SEXP value; 
+  using value_type = SEXP;
+
+  // Constructors
+  r_str_view() : value{R_BlankString} {}
+  explicit r_str_view(SEXP x) : value{x} {}
+  // explicit r_str_view(const char *x) : value(Rf_mkCharCE(x, CE_UTF8)) {}
+  // Implicit r_str_view -> SEXP
+  constexpr operator SEXP() const noexcept { return value; }
+  
+  // Implicit r_str -> r_str_view
+  r_str_view(const r_str& x) : value(static_cast<SEXP>(x)) {}
+  
+  const char* c_str() const { return CHAR(value); }
+  std::string_view cpp_str() const noexcept { return std::string_view{c_str()}; }
+};
+
+inline r_str::r_str(r_str_view x) : value(static_cast<SEXP>(x)) {}
+
 // Alias type for SYMSXP
 struct r_sym {
-  r_sexp value;
+  SEXP value;
   using value_type = r_sexp;
-  // r_sym() : value{internal::missing_arg_constant, internal::view_tag{}} {}
-  r_sym() : value{R_MissingArg, internal::view_tag{}} {}
+
+  r_sym() : value{R_MissingArg} {}
   explicit r_sym(SEXP x) : value{x} {}
-  explicit r_sym(SEXP x, internal::view_tag) : value(x, internal::view_tag{}) {}
-  explicit r_sym(r_sexp x) : value(std::move(x)) {} 
-  explicit r_sym(const char *x) : value(Rf_installChar(r_str(x))) {}
+  explicit r_sym(const char *x) : value(Rf_installChar(Rf_mkCharCE(x, CE_UTF8))) {}
   constexpr operator SEXP() const noexcept { return value; }
 };
 
@@ -243,14 +266,14 @@ if constexpr (RVal<T>){
 // R C NULL constant
 inline const r_sexp r_null = r_sexp();
 // Blank string ''
-inline const r_str blank_r_string = r_str();
-inline const r_str na_str = r_str(NA_STRING);
+inline const r_str_view blank_r_string = r_str_view();
+inline const r_str_view na_str = r_str_view(NA_STRING);
 
 // // Lazy loaded version
 // // R C NULL constant
 // inline const r_sexp& r_null() { static const r_sexp s; return s; }
 // // Blank string ''
-// inline const r_str& r_blank_string() { static const r_str s; return s; };
+// inline const r_str_view& r_blank_string() { static const r_str_view s; return s; };
   
 // Coerce to an R type based on the C type (useful for RVal templates)
 template<typename T>

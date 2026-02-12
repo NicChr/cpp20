@@ -11,7 +11,7 @@ struct r_dates : public r_vec<r_int> {
 
 private:
   void init_date_attrs() {
-      attr::set_old_class(*this, r_vec<r_str>(1, r_str("Date")));
+      attr::set_old_class(*this, r_vec<r_str_view>(1, "Date"));
   }
 
 public: 

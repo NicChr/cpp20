@@ -917,6 +917,21 @@ extern "C" SEXP _cpp20_foo_sorted(SEXP x) {
     return cpp11::as_sexp(foo_sorted(cpp11::as_cpp<cpp11::decay_t<SEXP>>(x)));
   END_CPP11
 }
+// test.cpp
+void test1();
+extern "C" SEXP _cpp20_test1() {
+  BEGIN_CPP11
+    test1();
+    return R_NilValue;
+  END_CPP11
+}
+// test.cpp
+SEXP foo_str_vectors(SEXP x);
+extern "C" SEXP _cpp20_foo_str_vectors(SEXP x) {
+  BEGIN_CPP11
+    return cpp11::as_sexp(foo_str_vectors(cpp11::as_cpp<cpp11::decay_t<SEXP>>(x)));
+  END_CPP11
+}
 
 extern "C" {
 static const R_CallMethodDef CallEntries[] = {
@@ -1017,6 +1032,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"_cpp20_foo_sorted_unique",    (DL_FUNC) &_cpp20_foo_sorted_unique,    1},
     {"_cpp20_foo_sset",             (DL_FUNC) &_cpp20_foo_sset,             2},
     {"_cpp20_foo_stable_order",     (DL_FUNC) &_cpp20_foo_stable_order,     1},
+    {"_cpp20_foo_str_vectors",      (DL_FUNC) &_cpp20_foo_str_vectors,      1},
     {"_cpp20_foo_strs",             (DL_FUNC) &_cpp20_foo_strs,             0},
     {"_cpp20_foo_subset",           (DL_FUNC) &_cpp20_foo_subset,           2},
     {"_cpp20_foo_subset2",          (DL_FUNC) &_cpp20_foo_subset2,          2},
@@ -1049,6 +1065,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"_cpp20_foofoo",               (DL_FUNC) &_cpp20_foofoo,               0},
     {"_cpp20_foofoofoo",            (DL_FUNC) &_cpp20_foofoofoo,            0},
     {"_cpp20_ok",                   (DL_FUNC) &_cpp20_ok,                   0},
+    {"_cpp20_test1",                (DL_FUNC) &_cpp20_test1,                0},
     {"_cpp20_yeah",                 (DL_FUNC) &_cpp20_yeah,                 1},
     {NULL, NULL, 0}
 };

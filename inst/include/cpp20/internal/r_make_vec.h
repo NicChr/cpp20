@@ -18,6 +18,7 @@ struct arg {
     r_int64,
     r_dbl,
     r_str,
+    r_str_view,
     r_cplx,
     r_raw,
     r_sexp
@@ -70,13 +71,13 @@ inline r_vec<T> make_vec(Args... args) {
     // Are any args named?
     constexpr bool any_named = (is<Args, arg> || ...);
 
-    auto nms = any_named ? r_vec<r_str>(n) : r_vec<r_str>(r_null);
+    auto nms = any_named ? r_vec<r_str_view>(n) : r_vec<r_str_view>(r_null);
 
     int i = 0;
     (([&]() {
       if constexpr (is<Args, arg>) {
         out.set(i, as<T>(args));
-        nms.set(i, as<r_str>(args.name));
+        nms.set(i, as<r_str_view>(args.name));
       } else {
         out.set(i, as<T>(args));
       }
