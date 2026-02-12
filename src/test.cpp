@@ -358,6 +358,28 @@ SEXP foo_sum(SEXP x, bool na_rm) {
   });
 }
 [[cpp11::register]]
+SEXP foo_mean(SEXP x, bool na_rm) {
+  return internal::visit_vector(x, [&](auto xvec) -> SEXP {
+    using T = typename decltype(xvec)::data_type;
+    if constexpr (RMathType<T>){
+      return as_vector(mean(xvec, na_rm));
+    } else {
+      return r_null;
+    }
+  });
+}
+[[cpp11::register]]
+SEXP foo_var(SEXP x, bool na_rm) {
+  return internal::visit_vector(x, [&](auto xvec) -> SEXP {
+    using T = typename decltype(xvec)::data_type;
+    if constexpr (RMathType<T>){
+      return as_vector(var(xvec, na_rm));
+    } else {
+      return r_null;
+    }
+  });
+}
+[[cpp11::register]]
 SEXP foo_sum_int(SEXP x, bool na_rm) {
   return internal::visit_vector(x, [&](auto xvec) -> SEXP {
     using T = typename decltype(xvec)::data_type;

@@ -180,6 +180,14 @@ foo_sum <- function(x, na_rm) {
   .Call(`_cpp20_foo_sum`, x, na_rm)
 }
 
+foo_mean <- function(x, na_rm) {
+  .Call(`_cpp20_foo_mean`, x, na_rm)
+}
+
+foo_var <- function(x, na_rm) {
+  .Call(`_cpp20_foo_var`, x, na_rm)
+}
+
 foo_sum_int <- function(x, na_rm) {
   .Call(`_cpp20_foo_sum_int`, x, na_rm)
 }

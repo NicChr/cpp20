@@ -185,6 +185,52 @@ r_vec<T> abs(const r_vec<T> &x){
     return out;
 }
 
+
+template <RMathType T>
+r_dbl mean(const r_vec<T> &x, bool na_rm = false){
+    r_dbl total = sum(x, na_rm);
+
+    if (na_rm){
+        return total / (x.length() - x.na_count());
+    } else {
+        return total / x.length();
+    }
+}
+
+
+template <RMathType T>
+r_dbl var(const r_vec<T> &x, bool na_rm = false){
+
+    r_size_t N;
+
+    if (na_rm){
+        N = x.length() - x.na_count() - 1;
+    } else {
+        N = x.length() - 1;
+    }
+
+    if (N < 1){
+        return na<r_dbl>();
+    }
+
+    r_dbl mu = mean(x, na_rm);
+
+    if (is_na(mu)){
+        return mu;
+    }
+    // Sum of squared differences
+
+    r_size_t n = x.length();
+
+    r_dbl sum_sq_diff(0);
+    
+    for (r_size_t i = 0; i < n; ++i){
+        if (is_na(x.get(i))) continue;
+        sum_sq_diff += pow(x.get(i) - mu, 2);
+      }
+      return sum_sq_diff / N;
+}
+
 } 
 
 #endif

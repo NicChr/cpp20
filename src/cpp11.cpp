@@ -323,6 +323,20 @@ extern "C" SEXP _cpp20_foo_sum(SEXP x, SEXP na_rm) {
   END_CPP11
 }
 // test.cpp
+SEXP foo_mean(SEXP x, bool na_rm);
+extern "C" SEXP _cpp20_foo_mean(SEXP x, SEXP na_rm) {
+  BEGIN_CPP11
+    return cpp11::as_sexp(foo_mean(cpp11::as_cpp<cpp11::decay_t<SEXP>>(x), cpp11::as_cpp<cpp11::decay_t<bool>>(na_rm)));
+  END_CPP11
+}
+// test.cpp
+SEXP foo_var(SEXP x, bool na_rm);
+extern "C" SEXP _cpp20_foo_var(SEXP x, SEXP na_rm) {
+  BEGIN_CPP11
+    return cpp11::as_sexp(foo_var(cpp11::as_cpp<cpp11::decay_t<SEXP>>(x), cpp11::as_cpp<cpp11::decay_t<bool>>(na_rm)));
+  END_CPP11
+}
+// test.cpp
 SEXP foo_sum_int(SEXP x, bool na_rm);
 extern "C" SEXP _cpp20_foo_sum_int(SEXP x, SEXP na_rm) {
   BEGIN_CPP11
@@ -1040,6 +1054,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"_cpp20_foo_make_vec_test",    (DL_FUNC) &_cpp20_foo_make_vec_test,    0},
     {"_cpp20_foo_match",            (DL_FUNC) &_cpp20_foo_match,            2},
     {"_cpp20_foo_match_unique",     (DL_FUNC) &_cpp20_foo_match_unique,     1},
+    {"_cpp20_foo_mean",             (DL_FUNC) &_cpp20_foo_mean,             2},
     {"_cpp20_foo_n_groups",         (DL_FUNC) &_cpp20_foo_n_groups,         1},
     {"_cpp20_foo_na_count",         (DL_FUNC) &_cpp20_foo_na_count,         1},
     {"_cpp20_foo_na_real",          (DL_FUNC) &_cpp20_foo_na_real,          0},
@@ -1069,6 +1084,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"_cpp20_foo_unique",           (DL_FUNC) &_cpp20_foo_unique,           1},
     {"_cpp20_foo_unique2",          (DL_FUNC) &_cpp20_foo_unique2,          1},
     {"_cpp20_foo_unique_strs",      (DL_FUNC) &_cpp20_foo_unique_strs,      1},
+    {"_cpp20_foo_var",              (DL_FUNC) &_cpp20_foo_var,              2},
     {"_cpp20_foo_vec_add",          (DL_FUNC) &_cpp20_foo_vec_add,          1},
     {"_cpp20_foo_vec_add2",         (DL_FUNC) &_cpp20_foo_vec_add2,         1},
     {"_cpp20_foo_vec_add3",         (DL_FUNC) &_cpp20_foo_vec_add3,         1},
