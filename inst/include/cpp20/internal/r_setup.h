@@ -1,13 +1,14 @@
 #ifndef CPP20_R_SETUP_H
 #define CPP20_R_SETUP_H
 
+#include <cpp11/sexp.hpp>
 #include <type_traits>
 #include <ankerl/unordered_dense.h> // Unique + match
 #include <cstring> // For strcmp
 #include <complex>
 #include <limits>
 #include <vector>
-#include <cpp11.hpp>
+#include <algorithm>
 
 #ifdef _MSC_VER
 #define RESTRICT __restrict
