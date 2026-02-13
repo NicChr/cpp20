@@ -1,7 +1,7 @@
 #ifndef CPP20_R_SETUP_H
 #define CPP20_R_SETUP_H
 
-#include <cpp11/sexp.hpp>
+#include <cpp11.hpp>
 #include <type_traits>
 #include <ankerl/unordered_dense.h> // Unique + match
 #include <cstring> // For strcmp
