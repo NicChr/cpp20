@@ -50,41 +50,6 @@ extern "C" SEXP _cpp20_foofoo() {
   END_CPP11
 }
 // test.cpp
-SEXP ok();
-extern "C" SEXP _cpp20_ok() {
-  BEGIN_CPP11
-    return cpp11::as_sexp(ok());
-  END_CPP11
-}
-// test.cpp
-SEXP yeah(SEXP x);
-extern "C" SEXP _cpp20_yeah(SEXP x) {
-  BEGIN_CPP11
-    return cpp11::as_sexp(yeah(cpp11::as_cpp<cpp11::decay_t<SEXP>>(x)));
-  END_CPP11
-}
-// test.cpp
-SEXP foo2();
-extern "C" SEXP _cpp20_foo2() {
-  BEGIN_CPP11
-    return cpp11::as_sexp(foo2());
-  END_CPP11
-}
-// test.cpp
-SEXP foo4(SEXP x);
-extern "C" SEXP _cpp20_foo4(SEXP x) {
-  BEGIN_CPP11
-    return cpp11::as_sexp(foo4(cpp11::as_cpp<cpp11::decay_t<SEXP>>(x)));
-  END_CPP11
-}
-// test.cpp
-SEXP foo5(SEXP x);
-extern "C" SEXP _cpp20_foo5(SEXP x) {
-  BEGIN_CPP11
-    return cpp11::as_sexp(foo5(cpp11::as_cpp<cpp11::decay_t<SEXP>>(x)));
-  END_CPP11
-}
-// test.cpp
 SEXP foo6(SEXP x);
 extern "C" SEXP _cpp20_foo6(SEXP x) {
   BEGIN_CPP11
@@ -99,24 +64,10 @@ extern "C" SEXP _cpp20_foo7(SEXP x) {
   END_CPP11
 }
 // test.cpp
-SEXP foo8();
-extern "C" SEXP _cpp20_foo8() {
-  BEGIN_CPP11
-    return cpp11::as_sexp(foo8());
-  END_CPP11
-}
-// test.cpp
 SEXP foo9();
 extern "C" SEXP _cpp20_foo9() {
   BEGIN_CPP11
     return cpp11::as_sexp(foo9());
-  END_CPP11
-}
-// test.cpp
-SEXP foo10(SEXP x);
-extern "C" SEXP _cpp20_foo10(SEXP x) {
-  BEGIN_CPP11
-    return cpp11::as_sexp(foo10(cpp11::as_cpp<cpp11::decay_t<SEXP>>(x)));
   END_CPP11
 }
 // test.cpp
@@ -134,87 +85,10 @@ extern "C" SEXP _cpp20_foo12(SEXP x, SEXP attrs) {
   END_CPP11
 }
 // test.cpp
-SEXP foo13(SEXP x);
-extern "C" SEXP _cpp20_foo13(SEXP x) {
-  BEGIN_CPP11
-    return cpp11::as_sexp(foo13(cpp11::as_cpp<cpp11::decay_t<SEXP>>(x)));
-  END_CPP11
-}
-// test.cpp
 SEXP foo14();
 extern "C" SEXP _cpp20_foo14() {
   BEGIN_CPP11
     return cpp11::as_sexp(foo14());
-  END_CPP11
-}
-// test.cpp
-SEXP foo15();
-extern "C" SEXP _cpp20_foo15() {
-  BEGIN_CPP11
-    return cpp11::as_sexp(foo15());
-  END_CPP11
-}
-// test.cpp
-SEXP foo16(SEXP x);
-extern "C" SEXP _cpp20_foo16(SEXP x) {
-  BEGIN_CPP11
-    return cpp11::as_sexp(foo16(cpp11::as_cpp<cpp11::decay_t<SEXP>>(x)));
-  END_CPP11
-}
-// test.cpp
-SEXP foo17(SEXP x);
-extern "C" SEXP _cpp20_foo17(SEXP x) {
-  BEGIN_CPP11
-    return cpp11::as_sexp(foo17(cpp11::as_cpp<cpp11::decay_t<SEXP>>(x)));
-  END_CPP11
-}
-// test.cpp
-SEXP foo18(SEXP x);
-extern "C" SEXP _cpp20_foo18(SEXP x) {
-  BEGIN_CPP11
-    return cpp11::as_sexp(foo18(cpp11::as_cpp<cpp11::decay_t<SEXP>>(x)));
-  END_CPP11
-}
-// test.cpp
-double foo20();
-extern "C" SEXP _cpp20_foo20() {
-  BEGIN_CPP11
-    return cpp11::as_sexp(foo20());
-  END_CPP11
-}
-// test.cpp
-SEXP foo21(int n);
-extern "C" SEXP _cpp20_foo21(SEXP n) {
-  BEGIN_CPP11
-    return cpp11::as_sexp(foo21(cpp11::as_cpp<cpp11::decay_t<int>>(n)));
-  END_CPP11
-}
-// test.cpp
-SEXP foo22(SEXP cols);
-extern "C" SEXP _cpp20_foo22(SEXP cols) {
-  BEGIN_CPP11
-    return cpp11::as_sexp(foo22(cpp11::as_cpp<cpp11::decay_t<SEXP>>(cols)));
-  END_CPP11
-}
-// test.cpp
-SEXP foo23();
-extern "C" SEXP _cpp20_foo23() {
-  BEGIN_CPP11
-    return cpp11::as_sexp(foo23());
-  END_CPP11
-}
-// test.cpp
-SEXP foo24(SEXP cols);
-extern "C" SEXP _cpp20_foo24(SEXP cols) {
-  BEGIN_CPP11
-    return cpp11::as_sexp(foo24(cpp11::as_cpp<cpp11::decay_t<SEXP>>(cols)));
-  END_CPP11
-}
-// test.cpp
-SEXP foo25(SEXP cols, SEXP x);
-extern "C" SEXP _cpp20_foo25(SEXP cols, SEXP x) {
-  BEGIN_CPP11
-    return cpp11::as_sexp(foo25(cpp11::as_cpp<cpp11::decay_t<SEXP>>(cols), cpp11::as_cpp<cpp11::decay_t<SEXP>>(x)));
   END_CPP11
 }
 // test.cpp
@@ -232,13 +106,6 @@ extern "C" SEXP _cpp20_foo27(SEXP cols) {
   END_CPP11
 }
 // test.cpp
-SEXP foo28(SEXP x, SEXP y);
-extern "C" SEXP _cpp20_foo28(SEXP x, SEXP y) {
-  BEGIN_CPP11
-    return cpp11::as_sexp(foo28(cpp11::as_cpp<cpp11::decay_t<SEXP>>(x), cpp11::as_cpp<cpp11::decay_t<SEXP>>(y)));
-  END_CPP11
-}
-// test.cpp
 SEXP foo28a(SEXP x, SEXP y);
 extern "C" SEXP _cpp20_foo28a(SEXP x, SEXP y) {
   BEGIN_CPP11
@@ -253,59 +120,10 @@ extern "C" SEXP _cpp20_foo28b(SEXP x, SEXP y) {
   END_CPP11
 }
 // test.cpp
-SEXP foo29(SEXP x);
-extern "C" SEXP _cpp20_foo29(SEXP x) {
-  BEGIN_CPP11
-    return cpp11::as_sexp(foo29(cpp11::as_cpp<cpp11::decay_t<SEXP>>(x)));
-  END_CPP11
-}
-// test.cpp
 int foo30();
 extern "C" SEXP _cpp20_foo30() {
   BEGIN_CPP11
     return cpp11::as_sexp(foo30());
-  END_CPP11
-}
-// test.cpp
-SEXP foo31();
-extern "C" SEXP _cpp20_foo31() {
-  BEGIN_CPP11
-    return cpp11::as_sexp(foo31());
-  END_CPP11
-}
-// test.cpp
-SEXP foo32();
-extern "C" SEXP _cpp20_foo32() {
-  BEGIN_CPP11
-    return cpp11::as_sexp(foo32());
-  END_CPP11
-}
-// test.cpp
-SEXP foo33();
-extern "C" SEXP _cpp20_foo33() {
-  BEGIN_CPP11
-    return cpp11::as_sexp(foo33());
-  END_CPP11
-}
-// test.cpp
-SEXP foo34();
-extern "C" SEXP _cpp20_foo34() {
-  BEGIN_CPP11
-    return cpp11::as_sexp(foo34());
-  END_CPP11
-}
-// test.cpp
-SEXP foo35();
-extern "C" SEXP _cpp20_foo35() {
-  BEGIN_CPP11
-    return cpp11::as_sexp(foo35());
-  END_CPP11
-}
-// test.cpp
-SEXP foo36(int n);
-extern "C" SEXP _cpp20_foo36(SEXP n) {
-  BEGIN_CPP11
-    return cpp11::as_sexp(foo36(cpp11::as_cpp<cpp11::decay_t<int>>(n)));
   END_CPP11
 }
 // test.cpp
@@ -407,20 +225,6 @@ extern "C" SEXP _cpp20_foo44(SEXP x) {
   END_CPP11
 }
 // test.cpp
-SEXP foo46();
-extern "C" SEXP _cpp20_foo46() {
-  BEGIN_CPP11
-    return cpp11::as_sexp(foo46());
-  END_CPP11
-}
-// test.cpp
-SEXP foo47(int n);
-extern "C" SEXP _cpp20_foo47(SEXP n) {
-  BEGIN_CPP11
-    return cpp11::as_sexp(foo47(cpp11::as_cpp<cpp11::decay_t<int>>(n)));
-  END_CPP11
-}
-// test.cpp
 SEXP foo48(SEXP x);
 extern "C" SEXP _cpp20_foo48(SEXP x) {
   BEGIN_CPP11
@@ -449,66 +253,10 @@ extern "C" SEXP _cpp20_foo51(SEXP x) {
   END_CPP11
 }
 // test.cpp
-bool foo52();
-extern "C" SEXP _cpp20_foo52() {
-  BEGIN_CPP11
-    return cpp11::as_sexp(foo52());
-  END_CPP11
-}
-// test.cpp
-bool foo53();
-extern "C" SEXP _cpp20_foo53() {
-  BEGIN_CPP11
-    return cpp11::as_sexp(foo53());
-  END_CPP11
-}
-// test.cpp
 SEXP foo54(SEXP x);
 extern "C" SEXP _cpp20_foo54(SEXP x) {
   BEGIN_CPP11
     return cpp11::as_sexp(foo54(cpp11::as_cpp<cpp11::decay_t<SEXP>>(x)));
-  END_CPP11
-}
-// test.cpp
-SEXP foo55(SEXP x, SEXP y);
-extern "C" SEXP _cpp20_foo55(SEXP x, SEXP y) {
-  BEGIN_CPP11
-    return cpp11::as_sexp(foo55(cpp11::as_cpp<cpp11::decay_t<SEXP>>(x), cpp11::as_cpp<cpp11::decay_t<SEXP>>(y)));
-  END_CPP11
-}
-// test.cpp
-SEXP foo56(SEXP x, SEXP y);
-extern "C" SEXP _cpp20_foo56(SEXP x, SEXP y) {
-  BEGIN_CPP11
-    return cpp11::as_sexp(foo56(cpp11::as_cpp<cpp11::decay_t<SEXP>>(x), cpp11::as_cpp<cpp11::decay_t<SEXP>>(y)));
-  END_CPP11
-}
-// test.cpp
-SEXP foo57(SEXP x, SEXP y);
-extern "C" SEXP _cpp20_foo57(SEXP x, SEXP y) {
-  BEGIN_CPP11
-    return cpp11::as_sexp(foo57(cpp11::as_cpp<cpp11::decay_t<SEXP>>(x), cpp11::as_cpp<cpp11::decay_t<SEXP>>(y)));
-  END_CPP11
-}
-// test.cpp
-SEXP foo58(SEXP x);
-extern "C" SEXP _cpp20_foo58(SEXP x) {
-  BEGIN_CPP11
-    return cpp11::as_sexp(foo58(cpp11::as_cpp<cpp11::decay_t<SEXP>>(x)));
-  END_CPP11
-}
-// test.cpp
-SEXP foo_make_list();
-extern "C" SEXP _cpp20_foo_make_list() {
-  BEGIN_CPP11
-    return cpp11::as_sexp(foo_make_list());
-  END_CPP11
-}
-// test.cpp
-SEXP foo_make_list2();
-extern "C" SEXP _cpp20_foo_make_list2() {
-  BEGIN_CPP11
-    return cpp11::as_sexp(foo_make_list2());
   END_CPP11
 }
 // test.cpp
@@ -526,80 +274,10 @@ extern "C" SEXP _cpp20_foo_add(SEXP x) {
   END_CPP11
 }
 // test.cpp
-SEXP foo_vec_add(SEXP x);
-extern "C" SEXP _cpp20_foo_vec_add(SEXP x) {
+SEXP foo_vec_add(SEXP x, SEXP y);
+extern "C" SEXP _cpp20_foo_vec_add(SEXP x, SEXP y) {
   BEGIN_CPP11
-    return cpp11::as_sexp(foo_vec_add(cpp11::as_cpp<cpp11::decay_t<SEXP>>(x)));
-  END_CPP11
-}
-// test.cpp
-SEXP foo_vec_add2(SEXP x);
-extern "C" SEXP _cpp20_foo_vec_add2(SEXP x) {
-  BEGIN_CPP11
-    return cpp11::as_sexp(foo_vec_add2(cpp11::as_cpp<cpp11::decay_t<SEXP>>(x)));
-  END_CPP11
-}
-// test.cpp
-SEXP foo_vec_add3(SEXP x);
-extern "C" SEXP _cpp20_foo_vec_add3(SEXP x) {
-  BEGIN_CPP11
-    return cpp11::as_sexp(foo_vec_add3(cpp11::as_cpp<cpp11::decay_t<SEXP>>(x)));
-  END_CPP11
-}
-// test.cpp
-SEXP foo_vec_add4(SEXP x, SEXP y);
-extern "C" SEXP _cpp20_foo_vec_add4(SEXP x, SEXP y) {
-  BEGIN_CPP11
-    return cpp11::as_sexp(foo_vec_add4(cpp11::as_cpp<cpp11::decay_t<SEXP>>(x), cpp11::as_cpp<cpp11::decay_t<SEXP>>(y)));
-  END_CPP11
-}
-// test.cpp
-SEXP foo_vec_add5(SEXP x, SEXP y);
-extern "C" SEXP _cpp20_foo_vec_add5(SEXP x, SEXP y) {
-  BEGIN_CPP11
-    return cpp11::as_sexp(foo_vec_add5(cpp11::as_cpp<cpp11::decay_t<SEXP>>(x), cpp11::as_cpp<cpp11::decay_t<SEXP>>(y)));
-  END_CPP11
-}
-// test.cpp
-SEXP foo_vec_add6(SEXP x, SEXP y);
-extern "C" SEXP _cpp20_foo_vec_add6(SEXP x, SEXP y) {
-  BEGIN_CPP11
-    return cpp11::as_sexp(foo_vec_add6(cpp11::as_cpp<cpp11::decay_t<SEXP>>(x), cpp11::as_cpp<cpp11::decay_t<SEXP>>(y)));
-  END_CPP11
-}
-// test.cpp
-SEXP foo_vec_add7(SEXP x);
-extern "C" SEXP _cpp20_foo_vec_add7(SEXP x) {
-  BEGIN_CPP11
-    return cpp11::as_sexp(foo_vec_add7(cpp11::as_cpp<cpp11::decay_t<SEXP>>(x)));
-  END_CPP11
-}
-// test.cpp
-SEXP foo_vec_mod(SEXP x);
-extern "C" SEXP _cpp20_foo_vec_mod(SEXP x) {
-  BEGIN_CPP11
-    return cpp11::as_sexp(foo_vec_mod(cpp11::as_cpp<cpp11::decay_t<SEXP>>(x)));
-  END_CPP11
-}
-// test.cpp
-SEXP foo_vec_mod2(SEXP x);
-extern "C" SEXP _cpp20_foo_vec_mod2(SEXP x) {
-  BEGIN_CPP11
-    return cpp11::as_sexp(foo_vec_mod2(cpp11::as_cpp<cpp11::decay_t<SEXP>>(x)));
-  END_CPP11
-}
-// test.cpp
-SEXP foo_vec_mod3(SEXP x);
-extern "C" SEXP _cpp20_foo_vec_mod3(SEXP x) {
-  BEGIN_CPP11
-    return cpp11::as_sexp(foo_vec_mod3(cpp11::as_cpp<cpp11::decay_t<SEXP>>(x)));
-  END_CPP11
-}
-// test.cpp
-SEXP foo_vec_mod4(SEXP x);
-extern "C" SEXP _cpp20_foo_vec_mod4(SEXP x) {
-  BEGIN_CPP11
-    return cpp11::as_sexp(foo_vec_mod4(cpp11::as_cpp<cpp11::decay_t<SEXP>>(x)));
+    return cpp11::as_sexp(foo_vec_add(cpp11::as_cpp<cpp11::decay_t<SEXP>>(x), cpp11::as_cpp<cpp11::decay_t<SEXP>>(y)));
   END_CPP11
 }
 // test.cpp
@@ -624,13 +302,6 @@ extern "C" SEXP _cpp20_foo_vec_divide(SEXP x, SEXP y) {
   END_CPP11
 }
 // test.cpp
-SEXP foo59(SEXP x);
-extern "C" SEXP _cpp20_foo59(SEXP x) {
-  BEGIN_CPP11
-    return cpp11::as_sexp(foo59(cpp11::as_cpp<cpp11::decay_t<SEXP>>(x)));
-  END_CPP11
-}
-// test.cpp
 SEXP foo_factor(SEXP x);
 extern "C" SEXP _cpp20_foo_factor(SEXP x) {
   BEGIN_CPP11
@@ -645,27 +316,6 @@ extern "C" SEXP _cpp20_foo_factor2(SEXP x, SEXP levels) {
   END_CPP11
 }
 // test.cpp
-SEXP foo_factor3();
-extern "C" SEXP _cpp20_foo_factor3() {
-  BEGIN_CPP11
-    return cpp11::as_sexp(foo_factor3());
-  END_CPP11
-}
-// test.cpp
-SEXP foo_test();
-extern "C" SEXP _cpp20_foo_test() {
-  BEGIN_CPP11
-    return cpp11::as_sexp(foo_test());
-  END_CPP11
-}
-// test.cpp
-SEXP foo_test2();
-extern "C" SEXP _cpp20_foo_test2() {
-  BEGIN_CPP11
-    return cpp11::as_sexp(foo_test2());
-  END_CPP11
-}
-// test.cpp
 SEXP foo_gcd(SEXP x, bool na_rm);
 extern "C" SEXP _cpp20_foo_gcd(SEXP x, SEXP na_rm) {
   BEGIN_CPP11
@@ -677,20 +327,6 @@ SEXP foo_lcm(SEXP x, bool na_rm);
 extern "C" SEXP _cpp20_foo_lcm(SEXP x, SEXP na_rm) {
   BEGIN_CPP11
     return cpp11::as_sexp(foo_lcm(cpp11::as_cpp<cpp11::decay_t<SEXP>>(x), cpp11::as_cpp<cpp11::decay_t<bool>>(na_rm)));
-  END_CPP11
-}
-// test.cpp
-SEXP foo_range2(SEXP x);
-extern "C" SEXP _cpp20_foo_range2(SEXP x) {
-  BEGIN_CPP11
-    return cpp11::as_sexp(foo_range2(cpp11::as_cpp<cpp11::decay_t<SEXP>>(x)));
-  END_CPP11
-}
-// test.cpp
-SEXP foo_range3(SEXP x);
-extern "C" SEXP _cpp20_foo_range3(SEXP x) {
-  BEGIN_CPP11
-    return cpp11::as_sexp(foo_range3(cpp11::as_cpp<cpp11::decay_t<SEXP>>(x)));
   END_CPP11
 }
 // test.cpp
@@ -722,31 +358,10 @@ extern "C" SEXP _cpp20_foo_sorted_unique(SEXP x) {
   END_CPP11
 }
 // test.cpp
-SEXP foo_unique2(SEXP x);
-extern "C" SEXP _cpp20_foo_unique2(SEXP x) {
-  BEGIN_CPP11
-    return cpp11::as_sexp(foo_unique2(cpp11::as_cpp<cpp11::decay_t<SEXP>>(x)));
-  END_CPP11
-}
-// test.cpp
-SEXP foo_unique_strs(SEXP x);
-extern "C" SEXP _cpp20_foo_unique_strs(SEXP x) {
-  BEGIN_CPP11
-    return cpp11::as_sexp(foo_unique_strs(cpp11::as_cpp<cpp11::decay_t<SEXP>>(x)));
-  END_CPP11
-}
-// test.cpp
 SEXP foo_as_str(SEXP x);
 extern "C" SEXP _cpp20_foo_as_str(SEXP x) {
   BEGIN_CPP11
     return cpp11::as_sexp(foo_as_str(cpp11::as_cpp<cpp11::decay_t<SEXP>>(x)));
-  END_CPP11
-}
-// test.cpp
-SEXP foo_match_unique(SEXP x);
-extern "C" SEXP _cpp20_foo_match_unique(SEXP x) {
-  BEGIN_CPP11
-    return cpp11::as_sexp(foo_match_unique(cpp11::as_cpp<cpp11::decay_t<SEXP>>(x)));
   END_CPP11
 }
 // test.cpp
@@ -768,27 +383,6 @@ SEXP foo_copy(SEXP x);
 extern "C" SEXP _cpp20_foo_copy(SEXP x) {
   BEGIN_CPP11
     return cpp11::as_sexp(foo_copy(cpp11::as_cpp<cpp11::decay_t<SEXP>>(x)));
-  END_CPP11
-}
-// test.cpp
-SEXP foo_copy2(SEXP x);
-extern "C" SEXP _cpp20_foo_copy2(SEXP x) {
-  BEGIN_CPP11
-    return cpp11::as_sexp(foo_copy2(cpp11::as_cpp<cpp11::decay_t<SEXP>>(x)));
-  END_CPP11
-}
-// test.cpp
-SEXP foo_new_int(int n);
-extern "C" SEXP _cpp20_foo_new_int(SEXP n) {
-  BEGIN_CPP11
-    return cpp11::as_sexp(foo_new_int(cpp11::as_cpp<cpp11::decay_t<int>>(n)));
-  END_CPP11
-}
-// test.cpp
-SEXP foo_copy_constructor(SEXP x);
-extern "C" SEXP _cpp20_foo_copy_constructor(SEXP x) {
-  BEGIN_CPP11
-    return cpp11::as_sexp(foo_copy_constructor(cpp11::as_cpp<cpp11::decay_t<SEXP>>(x)));
   END_CPP11
 }
 // test.cpp
@@ -841,45 +435,10 @@ extern "C" SEXP _cpp20_foo_make_vec_test() {
   END_CPP11
 }
 // test.cpp
-SEXP foo_test3(SEXP x, SEXP y);
-extern "C" SEXP _cpp20_foo_test3(SEXP x, SEXP y) {
-  BEGIN_CPP11
-    return cpp11::as_sexp(foo_test3(cpp11::as_cpp<cpp11::decay_t<SEXP>>(x), cpp11::as_cpp<cpp11::decay_t<SEXP>>(y)));
-  END_CPP11
-}
-// test.cpp
-SEXP foo_na_real();
-extern "C" SEXP _cpp20_foo_na_real() {
-  BEGIN_CPP11
-    return cpp11::as_sexp(foo_na_real());
-  END_CPP11
-}
-// test.cpp
 SEXP foofoofoo();
 extern "C" SEXP _cpp20_foofoofoo() {
   BEGIN_CPP11
     return cpp11::as_sexp(foofoofoo());
-  END_CPP11
-}
-// test.cpp
-SEXP foo_subset(SEXP x, SEXP i);
-extern "C" SEXP _cpp20_foo_subset(SEXP x, SEXP i) {
-  BEGIN_CPP11
-    return cpp11::as_sexp(foo_subset(cpp11::as_cpp<cpp11::decay_t<SEXP>>(x), cpp11::as_cpp<cpp11::decay_t<SEXP>>(i)));
-  END_CPP11
-}
-// test.cpp
-SEXP foo_subset2(SEXP x, SEXP i);
-extern "C" SEXP _cpp20_foo_subset2(SEXP x, SEXP i) {
-  BEGIN_CPP11
-    return cpp11::as_sexp(foo_subset2(cpp11::as_cpp<cpp11::decay_t<SEXP>>(x), cpp11::as_cpp<cpp11::decay_t<SEXP>>(i)));
-  END_CPP11
-}
-// test.cpp
-SEXP foo_subset3(SEXP x, SEXP i);
-extern "C" SEXP _cpp20_foo_subset3(SEXP x, SEXP i) {
-  BEGIN_CPP11
-    return cpp11::as_sexp(foo_subset3(cpp11::as_cpp<cpp11::decay_t<SEXP>>(x), cpp11::as_cpp<cpp11::decay_t<SEXP>>(i)));
   END_CPP11
 }
 // test.cpp
@@ -894,13 +453,6 @@ SEXP foo_which_inverted(SEXP x);
 extern "C" SEXP _cpp20_foo_which_inverted(SEXP x) {
   BEGIN_CPP11
     return cpp11::as_sexp(foo_which_inverted(cpp11::as_cpp<cpp11::decay_t<SEXP>>(x)));
-  END_CPP11
-}
-// test.cpp
-SEXP foo_strs();
-extern "C" SEXP _cpp20_foo_strs() {
-  BEGIN_CPP11
-    return cpp11::as_sexp(foo_strs());
   END_CPP11
 }
 // test.cpp
@@ -967,146 +519,90 @@ extern "C" SEXP _cpp20_foo_seqs2(SEXP sizes, SEXP from, SEXP by) {
     return cpp11::as_sexp(foo_seqs2(cpp11::as_cpp<cpp11::decay_t<SEXP>>(sizes), cpp11::as_cpp<cpp11::decay_t<SEXP>>(from), cpp11::as_cpp<cpp11::decay_t<SEXP>>(by)));
   END_CPP11
 }
+// test.cpp
+SEXP foo_test();
+extern "C" SEXP _cpp20_foo_test() {
+  BEGIN_CPP11
+    return cpp11::as_sexp(foo_test());
+  END_CPP11
+}
 
 extern "C" {
 static const R_CallMethodDef CallEntries[] = {
-    {"_cpp20_bar",                  (DL_FUNC) &_cpp20_bar,                  1},
-    {"_cpp20_cpp_set_threads",      (DL_FUNC) &_cpp20_cpp_set_threads,      1},
-    {"_cpp20_dummy",                (DL_FUNC) &_cpp20_dummy,                0},
-    {"_cpp20_foo",                  (DL_FUNC) &_cpp20_foo,                  1},
-    {"_cpp20_foo10",                (DL_FUNC) &_cpp20_foo10,                1},
-    {"_cpp20_foo12",                (DL_FUNC) &_cpp20_foo12,                2},
-    {"_cpp20_foo13",                (DL_FUNC) &_cpp20_foo13,                1},
-    {"_cpp20_foo14",                (DL_FUNC) &_cpp20_foo14,                0},
-    {"_cpp20_foo15",                (DL_FUNC) &_cpp20_foo15,                0},
-    {"_cpp20_foo16",                (DL_FUNC) &_cpp20_foo16,                1},
-    {"_cpp20_foo17",                (DL_FUNC) &_cpp20_foo17,                1},
-    {"_cpp20_foo18",                (DL_FUNC) &_cpp20_foo18,                1},
-    {"_cpp20_foo2",                 (DL_FUNC) &_cpp20_foo2,                 0},
-    {"_cpp20_foo20",                (DL_FUNC) &_cpp20_foo20,                0},
-    {"_cpp20_foo21",                (DL_FUNC) &_cpp20_foo21,                1},
-    {"_cpp20_foo22",                (DL_FUNC) &_cpp20_foo22,                1},
-    {"_cpp20_foo23",                (DL_FUNC) &_cpp20_foo23,                0},
-    {"_cpp20_foo24",                (DL_FUNC) &_cpp20_foo24,                1},
-    {"_cpp20_foo25",                (DL_FUNC) &_cpp20_foo25,                2},
-    {"_cpp20_foo26",                (DL_FUNC) &_cpp20_foo26,                0},
-    {"_cpp20_foo27",                (DL_FUNC) &_cpp20_foo27,                1},
-    {"_cpp20_foo28",                (DL_FUNC) &_cpp20_foo28,                2},
-    {"_cpp20_foo28a",               (DL_FUNC) &_cpp20_foo28a,               2},
-    {"_cpp20_foo28b",               (DL_FUNC) &_cpp20_foo28b,               2},
-    {"_cpp20_foo29",                (DL_FUNC) &_cpp20_foo29,                1},
-    {"_cpp20_foo30",                (DL_FUNC) &_cpp20_foo30,                0},
-    {"_cpp20_foo31",                (DL_FUNC) &_cpp20_foo31,                0},
-    {"_cpp20_foo32",                (DL_FUNC) &_cpp20_foo32,                0},
-    {"_cpp20_foo33",                (DL_FUNC) &_cpp20_foo33,                0},
-    {"_cpp20_foo34",                (DL_FUNC) &_cpp20_foo34,                0},
-    {"_cpp20_foo35",                (DL_FUNC) &_cpp20_foo35,                0},
-    {"_cpp20_foo36",                (DL_FUNC) &_cpp20_foo36,                1},
-    {"_cpp20_foo39",                (DL_FUNC) &_cpp20_foo39,                2},
-    {"_cpp20_foo4",                 (DL_FUNC) &_cpp20_foo4,                 1},
-    {"_cpp20_foo40",                (DL_FUNC) &_cpp20_foo40,                2},
-    {"_cpp20_foo41",                (DL_FUNC) &_cpp20_foo41,                1},
-    {"_cpp20_foo42",                (DL_FUNC) &_cpp20_foo42,                1},
-    {"_cpp20_foo43",                (DL_FUNC) &_cpp20_foo43,                1},
-    {"_cpp20_foo44",                (DL_FUNC) &_cpp20_foo44,                1},
-    {"_cpp20_foo46",                (DL_FUNC) &_cpp20_foo46,                0},
-    {"_cpp20_foo47",                (DL_FUNC) &_cpp20_foo47,                1},
-    {"_cpp20_foo48",                (DL_FUNC) &_cpp20_foo48,                1},
-    {"_cpp20_foo49",                (DL_FUNC) &_cpp20_foo49,                2},
-    {"_cpp20_foo5",                 (DL_FUNC) &_cpp20_foo5,                 1},
-    {"_cpp20_foo50",                (DL_FUNC) &_cpp20_foo50,                2},
-    {"_cpp20_foo51",                (DL_FUNC) &_cpp20_foo51,                1},
-    {"_cpp20_foo52",                (DL_FUNC) &_cpp20_foo52,                0},
-    {"_cpp20_foo53",                (DL_FUNC) &_cpp20_foo53,                0},
-    {"_cpp20_foo54",                (DL_FUNC) &_cpp20_foo54,                1},
-    {"_cpp20_foo55",                (DL_FUNC) &_cpp20_foo55,                2},
-    {"_cpp20_foo56",                (DL_FUNC) &_cpp20_foo56,                2},
-    {"_cpp20_foo57",                (DL_FUNC) &_cpp20_foo57,                2},
-    {"_cpp20_foo58",                (DL_FUNC) &_cpp20_foo58,                1},
-    {"_cpp20_foo59",                (DL_FUNC) &_cpp20_foo59,                1},
-    {"_cpp20_foo6",                 (DL_FUNC) &_cpp20_foo6,                 1},
-    {"_cpp20_foo7",                 (DL_FUNC) &_cpp20_foo7,                 1},
-    {"_cpp20_foo8",                 (DL_FUNC) &_cpp20_foo8,                 0},
-    {"_cpp20_foo9",                 (DL_FUNC) &_cpp20_foo9,                 0},
-    {"_cpp20_foo_add",              (DL_FUNC) &_cpp20_foo_add,              1},
-    {"_cpp20_foo_add1",             (DL_FUNC) &_cpp20_foo_add1,             2},
-    {"_cpp20_foo_all_whole",        (DL_FUNC) &_cpp20_foo_all_whole,        1},
-    {"_cpp20_foo_as_str",           (DL_FUNC) &_cpp20_foo_as_str,           1},
-    {"_cpp20_foo_asint64",          (DL_FUNC) &_cpp20_foo_asint64,          1},
-    {"_cpp20_foo_attrs",            (DL_FUNC) &_cpp20_foo_attrs,            1},
-    {"_cpp20_foo_between",          (DL_FUNC) &_cpp20_foo_between,          3},
-    {"_cpp20_foo_copy",             (DL_FUNC) &_cpp20_foo_copy,             1},
-    {"_cpp20_foo_copy2",            (DL_FUNC) &_cpp20_foo_copy2,            1},
-    {"_cpp20_foo_copy_constructor", (DL_FUNC) &_cpp20_foo_copy_constructor, 1},
-    {"_cpp20_foo_factor",           (DL_FUNC) &_cpp20_foo_factor,           1},
-    {"_cpp20_foo_factor2",          (DL_FUNC) &_cpp20_foo_factor2,          2},
-    {"_cpp20_foo_factor3",          (DL_FUNC) &_cpp20_foo_factor3,          0},
-    {"_cpp20_foo_gcd",              (DL_FUNC) &_cpp20_foo_gcd,              2},
-    {"_cpp20_foo_group_id",         (DL_FUNC) &_cpp20_foo_group_id,         1},
-    {"_cpp20_foo_group_id2",        (DL_FUNC) &_cpp20_foo_group_id2,        1},
-    {"_cpp20_foo_group_starts",     (DL_FUNC) &_cpp20_foo_group_starts,     3},
-    {"_cpp20_foo_groups_sorted",    (DL_FUNC) &_cpp20_foo_groups_sorted,    1},
-    {"_cpp20_foo_is_na",            (DL_FUNC) &_cpp20_foo_is_na,            1},
-    {"_cpp20_foo_lcm",              (DL_FUNC) &_cpp20_foo_lcm,              2},
-    {"_cpp20_foo_lgl",              (DL_FUNC) &_cpp20_foo_lgl,              0},
-    {"_cpp20_foo_make_list",        (DL_FUNC) &_cpp20_foo_make_list,        0},
-    {"_cpp20_foo_make_list2",       (DL_FUNC) &_cpp20_foo_make_list2,       0},
-    {"_cpp20_foo_make_vec_test",    (DL_FUNC) &_cpp20_foo_make_vec_test,    0},
-    {"_cpp20_foo_match",            (DL_FUNC) &_cpp20_foo_match,            2},
-    {"_cpp20_foo_match_unique",     (DL_FUNC) &_cpp20_foo_match_unique,     1},
-    {"_cpp20_foo_mean",             (DL_FUNC) &_cpp20_foo_mean,             2},
-    {"_cpp20_foo_n_groups",         (DL_FUNC) &_cpp20_foo_n_groups,         1},
-    {"_cpp20_foo_na_count",         (DL_FUNC) &_cpp20_foo_na_count,         1},
-    {"_cpp20_foo_na_real",          (DL_FUNC) &_cpp20_foo_na_real,          0},
-    {"_cpp20_foo_new_int",          (DL_FUNC) &_cpp20_foo_new_int,          1},
-    {"_cpp20_foo_order",            (DL_FUNC) &_cpp20_foo_order,            1},
-    {"_cpp20_foo_range",            (DL_FUNC) &_cpp20_foo_range,            2},
-    {"_cpp20_foo_range2",           (DL_FUNC) &_cpp20_foo_range2,           1},
-    {"_cpp20_foo_range3",           (DL_FUNC) &_cpp20_foo_range3,           1},
-    {"_cpp20_foo_remainder",        (DL_FUNC) &_cpp20_foo_remainder,        0},
-    {"_cpp20_foo_rep_len",          (DL_FUNC) &_cpp20_foo_rep_len,          2},
-    {"_cpp20_foo_seqs",             (DL_FUNC) &_cpp20_foo_seqs,             3},
-    {"_cpp20_foo_seqs2",            (DL_FUNC) &_cpp20_foo_seqs2,            3},
-    {"_cpp20_foo_sorted",           (DL_FUNC) &_cpp20_foo_sorted,           1},
-    {"_cpp20_foo_sorted_unique",    (DL_FUNC) &_cpp20_foo_sorted_unique,    1},
-    {"_cpp20_foo_sset",             (DL_FUNC) &_cpp20_foo_sset,             2},
-    {"_cpp20_foo_stable_order",     (DL_FUNC) &_cpp20_foo_stable_order,     1},
-    {"_cpp20_foo_str_vectors",      (DL_FUNC) &_cpp20_foo_str_vectors,      1},
-    {"_cpp20_foo_strs",             (DL_FUNC) &_cpp20_foo_strs,             0},
-    {"_cpp20_foo_subset",           (DL_FUNC) &_cpp20_foo_subset,           2},
-    {"_cpp20_foo_subset2",          (DL_FUNC) &_cpp20_foo_subset2,          2},
-    {"_cpp20_foo_subset3",          (DL_FUNC) &_cpp20_foo_subset3,          2},
-    {"_cpp20_foo_sum",              (DL_FUNC) &_cpp20_foo_sum,              2},
-    {"_cpp20_foo_sum_int",          (DL_FUNC) &_cpp20_foo_sum_int,          2},
-    {"_cpp20_foo_test",             (DL_FUNC) &_cpp20_foo_test,             0},
-    {"_cpp20_foo_test2",            (DL_FUNC) &_cpp20_foo_test2,            0},
-    {"_cpp20_foo_test3",            (DL_FUNC) &_cpp20_foo_test3,            2},
-    {"_cpp20_foo_unique",           (DL_FUNC) &_cpp20_foo_unique,           1},
-    {"_cpp20_foo_unique2",          (DL_FUNC) &_cpp20_foo_unique2,          1},
-    {"_cpp20_foo_unique_strs",      (DL_FUNC) &_cpp20_foo_unique_strs,      1},
-    {"_cpp20_foo_var",              (DL_FUNC) &_cpp20_foo_var,              2},
-    {"_cpp20_foo_vec_add",          (DL_FUNC) &_cpp20_foo_vec_add,          1},
-    {"_cpp20_foo_vec_add2",         (DL_FUNC) &_cpp20_foo_vec_add2,         1},
-    {"_cpp20_foo_vec_add3",         (DL_FUNC) &_cpp20_foo_vec_add3,         1},
-    {"_cpp20_foo_vec_add4",         (DL_FUNC) &_cpp20_foo_vec_add4,         2},
-    {"_cpp20_foo_vec_add5",         (DL_FUNC) &_cpp20_foo_vec_add5,         2},
-    {"_cpp20_foo_vec_add6",         (DL_FUNC) &_cpp20_foo_vec_add6,         2},
-    {"_cpp20_foo_vec_add7",         (DL_FUNC) &_cpp20_foo_vec_add7,         1},
-    {"_cpp20_foo_vec_divide",       (DL_FUNC) &_cpp20_foo_vec_divide,       2},
-    {"_cpp20_foo_vec_mod",          (DL_FUNC) &_cpp20_foo_vec_mod,          1},
-    {"_cpp20_foo_vec_mod2",         (DL_FUNC) &_cpp20_foo_vec_mod2,         1},
-    {"_cpp20_foo_vec_mod3",         (DL_FUNC) &_cpp20_foo_vec_mod3,         1},
-    {"_cpp20_foo_vec_mod4",         (DL_FUNC) &_cpp20_foo_vec_mod4,         1},
-    {"_cpp20_foo_vec_multiply",     (DL_FUNC) &_cpp20_foo_vec_multiply,     2},
-    {"_cpp20_foo_vec_subtract",     (DL_FUNC) &_cpp20_foo_vec_subtract,     2},
-    {"_cpp20_foo_which",            (DL_FUNC) &_cpp20_foo_which,            1},
-    {"_cpp20_foo_which_inverted",   (DL_FUNC) &_cpp20_foo_which_inverted,   1},
-    {"_cpp20_foobar",               (DL_FUNC) &_cpp20_foobar,               1},
-    {"_cpp20_foofoo",               (DL_FUNC) &_cpp20_foofoo,               0},
-    {"_cpp20_foofoofoo",            (DL_FUNC) &_cpp20_foofoofoo,            0},
-    {"_cpp20_ok",                   (DL_FUNC) &_cpp20_ok,                   0},
-    {"_cpp20_test1",                (DL_FUNC) &_cpp20_test1,                0},
-    {"_cpp20_yeah",                 (DL_FUNC) &_cpp20_yeah,                 1},
+    {"_cpp20_bar",                (DL_FUNC) &_cpp20_bar,                1},
+    {"_cpp20_cpp_set_threads",    (DL_FUNC) &_cpp20_cpp_set_threads,    1},
+    {"_cpp20_dummy",              (DL_FUNC) &_cpp20_dummy,              0},
+    {"_cpp20_foo",                (DL_FUNC) &_cpp20_foo,                1},
+    {"_cpp20_foo12",              (DL_FUNC) &_cpp20_foo12,              2},
+    {"_cpp20_foo14",              (DL_FUNC) &_cpp20_foo14,              0},
+    {"_cpp20_foo26",              (DL_FUNC) &_cpp20_foo26,              0},
+    {"_cpp20_foo27",              (DL_FUNC) &_cpp20_foo27,              1},
+    {"_cpp20_foo28a",             (DL_FUNC) &_cpp20_foo28a,             2},
+    {"_cpp20_foo28b",             (DL_FUNC) &_cpp20_foo28b,             2},
+    {"_cpp20_foo30",              (DL_FUNC) &_cpp20_foo30,              0},
+    {"_cpp20_foo39",              (DL_FUNC) &_cpp20_foo39,              2},
+    {"_cpp20_foo40",              (DL_FUNC) &_cpp20_foo40,              2},
+    {"_cpp20_foo41",              (DL_FUNC) &_cpp20_foo41,              1},
+    {"_cpp20_foo42",              (DL_FUNC) &_cpp20_foo42,              1},
+    {"_cpp20_foo43",              (DL_FUNC) &_cpp20_foo43,              1},
+    {"_cpp20_foo44",              (DL_FUNC) &_cpp20_foo44,              1},
+    {"_cpp20_foo48",              (DL_FUNC) &_cpp20_foo48,              1},
+    {"_cpp20_foo49",              (DL_FUNC) &_cpp20_foo49,              2},
+    {"_cpp20_foo50",              (DL_FUNC) &_cpp20_foo50,              2},
+    {"_cpp20_foo51",              (DL_FUNC) &_cpp20_foo51,              1},
+    {"_cpp20_foo54",              (DL_FUNC) &_cpp20_foo54,              1},
+    {"_cpp20_foo6",               (DL_FUNC) &_cpp20_foo6,               1},
+    {"_cpp20_foo7",               (DL_FUNC) &_cpp20_foo7,               1},
+    {"_cpp20_foo9",               (DL_FUNC) &_cpp20_foo9,               0},
+    {"_cpp20_foo_add",            (DL_FUNC) &_cpp20_foo_add,            1},
+    {"_cpp20_foo_add1",           (DL_FUNC) &_cpp20_foo_add1,           2},
+    {"_cpp20_foo_all_whole",      (DL_FUNC) &_cpp20_foo_all_whole,      1},
+    {"_cpp20_foo_as_str",         (DL_FUNC) &_cpp20_foo_as_str,         1},
+    {"_cpp20_foo_asint64",        (DL_FUNC) &_cpp20_foo_asint64,        1},
+    {"_cpp20_foo_attrs",          (DL_FUNC) &_cpp20_foo_attrs,          1},
+    {"_cpp20_foo_between",        (DL_FUNC) &_cpp20_foo_between,        3},
+    {"_cpp20_foo_copy",           (DL_FUNC) &_cpp20_foo_copy,           1},
+    {"_cpp20_foo_factor",         (DL_FUNC) &_cpp20_foo_factor,         1},
+    {"_cpp20_foo_factor2",        (DL_FUNC) &_cpp20_foo_factor2,        2},
+    {"_cpp20_foo_gcd",            (DL_FUNC) &_cpp20_foo_gcd,            2},
+    {"_cpp20_foo_group_id",       (DL_FUNC) &_cpp20_foo_group_id,       1},
+    {"_cpp20_foo_group_id2",      (DL_FUNC) &_cpp20_foo_group_id2,      1},
+    {"_cpp20_foo_group_starts",   (DL_FUNC) &_cpp20_foo_group_starts,   3},
+    {"_cpp20_foo_groups_sorted",  (DL_FUNC) &_cpp20_foo_groups_sorted,  1},
+    {"_cpp20_foo_is_na",          (DL_FUNC) &_cpp20_foo_is_na,          1},
+    {"_cpp20_foo_lcm",            (DL_FUNC) &_cpp20_foo_lcm,            2},
+    {"_cpp20_foo_lgl",            (DL_FUNC) &_cpp20_foo_lgl,            0},
+    {"_cpp20_foo_make_vec_test",  (DL_FUNC) &_cpp20_foo_make_vec_test,  0},
+    {"_cpp20_foo_match",          (DL_FUNC) &_cpp20_foo_match,          2},
+    {"_cpp20_foo_mean",           (DL_FUNC) &_cpp20_foo_mean,           2},
+    {"_cpp20_foo_n_groups",       (DL_FUNC) &_cpp20_foo_n_groups,       1},
+    {"_cpp20_foo_na_count",       (DL_FUNC) &_cpp20_foo_na_count,       1},
+    {"_cpp20_foo_order",          (DL_FUNC) &_cpp20_foo_order,          1},
+    {"_cpp20_foo_range",          (DL_FUNC) &_cpp20_foo_range,          2},
+    {"_cpp20_foo_remainder",      (DL_FUNC) &_cpp20_foo_remainder,      0},
+    {"_cpp20_foo_rep_len",        (DL_FUNC) &_cpp20_foo_rep_len,        2},
+    {"_cpp20_foo_seqs",           (DL_FUNC) &_cpp20_foo_seqs,           3},
+    {"_cpp20_foo_seqs2",          (DL_FUNC) &_cpp20_foo_seqs2,          3},
+    {"_cpp20_foo_sorted",         (DL_FUNC) &_cpp20_foo_sorted,         1},
+    {"_cpp20_foo_sorted_unique",  (DL_FUNC) &_cpp20_foo_sorted_unique,  1},
+    {"_cpp20_foo_sset",           (DL_FUNC) &_cpp20_foo_sset,           2},
+    {"_cpp20_foo_stable_order",   (DL_FUNC) &_cpp20_foo_stable_order,   1},
+    {"_cpp20_foo_str_vectors",    (DL_FUNC) &_cpp20_foo_str_vectors,    1},
+    {"_cpp20_foo_sum",            (DL_FUNC) &_cpp20_foo_sum,            2},
+    {"_cpp20_foo_sum_int",        (DL_FUNC) &_cpp20_foo_sum_int,        2},
+    {"_cpp20_foo_test",           (DL_FUNC) &_cpp20_foo_test,           0},
+    {"_cpp20_foo_unique",         (DL_FUNC) &_cpp20_foo_unique,         1},
+    {"_cpp20_foo_var",            (DL_FUNC) &_cpp20_foo_var,            2},
+    {"_cpp20_foo_vec_add",        (DL_FUNC) &_cpp20_foo_vec_add,        2},
+    {"_cpp20_foo_vec_divide",     (DL_FUNC) &_cpp20_foo_vec_divide,     2},
+    {"_cpp20_foo_vec_multiply",   (DL_FUNC) &_cpp20_foo_vec_multiply,   2},
+    {"_cpp20_foo_vec_subtract",   (DL_FUNC) &_cpp20_foo_vec_subtract,   2},
+    {"_cpp20_foo_which",          (DL_FUNC) &_cpp20_foo_which,          1},
+    {"_cpp20_foo_which_inverted", (DL_FUNC) &_cpp20_foo_which_inverted, 1},
+    {"_cpp20_foobar",             (DL_FUNC) &_cpp20_foobar,             1},
+    {"_cpp20_foofoo",             (DL_FUNC) &_cpp20_foofoo,             0},
+    {"_cpp20_foofoofoo",          (DL_FUNC) &_cpp20_foofoofoo,          0},
+    {"_cpp20_test1",              (DL_FUNC) &_cpp20_test1,              0},
     {NULL, NULL, 0}
 };
 }

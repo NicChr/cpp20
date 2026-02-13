@@ -24,26 +24,6 @@ foofoo <- function() {
   .Call(`_cpp20_foofoo`)
 }
 
-ok <- function() {
-  .Call(`_cpp20_ok`)
-}
-
-yeah <- function(x) {
-  .Call(`_cpp20_yeah`, x)
-}
-
-foo2 <- function() {
-  .Call(`_cpp20_foo2`)
-}
-
-foo4 <- function(x) {
-  .Call(`_cpp20_foo4`, x)
-}
-
-foo5 <- function(x) {
-  .Call(`_cpp20_foo5`, x)
-}
-
 foo6 <- function(x) {
   .Call(`_cpp20_foo6`, x)
 }
@@ -52,16 +32,8 @@ foo7 <- function(x) {
   .Call(`_cpp20_foo7`, x)
 }
 
-foo8 <- function() {
-  .Call(`_cpp20_foo8`)
-}
-
 foo9 <- function() {
   .Call(`_cpp20_foo9`)
-}
-
-foo10 <- function(x) {
-  .Call(`_cpp20_foo10`, x)
 }
 
 foo_attrs <- function(x) {
@@ -72,52 +44,8 @@ foo12 <- function(x, attrs) {
   .Call(`_cpp20_foo12`, x, attrs)
 }
 
-foo13 <- function(x) {
-  .Call(`_cpp20_foo13`, x)
-}
-
 foo14 <- function() {
   .Call(`_cpp20_foo14`)
-}
-
-foo15 <- function() {
-  .Call(`_cpp20_foo15`)
-}
-
-foo16 <- function(x) {
-  .Call(`_cpp20_foo16`, x)
-}
-
-foo17 <- function(x) {
-  .Call(`_cpp20_foo17`, x)
-}
-
-foo18 <- function(x) {
-  .Call(`_cpp20_foo18`, x)
-}
-
-foo20 <- function() {
-  .Call(`_cpp20_foo20`)
-}
-
-foo21 <- function(n) {
-  .Call(`_cpp20_foo21`, n)
-}
-
-foo22 <- function(cols) {
-  .Call(`_cpp20_foo22`, cols)
-}
-
-foo23 <- function() {
-  .Call(`_cpp20_foo23`)
-}
-
-foo24 <- function(cols) {
-  .Call(`_cpp20_foo24`, cols)
-}
-
-foo25 <- function(cols, x) {
-  .Call(`_cpp20_foo25`, cols, x)
 }
 
 foo26 <- function() {
@@ -128,10 +56,6 @@ foo27 <- function(cols) {
   .Call(`_cpp20_foo27`, cols)
 }
 
-foo28 <- function(x, y) {
-  .Call(`_cpp20_foo28`, x, y)
-}
-
 foo28a <- function(x, y) {
   .Call(`_cpp20_foo28a`, x, y)
 }
@@ -140,36 +64,8 @@ foo28b <- function(x, y) {
   .Call(`_cpp20_foo28b`, x, y)
 }
 
-foo29 <- function(x) {
-  .Call(`_cpp20_foo29`, x)
-}
-
 foo30 <- function() {
   .Call(`_cpp20_foo30`)
-}
-
-foo31 <- function() {
-  .Call(`_cpp20_foo31`)
-}
-
-foo32 <- function() {
-  .Call(`_cpp20_foo32`)
-}
-
-foo33 <- function() {
-  .Call(`_cpp20_foo33`)
-}
-
-foo34 <- function() {
-  .Call(`_cpp20_foo34`)
-}
-
-foo35 <- function() {
-  .Call(`_cpp20_foo35`)
-}
-
-foo36 <- function(n) {
-  .Call(`_cpp20_foo36`, n)
 }
 
 foo_rep_len <- function(x, n) {
@@ -228,14 +124,6 @@ foo44 <- function(x) {
   .Call(`_cpp20_foo44`, x)
 }
 
-foo46 <- function() {
-  .Call(`_cpp20_foo46`)
-}
-
-foo47 <- function(n) {
-  .Call(`_cpp20_foo47`, n)
-}
-
 foo48 <- function(x) {
   .Call(`_cpp20_foo48`, x)
 }
@@ -252,40 +140,8 @@ foo51 <- function(x) {
   .Call(`_cpp20_foo51`, x)
 }
 
-foo52 <- function() {
-  .Call(`_cpp20_foo52`)
-}
-
-foo53 <- function() {
-  .Call(`_cpp20_foo53`)
-}
-
 foo54 <- function(x) {
   .Call(`_cpp20_foo54`, x)
-}
-
-foo55 <- function(x, y) {
-  .Call(`_cpp20_foo55`, x, y)
-}
-
-foo56 <- function(x, y) {
-  .Call(`_cpp20_foo56`, x, y)
-}
-
-foo57 <- function(x, y) {
-  .Call(`_cpp20_foo57`, x, y)
-}
-
-foo58 <- function(x) {
-  .Call(`_cpp20_foo58`, x)
-}
-
-foo_make_list <- function() {
-  .Call(`_cpp20_foo_make_list`)
-}
-
-foo_make_list2 <- function() {
-  .Call(`_cpp20_foo_make_list2`)
 }
 
 foo_add1 <- function(x, y) {
@@ -296,48 +152,8 @@ foo_add <- function(x) {
   .Call(`_cpp20_foo_add`, x)
 }
 
-foo_vec_add <- function(x) {
-  .Call(`_cpp20_foo_vec_add`, x)
-}
-
-foo_vec_add2 <- function(x) {
-  .Call(`_cpp20_foo_vec_add2`, x)
-}
-
-foo_vec_add3 <- function(x) {
-  .Call(`_cpp20_foo_vec_add3`, x)
-}
-
-foo_vec_add4 <- function(x, y) {
-  .Call(`_cpp20_foo_vec_add4`, x, y)
-}
-
-foo_vec_add5 <- function(x, y) {
-  .Call(`_cpp20_foo_vec_add5`, x, y)
-}
-
-foo_vec_add6 <- function(x, y) {
-  .Call(`_cpp20_foo_vec_add6`, x, y)
-}
-
-foo_vec_add7 <- function(x) {
-  .Call(`_cpp20_foo_vec_add7`, x)
-}
-
-foo_vec_mod <- function(x) {
-  .Call(`_cpp20_foo_vec_mod`, x)
-}
-
-foo_vec_mod2 <- function(x) {
-  .Call(`_cpp20_foo_vec_mod2`, x)
-}
-
-foo_vec_mod3 <- function(x) {
-  .Call(`_cpp20_foo_vec_mod3`, x)
-}
-
-foo_vec_mod4 <- function(x) {
-  .Call(`_cpp20_foo_vec_mod4`, x)
+foo_vec_add <- function(x, y) {
+  .Call(`_cpp20_foo_vec_add`, x, y)
 }
 
 foo_vec_subtract <- function(x, y) {
@@ -352,10 +168,6 @@ foo_vec_divide <- function(x, y) {
   .Call(`_cpp20_foo_vec_divide`, x, y)
 }
 
-foo59 <- function(x) {
-  .Call(`_cpp20_foo59`, x)
-}
-
 foo_factor <- function(x) {
   .Call(`_cpp20_foo_factor`, x)
 }
@@ -364,32 +176,12 @@ foo_factor2 <- function(x, levels) {
   .Call(`_cpp20_foo_factor2`, x, levels)
 }
 
-foo_factor3 <- function() {
-  .Call(`_cpp20_foo_factor3`)
-}
-
-foo_test <- function() {
-  .Call(`_cpp20_foo_test`)
-}
-
-foo_test2 <- function() {
-  .Call(`_cpp20_foo_test2`)
-}
-
 foo_gcd <- function(x, na_rm) {
   .Call(`_cpp20_foo_gcd`, x, na_rm)
 }
 
 foo_lcm <- function(x, na_rm) {
   .Call(`_cpp20_foo_lcm`, x, na_rm)
-}
-
-foo_range2 <- function(x) {
-  .Call(`_cpp20_foo_range2`, x)
-}
-
-foo_range3 <- function(x) {
-  .Call(`_cpp20_foo_range3`, x)
 }
 
 foo_sset <- function(x, i) {
@@ -408,20 +200,8 @@ foo_sorted_unique <- function(x) {
   .Call(`_cpp20_foo_sorted_unique`, x)
 }
 
-foo_unique2 <- function(x) {
-  .Call(`_cpp20_foo_unique2`, x)
-}
-
-foo_unique_strs <- function(x) {
-  .Call(`_cpp20_foo_unique_strs`, x)
-}
-
 foo_as_str <- function(x) {
   .Call(`_cpp20_foo_as_str`, x)
-}
-
-foo_match_unique <- function(x) {
-  .Call(`_cpp20_foo_match_unique`, x)
 }
 
 foo_match <- function(x, table) {
@@ -434,18 +214,6 @@ foo_all_whole <- function(x) {
 
 foo_copy <- function(x) {
   .Call(`_cpp20_foo_copy`, x)
-}
-
-foo_copy2 <- function(x) {
-  .Call(`_cpp20_foo_copy2`, x)
-}
-
-foo_new_int <- function(n) {
-  .Call(`_cpp20_foo_new_int`, n)
-}
-
-foo_copy_constructor <- function(x) {
-  .Call(`_cpp20_foo_copy_constructor`, x)
 }
 
 foo_group_id <- function(x) {
@@ -476,28 +244,8 @@ foo_make_vec_test <- function() {
   .Call(`_cpp20_foo_make_vec_test`)
 }
 
-foo_test3 <- function(x, y) {
-  .Call(`_cpp20_foo_test3`, x, y)
-}
-
-foo_na_real <- function() {
-  .Call(`_cpp20_foo_na_real`)
-}
-
 foofoofoo <- function() {
   .Call(`_cpp20_foofoofoo`)
-}
-
-foo_subset <- function(x, i) {
-  .Call(`_cpp20_foo_subset`, x, i)
-}
-
-foo_subset2 <- function(x, i) {
-  .Call(`_cpp20_foo_subset2`, x, i)
-}
-
-foo_subset3 <- function(x, i) {
-  .Call(`_cpp20_foo_subset3`, x, i)
 }
 
 foo_which <- function(x) {
@@ -506,10 +254,6 @@ foo_which <- function(x) {
 
 foo_which_inverted <- function(x) {
   .Call(`_cpp20_foo_which_inverted`, x)
-}
-
-foo_strs <- function() {
-  .Call(`_cpp20_foo_strs`)
 }
 
 foo_asint64 <- function(x) {
@@ -546,4 +290,8 @@ foo_seqs <- function(sizes, from, by) {
 
 foo_seqs2 <- function(sizes, from, by) {
   .Call(`_cpp20_foo_seqs2`, sizes, from, by)
+}
+
+foo_test <- function() {
+  .Call(`_cpp20_foo_test`)
 }
