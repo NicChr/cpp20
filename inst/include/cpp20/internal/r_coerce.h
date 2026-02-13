@@ -8,7 +8,7 @@
 
 namespace cpp20 {
 
-// Powerful and flexible coercion function that can handle many types and convert to R-spcific C++ types and R vectors
+// Powerful and flexible coercion function that can handle many types and convert to R-specific C++ types and R vectors
 template<typename T, typename U>
   requires (RVal<T> || RVector<T> || any<T, r_sexp, SEXP, r_factors>)
 inline T as(U x) {
