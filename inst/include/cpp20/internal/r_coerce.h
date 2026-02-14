@@ -10,7 +10,6 @@ namespace cpp20 {
 
 // Powerful and flexible coercion function that can handle many types and convert to R-specific C++ types and R vectors
 template<typename T, typename U>
-  requires (RVal<T> || RVector<T> || any<T, r_sexp, SEXP, r_factors>)
 inline T as(U x) {
   if constexpr (is<U, T>){
     return x;
@@ -67,6 +66,8 @@ inline T as(U x) {
     // If input is not an R type or an R vector type
   } else if constexpr (!RVal<U> && !RVector<U>){
     return as<T>(as_r_val(x));
+  } else if constexpr (CastableToRVal<T>){
+    return static_cast<T>(as<as_r_val_t<T>>(x));
   } else {
     static_assert(always_false<T>, "Unsupported type for `as`");
   }
