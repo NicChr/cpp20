@@ -15,13 +15,21 @@ inline T as(U x) {
     return x;
   } else if constexpr (RVector<U> && is<T, r_sexp>){
     return x.sexp;
-  } else if constexpr (RVector<T> && any<U, SEXP, r_sexp>){
+  } else if constexpr (RVector<T> && is_sexp<U>){
     return internal::visit_vector(x, [&](auto xvec) -> T {
       // This will trigger the branch that checks that both are RVector
       return as<T>(xvec);
     });
-  } else if constexpr (RVal<T> && any<U, SEXP, r_sexp>){
-    return internal::visit_vector(x, [&](auto xvec) -> T {
+  } else if constexpr (is_sexp<T> && is_sexp<U>){
+    if constexpr (is<T, r_sexp>){
+      // SEXP -> r_sexp
+      return r_sexp(x);
+    } else {
+      // r_sexp -> SEXP
+      return static_cast<SEXP>(x);
+    }
+  } else if constexpr (RVal<T> && is_sexp<U>){
+    return internal::visit_maybe_vector(x, [&](auto xvec) -> T {
       // Use branch below current branch
       return as<T>(xvec);
     });
