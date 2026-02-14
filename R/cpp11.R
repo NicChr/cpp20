@@ -136,10 +136,6 @@ foo50 <- function(x, na_rm) {
   .Call(`_cpp20_foo50`, x, na_rm)
 }
 
-foo51 <- function(x) {
-  .Call(`_cpp20_foo51`, x)
-}
-
 foo54 <- function(x) {
   .Call(`_cpp20_foo54`, x)
 }
@@ -298,4 +294,8 @@ foo_seqs2 <- function(sizes, from, by) {
 
 foo_test <- function() {
   .Call(`_cpp20_foo_test`)
+}
+
+foo_abs <- function(x) {
+  .Call(`_cpp20_foo_abs`, x)
 }

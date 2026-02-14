@@ -246,13 +246,6 @@ extern "C" SEXP _cpp20_foo50(SEXP x, SEXP na_rm) {
   END_CPP11
 }
 // test.cpp
-SEXP foo51(SEXP x);
-extern "C" SEXP _cpp20_foo51(SEXP x) {
-  BEGIN_CPP11
-    return cpp11::as_sexp(foo51(cpp11::as_cpp<cpp11::decay_t<SEXP>>(x)));
-  END_CPP11
-}
-// test.cpp
 SEXP foo54(SEXP x);
 extern "C" SEXP _cpp20_foo54(SEXP x) {
   BEGIN_CPP11
@@ -533,6 +526,13 @@ extern "C" SEXP _cpp20_foo_test() {
     return cpp11::as_sexp(foo_test());
   END_CPP11
 }
+// test.cpp
+SEXP foo_abs(SEXP x);
+extern "C" SEXP _cpp20_foo_abs(SEXP x) {
+  BEGIN_CPP11
+    return cpp11::as_sexp(foo_abs(cpp11::as_cpp<cpp11::decay_t<SEXP>>(x)));
+  END_CPP11
+}
 
 extern "C" {
 static const R_CallMethodDef CallEntries[] = {
@@ -556,11 +556,11 @@ static const R_CallMethodDef CallEntries[] = {
     {"_cpp20_foo48",              (DL_FUNC) &_cpp20_foo48,              1},
     {"_cpp20_foo49",              (DL_FUNC) &_cpp20_foo49,              2},
     {"_cpp20_foo50",              (DL_FUNC) &_cpp20_foo50,              2},
-    {"_cpp20_foo51",              (DL_FUNC) &_cpp20_foo51,              1},
     {"_cpp20_foo54",              (DL_FUNC) &_cpp20_foo54,              1},
     {"_cpp20_foo6",               (DL_FUNC) &_cpp20_foo6,               1},
     {"_cpp20_foo7",               (DL_FUNC) &_cpp20_foo7,               1},
     {"_cpp20_foo9",               (DL_FUNC) &_cpp20_foo9,               0},
+    {"_cpp20_foo_abs",            (DL_FUNC) &_cpp20_foo_abs,            1},
     {"_cpp20_foo_add",            (DL_FUNC) &_cpp20_foo_add,            1},
     {"_cpp20_foo_add1",           (DL_FUNC) &_cpp20_foo_add1,           2},
     {"_cpp20_foo_all_whole",      (DL_FUNC) &_cpp20_foo_all_whole,      1},

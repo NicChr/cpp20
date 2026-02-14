@@ -16,8 +16,7 @@ inline r_dbl round_to_even(r_dbl x){
 }
 
 // Constexpr version of std::abs
-template<typename T>
-requires (!RVal<T>)
+template<CppMathType T>
 inline constexpr T cpp_abs(T v) {
     return (v < 0) ? -v : v;
 }

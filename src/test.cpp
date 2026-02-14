@@ -359,14 +359,6 @@ SEXP foo50(SEXP x, bool na_rm){
 
 
 [[cpp11::register]]
-SEXP foo51(SEXP x){
-  r_vec<r_int> x_ = r_vec<r_int>(x);
-  return abs(x_);
-}
-
-
-
-[[cpp11::register]]
 SEXP foo54(SEXP x){
   auto y = r_vec<r_int>(x);
   return as_r_val(y);
@@ -773,4 +765,16 @@ SEXP foo_seqs2(SEXP sizes, SEXP from, SEXP by){
 [[cpp11::register]]
 SEXP foo_test(){
   return as<r_sexp>(int(1));
+}
+
+[[cpp11::register]]
+SEXP foo_abs(SEXP x){
+  return internal::visit_vector(x, [&](auto xvec) -> SEXP {
+    using data_t = typename decltype(xvec)::data_type;
+    if constexpr (RMathType<data_t>){
+      return abs(xvec);
+    } else {
+      return r_null;
+    }
+  });
 }
