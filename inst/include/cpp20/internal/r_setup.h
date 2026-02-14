@@ -1,22 +1,23 @@
 #ifndef CPP20_R_SETUP_H
 #define CPP20_R_SETUP_H
 
+#ifndef R_NO_REMAP
+#define R_NO_REMAP 
+#endif
+
+#include <cpp11/sexp.hpp>
 #include <type_traits>
 #include <ankerl/unordered_dense.h> // Unique + match
 #include <cstring> // For strcmp
 #include <complex>
 #include <limits>
 #include <vector>
-#include <cpp11.hpp>
+#include <algorithm>
 
 #ifdef _MSC_VER
 #define RESTRICT __restrict
 #else
 #define RESTRICT __restrict__
-#endif
-
-#ifndef R_NO_REMAP
-#define R_NO_REMAP 
 #endif
 
 #if !defined(OBJSXP) && defined(S4SXP) 
