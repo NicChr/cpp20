@@ -9,6 +9,8 @@
 
 namespace cpp20 {
 
+namespace internal {
+
 // general order vector that sorts `x`
 // NAs are ordered last
 // Internal function to be used for low overhead sorting small vectors (n<500)
@@ -74,13 +76,15 @@ r_vec<r_int> cpp_stable_order(const r_vec<T>& x) {
     return p;
 }
 
+}
+
 // Stable order that preserves order of ties
 template <RSortable T>
 r_vec<r_int> stable_order(const r_vec<T>& x) {
     int n = x.size();
 
     if (n < 500){
-        return cpp_stable_order(x);
+        return internal::cpp_stable_order(x);
     }
 
     // ----------------------------------------------------------------------
@@ -179,7 +183,7 @@ r_vec<r_int> stable_order(const r_vec<T>& x) {
         
         return p;
     } else {
-        return cpp_stable_order(x);
+        return internal::cpp_stable_order(x);
     }
 }
 
@@ -189,7 +193,7 @@ r_vec<r_int> order(const r_vec<T>& x) {
     int n = x.size();
 
     if (n < 500){
-        return cpp_order(x);
+        return internal::cpp_order(x);
     }
 
     // ----------------------------------------------------------------------
@@ -306,7 +310,7 @@ r_vec<r_int> order(const r_vec<T>& x) {
         }
         return p;  
     } else {
-        return cpp_order(x);
+        return internal::cpp_order(x);
     }
 }
 
@@ -329,6 +333,8 @@ inline r_lgl is_sorted(const r_vec<T>& x) {
     }
     return r_true;
 }
+
+namespace internal {
 
 template <RSortable T>
 inline groups make_groups_from_order(const r_vec<T>& x, const r_vec<r_int>& o) {
@@ -365,10 +371,12 @@ inline groups make_groups_from_order(const r_vec<T>& x, const r_vec<r_int>& o) {
     return g;
 }
 
+}
+
 template <RVal T>
 r_vec<T> sorted_unique(const r_vec<T>& x) {
     if constexpr (RSortable<T>){
-        groups group_info = make_groups_from_order(x, order(x));
+        groups group_info = internal::make_groups_from_order(x, order(x));
         auto starts = group_starts(group_info);
         starts += 1;
         return x.subset(starts);

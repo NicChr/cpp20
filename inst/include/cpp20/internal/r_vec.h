@@ -22,11 +22,11 @@ struct r_vec {
   // Initialise read-only ptr to: 
   // SEXP - If T is `r_sexp` or `r_str_view`
   // T - Otherwise
-  using ptr_t = std::conditional_t<RPtrWritableType<T>, unwrap_t<T>*, const SEXP*>;  
+  using ptr_t = std::conditional_t<internal::RPtrWritableType<T>, unwrap_t<T>*, const SEXP*>;  
   ptr_t m_ptr = nullptr;
 
   void initialise_ptr(){
-    if constexpr (RPtrWritableType<T>) {
+    if constexpr (internal::RPtrWritableType<T>) {
       m_ptr = internal::vector_ptr<T>(sexp);
     } else if constexpr (any<T, r_sexp, r_sym>) {
       m_ptr = (const SEXP*) DATAPTR_RO(sexp);
@@ -176,7 +176,7 @@ struct r_vec {
     r_size_t n = length();
     auto out = r_vec<r_lgl>(n);
 
-    if constexpr (RPtrWritableType<T>){
+    if constexpr (internal::RPtrWritableType<T>){
       int n_threads = internal::calc_threads(n);
       if (n_threads > 1){
         OMP_PARALLEL_FOR_SIMD(n_threads)
@@ -203,7 +203,7 @@ struct r_vec {
     r_size_t n = length();
     r_size_t out(0);
 
-    if constexpr (RPtrWritableType<T>){
+    if constexpr (internal::RPtrWritableType<T>){
       int n_threads = internal::calc_threads(n);
 
       if (n_threads > 1){
@@ -237,7 +237,7 @@ struct r_vec {
   template <typename U>
   void fill(r_size_t start, r_size_t n, const U val){
     auto val2 = internal::as_r<T>(val);
-    if constexpr (RPtrWritableType<T>){
+    if constexpr (internal::RPtrWritableType<T>){
       int n_threads = internal::calc_threads(n);
       auto* RESTRICT p_target = data();
       if (n_threads > 1) {
@@ -261,7 +261,7 @@ struct r_vec {
     auto new_val2 = internal::as_r<T>(new_val);
     bool implicit_na_coercion = !cpp20::is_na(old_val) && cpp20::is_na(old_val2);
     if (!implicit_na_coercion){
-      if constexpr (RPtrWritableType<T>){
+      if constexpr (internal::RPtrWritableType<T>){
         int n_threads = internal::calc_threads(n);
         auto *p_target = data();
         if (n_threads > 1) {
@@ -300,7 +300,7 @@ struct r_vec {
       auto resized_vec = r_vec<T>(n);
       r_size_t n_to_copy = std::min(n, vec_size);
 
-      if constexpr (RPtrWritableType<T>){
+      if constexpr (internal::RPtrWritableType<T>){
         std::copy_n(this->begin(), n_to_copy, resized_vec.begin());
       } else {
         for (r_size_t i = 0; i < n_to_copy; ++i){
@@ -425,7 +425,7 @@ decltype(auto) visit_maybe_vector(const r_sexp& x, F&& f) {
 template <RVal T>
 inline void r_copy_n(const r_vec<T>& target, const r_vec<T>& source, r_size_t target_offset, r_size_t n){
 
-  if constexpr (RPtrWritableType<T>){
+  if constexpr (internal::RPtrWritableType<T>){
     auto *p_source = source.data();
     auto *p_target = target.data();
 

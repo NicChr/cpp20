@@ -17,7 +17,7 @@ inline r_sexp new_vec(SEXPTYPE type, r_size_t n){
   return r_sexp(cpp11::safe[Rf_allocVector](type, n));
 }
 
-template<RPtrWritableType T>
+template<internal::RPtrWritableType T>
 inline vec_ptr_t<T> vector_ptr(SEXP x) {
   static_assert(
     always_false<T>,

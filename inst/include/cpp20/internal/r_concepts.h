@@ -93,15 +93,12 @@ concept RScalar = RMathType<T> || any<T, r_cplx, r_str, r_str_view, r_raw, r_sym
 template <typename T>
 concept RVal = RScalar<T> || is<T, r_sexp>;
 
+
+namespace internal {
 // A `SEXP` which we can write data to directly via a pointer
 template <typename T>
 concept RPtrWritableType = RMathType<T> || any<T, r_cplx, r_raw>;
-
-template <typename T>
-concept RConvertibleToSexp = std::is_convertible_v<T, SEXP>;
-
-template <typename T>
-concept RNotConvertibleToSexp = !RConvertibleToSexp<T>;
+}
 
 // Forward declare structs to define concepts now
 template<RVal T>
@@ -134,7 +131,7 @@ concept RFactor = is<T, r_factors>;
 // RObject is any object that can be represented in R - it excludes internal R types like CHARSXP
 // Also, these are all implicitly convertible to `SEXP`
 template <typename T> 
-concept RObject = any<T, r_sexp, r_factors, r_df, r_sym> || RVector<T>;
+concept RObject = std::is_convertible_v<T, SEXP>;
 
 template <typename T>
 concept CppScalar = std::is_scalar_v<T>;

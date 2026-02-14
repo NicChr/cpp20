@@ -694,13 +694,24 @@ SEXP foo_stable_order(SEXP x){
     }
   });
 }
+[[cpp11::register]]
+SEXP foo_slow_order(SEXP x){
+  return internal::visit_vector(x, [&](auto xvec) -> SEXP {
+    using T = typename decltype(xvec)::data_type;
+    if constexpr (RSortable<T>){
+      return internal::cpp_order(xvec);
+    } else {
+      return r_null;
+    }
+  });
+}
 
 [[cpp11::register]]
 SEXP foo_group_id2(SEXP x){
   return internal::visit_vector(x, [&](auto xvec) -> SEXP {
     using T = typename decltype(xvec)::data_type;
     if constexpr (RSortable<T>){
-      return make_groups_from_order(xvec, order(xvec)).ids;
+      return internal::make_groups_from_order(xvec, order(xvec)).ids;
     } else {
       return foo_group_id(x);
     }

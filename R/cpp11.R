@@ -268,6 +268,10 @@ foo_stable_order <- function(x) {
   .Call(`_cpp20_foo_stable_order`, x)
 }
 
+foo_slow_order <- function(x) {
+  .Call(`_cpp20_foo_slow_order`, x)
+}
+
 foo_group_id2 <- function(x) {
   .Call(`_cpp20_foo_group_id2`, x)
 }
