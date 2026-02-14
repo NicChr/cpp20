@@ -29,7 +29,7 @@ r_dbl sum(const r_vec<T> &x, bool na_rm = false){
 
 // Optimisation for r_dbl
 template <>
-r_dbl sum(const r_vec<r_dbl> &x, bool na_rm){
+inline r_dbl sum(const r_vec<r_dbl> &x, bool na_rm){
     r_size_t n = x.length();
     double out_ = 0;
     const auto* RESTRICT p_x = x.data();

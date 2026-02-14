@@ -7,7 +7,7 @@ namespace cpp20 {
 
 namespace internal {
 
-r_vec<r_sexp> new_df_impl(r_vec<r_sexp> cols){
+inline r_vec<r_sexp> new_df_impl(r_vec<r_sexp> cols){
 
     int n = cols.length();
     int nrows;
@@ -40,7 +40,8 @@ r_vec<r_sexp> new_df_impl(r_vec<r_sexp> cols){
     attr::set_attr(out, symbol::row_names_sym, row_names);
     return out;
 }
-r_vec<r_sexp> new_df_impl(int nrows){
+
+inline r_vec<r_sexp> new_df_impl(int nrows){
 
     r_vec<r_sexp> out{};
     r_vec<r_int> row_names;

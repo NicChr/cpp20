@@ -46,7 +46,7 @@ r_vec<U> exclude_locs(const r_vec<U>& exclude, unwrap_t<U> xn) {
 
 namespace internal {
 
-r_size_t count_true(const r_vec<r_lgl>& x, const uint_fast64_t n){
+inline r_size_t count_true(const r_vec<r_lgl>& x, const uint_fast64_t n){
   uint_fast64_t size = 0;
   auto* RESTRICT p_x = x.data();
   #pragma omp simd reduction(+:size)
@@ -56,7 +56,7 @@ r_size_t count_true(const r_vec<r_lgl>& x, const uint_fast64_t n){
 
 }
 
-r_vec<r_int> which(const r_vec<r_lgl>& x, bool invert = false){
+inline r_vec<r_int> which(const r_vec<r_lgl>& x, bool invert = false){
   r_size_t n = x.length();
   r_size_t true_count = internal::count_true(x, n);
   int whichi = 0;
