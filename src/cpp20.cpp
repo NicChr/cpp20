@@ -19,6 +19,13 @@ extern "C" SEXP _cpp20_cpp_set_threads(SEXP n) {
   END_CPP20
 }
 // test.cpp
+r_int cpp_get_threads();
+extern "C" SEXP _cpp20_cpp_get_threads() {
+  BEGIN_CPP20
+    return cpp20::unwrap(cpp20::as<cpp20::r_sexp>(cpp_get_threads()));
+  END_CPP20
+}
+// test.cpp
 SEXP foo(SEXP x);
 extern "C" SEXP _cpp20_foo(SEXP x) {
   BEGIN_CPP20
@@ -33,10 +40,10 @@ extern "C" SEXP _cpp20_bar(SEXP x) {
   END_CPP20
 }
 // test.cpp
-SEXP foobar(SEXP x);
-extern "C" SEXP _cpp20_foobar(SEXP x) {
+r_vec<r_lgl> foo_is_na(r_sexp x);
+extern "C" SEXP _cpp20_foo_is_na(SEXP x) {
   BEGIN_CPP20
-    return cpp20::unwrap(cpp20::as<cpp20::r_sexp>(foobar(cpp20::as<std::decay_t<SEXP>>(x))));
+    return cpp20::unwrap(cpp20::as<cpp20::r_sexp>(foo_is_na(cpp20::as<std::decay_t<r_sexp>>(x))));
   END_CPP20
 }
 // test.cpp
@@ -170,13 +177,6 @@ SEXP foo_na_count(SEXP x);
 extern "C" SEXP _cpp20_foo_na_count(SEXP x) {
   BEGIN_CPP20
     return cpp20::unwrap(cpp20::as<cpp20::r_sexp>(foo_na_count(cpp20::as<std::decay_t<SEXP>>(x))));
-  END_CPP20
-}
-// test.cpp
-SEXP foo_is_na(SEXP x);
-extern "C" SEXP _cpp20_foo_is_na(SEXP x) {
-  BEGIN_CPP20
-    return cpp20::unwrap(cpp20::as<cpp20::r_sexp>(foo_is_na(cpp20::as<std::decay_t<SEXP>>(x))));
   END_CPP20
 }
 // test.cpp
@@ -453,17 +453,17 @@ extern "C" SEXP _cpp20_foo_asint64(SEXP x) {
   END_CPP20
 }
 // test.cpp
-SEXP foo_order(SEXP x);
+r_sexp foo_order(SEXP x);
 extern "C" SEXP _cpp20_foo_order(SEXP x) {
   BEGIN_CPP20
     return cpp20::unwrap(cpp20::as<cpp20::r_sexp>(foo_order(cpp20::as<std::decay_t<SEXP>>(x))));
   END_CPP20
 }
 // test.cpp
-SEXP foo_stable_order(SEXP x);
+SEXP foo_stable_order(const r_sexp& x);
 extern "C" SEXP _cpp20_foo_stable_order(SEXP x) {
   BEGIN_CPP20
-    return cpp20::unwrap(cpp20::as<cpp20::r_sexp>(foo_stable_order(cpp20::as<std::decay_t<SEXP>>(x))));
+    return cpp20::unwrap(cpp20::as<cpp20::r_sexp>(foo_stable_order(cpp20::as<std::decay_t<const r_sexp&>>(x))));
   END_CPP20
 }
 // test.cpp
@@ -541,6 +541,7 @@ extern "C" SEXP _cpp20_foo_abs(SEXP x) {
 extern "C" {
 static const R_CallMethodDef CallEntries[] = {
     {"_cpp20_bar",                (DL_FUNC) &_cpp20_bar,                1},
+    {"_cpp20_cpp_get_threads",    (DL_FUNC) &_cpp20_cpp_get_threads,    0},
     {"_cpp20_cpp_set_threads",    (DL_FUNC) &_cpp20_cpp_set_threads,    1},
     {"_cpp20_foo",                (DL_FUNC) &_cpp20_foo,                1},
     {"_cpp20_foo12",              (DL_FUNC) &_cpp20_foo12,              2},
@@ -611,7 +612,6 @@ static const R_CallMethodDef CallEntries[] = {
     {"_cpp20_foo_vec_subtract",   (DL_FUNC) &_cpp20_foo_vec_subtract,   2},
     {"_cpp20_foo_which",          (DL_FUNC) &_cpp20_foo_which,          1},
     {"_cpp20_foo_which_inverted", (DL_FUNC) &_cpp20_foo_which_inverted, 1},
-    {"_cpp20_foobar",             (DL_FUNC) &_cpp20_foobar,             1},
     {"_cpp20_foofoo",             (DL_FUNC) &_cpp20_foofoo,             0},
     {"_cpp20_foofoofoo",          (DL_FUNC) &_cpp20_foofoofoo,          0},
     {"_cpp20_test1",              (DL_FUNC) &_cpp20_test1,              0},

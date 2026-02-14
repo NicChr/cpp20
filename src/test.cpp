@@ -10,21 +10,16 @@ void cpp_set_threads(int n){
 
 
 [[cpp20::register]]
-SEXP foo(SEXP x) {
-  // auto ok = internal::as_r_string(r_true);
-  // return as_vector(as<r_string_t>(r_true));
-  // return r_vector_t<r_lgl>(x);
-// return as<r_vector_t<r_string_t>>(r_vector_t<r_lgl>(x));
+r_int cpp_get_threads(){
+  return r_int(get_threads());
+}
 
+[[cpp20::register]]
+SEXP foo(SEXP x) {
   SEXP out = internal::visit_vector(x, [&](auto xvec) -> SEXP {
     return as<r_vec<r_str_view>>(xvec);
   });
   return out;
-
-  // return as<r_vector_t<r_string_t>>(r_vector_t<r_lgl>(x));
-
-  // // return make_list(as<r_string_t>(1.5), as<r_string_t>(na::real));
-  // return as_vector(as<r_string_t>(vec::new_vector<r_complex_t>(1, 123)));
 }
 
 [[cpp20::register]]
@@ -37,11 +32,10 @@ SEXP bar(SEXP x) {
 
 
 [[cpp20::register]]
-SEXP foobar(SEXP x) {
-    auto out = internal::visit_vector(x, [&](auto xvec) -> r_vec<r_lgl> {
+r_vec<r_lgl> foo_is_na(r_sexp x) {
+   return internal::visit_vector(x, [x](auto xvec) -> r_vec<r_lgl> {
       return xvec.is_na();
   });
-  return out;
 }
 
 
@@ -229,14 +223,6 @@ SEXP foo_range(SEXP x, bool na_rm) {
 SEXP foo_na_count(SEXP x) {
   return internal::visit_vector(x, [&](auto xvec) -> SEXP {
     return as<r_vec<r_int>>(xvec.na_count());
-  });
-}
-
-
-[[cpp20::register]]
-SEXP foo_is_na(SEXP x) {
-  return internal::visit_vector(x, [&](auto xvec) -> SEXP {
-    return xvec.is_na();
   });
 }
 
@@ -660,12 +646,11 @@ SEXP foo_asint64(SEXP x) {
 }
 
 [[cpp20::register]]
-SEXP foo_order(SEXP x){
-  return internal::visit_vector(x, [&](auto xvec) -> SEXP {
+r_sexp foo_order(SEXP x){
+  return internal::visit_vector(x, [&](auto xvec) -> r_sexp {
     using T = typename decltype(xvec)::data_type;
     if constexpr (RSortable<T>){
-      Rprintf("test3");
-      return order(xvec);
+      return as<r_sexp>(order(xvec));
     } else {
       return r_null;
     }
@@ -673,7 +658,7 @@ SEXP foo_order(SEXP x){
 }
 
 [[cpp20::register]]
-SEXP foo_stable_order(SEXP x){
+SEXP foo_stable_order(const r_sexp& x){
   return internal::visit_vector(x, [&](auto xvec) -> SEXP {
     using T = typename decltype(xvec)::data_type;
     if constexpr (RSortable<T>){

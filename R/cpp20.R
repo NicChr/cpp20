@@ -4,6 +4,10 @@ cpp_set_threads <- function(n) {
   invisible(.Call(`_cpp20_cpp_set_threads`, n))
 }
 
+cpp_get_threads <- function() {
+  .Call(`_cpp20_cpp_get_threads`)
+}
+
 foo <- function(x) {
   .Call(`_cpp20_foo`, x)
 }
@@ -12,8 +16,8 @@ bar <- function(x) {
   .Call(`_cpp20_bar`, x)
 }
 
-foobar <- function(x) {
-  .Call(`_cpp20_foobar`, x)
+foo_is_na <- function(x) {
+  .Call(`_cpp20_foo_is_na`, x)
 }
 
 foofoo <- function() {
@@ -90,10 +94,6 @@ foo_range <- function(x, na_rm) {
 
 foo_na_count <- function(x) {
   .Call(`_cpp20_foo_na_count`, x)
-}
-
-foo_is_na <- function(x) {
-  .Call(`_cpp20_foo_is_na`, x)
 }
 
 foo39 <- function(x, na_rm) {
