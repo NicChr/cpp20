@@ -1,7 +1,7 @@
 #ifndef CPP20_HPP
 #define CPP20_HPP
 
-// cpp20 Core definitions and templates
+// cpp20 API - Includes all necessary header files
 // License: MIT
 // Author: Nick Christofides
 

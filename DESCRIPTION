@@ -14,12 +14,15 @@ License: MIT + file LICENSE
 BugReports: https://github.com/NicChr/cpp20/issues
 Depends:
     R (>= 4.1.0)
+Imports:
+    cli,
+    decor, 
+    glue
 Suggests: 
     bench,
     testthat (>= 3.0.0)
-LinkingTo: 
-    cpp11
 Config/testthat/edition: 3
+Config/Needs/cpp20/cpp_register:
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.3.3

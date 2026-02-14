@@ -2,18 +2,14 @@
 
 using namespace cpp20;
 
-[[cpp11::register]]
-void dummy() {
-}
 
-
-[[cpp11::register]]
+[[cpp20::register]]
 void cpp_set_threads(int n){
   set_threads(n);
 }
 
 
-[[cpp11::register]]
+[[cpp20::register]]
 SEXP foo(SEXP x) {
   // auto ok = internal::as_r_string(r_true);
   // return as_vector(as<r_string_t>(r_true));
@@ -31,7 +27,7 @@ SEXP foo(SEXP x) {
   // return as_vector(as<r_string_t>(vec::new_vector<r_complex_t>(1, 123)));
 }
 
-[[cpp11::register]]
+[[cpp20::register]]
 SEXP bar(SEXP x) {
   SEXP out = internal::visit_vector(x, [&](auto xvec) -> SEXP {
     return as<r_vec<r_int>>(xvec);
@@ -40,7 +36,7 @@ SEXP bar(SEXP x) {
 }
 
 
-[[cpp11::register]]
+[[cpp20::register]]
 SEXP foobar(SEXP x) {
     auto out = internal::visit_vector(x, [&](auto xvec) -> r_vec<r_lgl> {
       return xvec.is_na();
@@ -50,7 +46,7 @@ SEXP foobar(SEXP x) {
 
 
 
-[[cpp11::register]]
+[[cpp20::register]]
 SEXP foofoo() {
   auto out = r_posixcts(10);
   out.fill(0, out.length(), 0);
@@ -60,7 +56,7 @@ SEXP foofoo() {
 }
 
 
-[[cpp11::register]]
+[[cpp20::register]]
 SEXP foo6(SEXP x){
     auto out = internal::visit_vector(x, [&](auto xvec) -> r_posixcts {
     return as<r_posixcts>(xvec);
@@ -70,7 +66,7 @@ SEXP foo6(SEXP x){
 }
 
 
-[[cpp11::register]]
+[[cpp20::register]]
 SEXP foo7(SEXP x){
     auto out = internal::visit_vector(x, [&](auto xvec) -> r_vec<r_str_view> {
     return xvec.names();
@@ -80,7 +76,7 @@ SEXP foo7(SEXP x){
 }
 
 
-[[cpp11::register]]
+[[cpp20::register]]
 SEXP foo9(){
   auto x = make_vec<r_int>(1, 2, 3);
   auto y = make_vec<r_dbl>(arg("x") = 2.5);
@@ -89,13 +85,13 @@ SEXP foo9(){
   return out;
 }
 
-[[cpp11::register]]
+[[cpp20::register]]
 SEXP foo_attrs(SEXP x){
   return attr::get_attrs(r_sexp(x));
 }
 
 
-[[cpp11::register]]
+[[cpp20::register]]
 SEXP foo12(SEXP x, SEXP attrs){
   auto y = r_vec<r_int>(x);
   attr::set_attrs(y.sexp, as<r_vec<r_sexp>>(attrs));
@@ -104,7 +100,7 @@ SEXP foo12(SEXP x, SEXP attrs){
 
 // Go from an r_sexp to an r_vec<>
 
-[[cpp11::register]]
+[[cpp20::register]]
 SEXP foo14(){
   r_sexp x = r_sexp(r_vec<r_int>(10));
   auto out = as<r_vec<r_str_view>>(x);
@@ -118,20 +114,20 @@ SEXP foo14(){
 // }
 
 
-[[cpp11::register]]
+[[cpp20::register]]
 SEXP foo26(){
-  return make_vec<r_sexp>(arg("r_sexp") = sizeof(r_sexp), arg ("SEXP") = sizeof(SEXP), arg("sexp") = sizeof(cpp11::sexp), arg("r_str_view") = sizeof(r_str_view),
+  return make_vec<r_sexp>(arg("r_sexp") = sizeof(r_sexp), arg ("SEXP") = sizeof(SEXP), arg("sexp"), arg("r_str_view") = sizeof(r_str_view),
 arg("r_dbl") = sizeof(r_dbl), arg("r_int") = sizeof(r_int), arg("r_lgl") = sizeof(r_lgl), arg("r_cplx") = sizeof(r_cplx),
   arg("r_sym") = sizeof(r_sym), arg("r_vec<r_int>") = sizeof(r_vec<r_int>));
 }
 
 
-[[cpp11::register]]
+[[cpp20::register]]
 SEXP foo27(SEXP cols){
   return internal::new_df_impl(r_vec<r_sexp>(cols));
 }
 
-[[cpp11::register]]
+[[cpp20::register]]
 SEXP foo28a(SEXP x, SEXP y){
   r_vec<r_sexp> x_ = r_vec<r_sexp>(x);
   r_sexp y_ = r_sexp(y);
@@ -142,7 +138,7 @@ SEXP foo28a(SEXP x, SEXP y){
   return x_;
 }
 
-[[cpp11::register]]
+[[cpp20::register]]
 SEXP foo28b(SEXP x, SEXP y){
   r_vec<r_sexp> x_ = r_vec<r_sexp>(x);
   r_sexp y_ = r_sexp(y);
@@ -153,7 +149,7 @@ SEXP foo28b(SEXP x, SEXP y){
   return x_;
 }
 
-[[cpp11::register]]
+[[cpp20::register]]
 int foo30(){
   r_lgl x = r_true;
   // return !x;
@@ -165,7 +161,7 @@ int foo30(){
 }
 
 
-[[cpp11::register]]
+[[cpp20::register]]
 SEXP foo_rep_len(SEXP x, int n) {
   return internal::visit_vector(x, [&](auto xvec) -> SEXP {
     return xvec.rep_len(n);
@@ -173,7 +169,7 @@ SEXP foo_rep_len(SEXP x, int n) {
 }
 
 
-[[cpp11::register]]
+[[cpp20::register]]
 SEXP foo_sum(SEXP x, bool na_rm) {
   return internal::visit_vector(x, [&](auto xvec) -> SEXP {
     using T = typename decltype(xvec)::data_type;
@@ -184,7 +180,7 @@ SEXP foo_sum(SEXP x, bool na_rm) {
     }
   });
 }
-[[cpp11::register]]
+[[cpp20::register]]
 SEXP foo_mean(SEXP x, bool na_rm) {
   return internal::visit_vector(x, [&](auto xvec) -> SEXP {
     using T = typename decltype(xvec)::data_type;
@@ -195,7 +191,7 @@ SEXP foo_mean(SEXP x, bool na_rm) {
     }
   });
 }
-[[cpp11::register]]
+[[cpp20::register]]
 SEXP foo_var(SEXP x, bool na_rm) {
   return internal::visit_vector(x, [&](auto xvec) -> SEXP {
     using T = typename decltype(xvec)::data_type;
@@ -206,7 +202,7 @@ SEXP foo_var(SEXP x, bool na_rm) {
     }
   });
 }
-[[cpp11::register]]
+[[cpp20::register]]
 SEXP foo_sum_int(SEXP x, bool na_rm) {
   return internal::visit_vector(x, [&](auto xvec) -> SEXP {
     using T = typename decltype(xvec)::data_type;
@@ -217,7 +213,7 @@ SEXP foo_sum_int(SEXP x, bool na_rm) {
     }
   });
 }
-[[cpp11::register]]
+[[cpp20::register]]
 SEXP foo_range(SEXP x, bool na_rm) {
   return internal::visit_vector(x, [&](auto xvec) -> SEXP {
     using T = typename decltype(xvec)::data_type;
@@ -229,7 +225,7 @@ SEXP foo_range(SEXP x, bool na_rm) {
   });
 }
 
-[[cpp11::register]]
+[[cpp20::register]]
 SEXP foo_na_count(SEXP x) {
   return internal::visit_vector(x, [&](auto xvec) -> SEXP {
     return as<r_vec<r_int>>(xvec.na_count());
@@ -237,14 +233,14 @@ SEXP foo_na_count(SEXP x) {
 }
 
 
-[[cpp11::register]]
+[[cpp20::register]]
 SEXP foo_is_na(SEXP x) {
   return internal::visit_vector(x, [&](auto xvec) -> SEXP {
     return xvec.is_na();
   });
 }
 
-[[cpp11::register]]
+[[cpp20::register]]
 SEXP foo39(SEXP x, bool na_rm){
   return internal::visit_vector(x, [&](auto xvec) -> SEXP {
     using t = decltype(xvec);
@@ -256,7 +252,7 @@ SEXP foo39(SEXP x, bool na_rm){
   });
 }
 
-[[cpp11::register]]
+[[cpp20::register]]
 SEXP foo40(SEXP x, bool na_rm){
   return internal::visit_vector(x, [&](auto xvec) -> SEXP {
     using t = decltype(xvec);
@@ -269,14 +265,14 @@ SEXP foo40(SEXP x, bool na_rm){
   });
 }
 
-[[cpp11::register]]
+[[cpp20::register]]
 SEXP foo41(SEXP x){
   r_vec<r_int> y = r_vec<r_int>(x);
   return as<r_vec<r_dbl>>(sum_int(y));
 }
 
 
-[[cpp11::register]]
+[[cpp20::register]]
 SEXP foo42(SEXP x) {
   auto xvec = r_vec<r_dbl>(x);
 
@@ -291,7 +287,7 @@ SEXP foo42(SEXP x) {
 }
 
 
-[[cpp11::register]]
+[[cpp20::register]]
 SEXP foo43(SEXP x) {
   auto xvec = r_vec<r_dbl>(x);
 
@@ -307,7 +303,7 @@ SEXP foo43(SEXP x) {
 }
 
 
-[[cpp11::register]]
+[[cpp20::register]]
 SEXP foo44(SEXP x) {
   auto xvec = r_vec<r_dbl>(x);
 
@@ -323,7 +319,7 @@ SEXP foo44(SEXP x) {
   }
 
 
-[[cpp11::register]]
+[[cpp20::register]]
 SEXP foo48(SEXP x) {
   auto xvec = r_vec<r_int>(x);
 
@@ -337,7 +333,7 @@ SEXP foo48(SEXP x) {
     return as_vector(min_);
 }
 
-[[cpp11::register]]
+[[cpp20::register]]
 SEXP foo49(SEXP x, bool na_rm){
   return internal::visit_vector(x, [&](auto xvec) -> SEXP {
     using t = decltype(xvec);
@@ -350,7 +346,7 @@ SEXP foo49(SEXP x, bool na_rm){
   });
 }
 
-[[cpp11::register]]
+[[cpp20::register]]
 SEXP foo50(SEXP x, bool na_rm){
   r_vec<r_int> x_ = r_vec<r_int>(x);
 
@@ -358,14 +354,14 @@ SEXP foo50(SEXP x, bool na_rm){
 }
 
 
-[[cpp11::register]]
+[[cpp20::register]]
 SEXP foo54(SEXP x){
   auto y = r_vec<r_int>(x);
   return as_r_val(y);
 }
 
 
-[[cpp11::register]]
+[[cpp20::register]]
 SEXP foo_add1(SEXP x, SEXP y) {
   return internal::visit_vector(x, [&](auto xvec) -> SEXP {
     auto yvec = as<decltype(xvec)>(y);
@@ -379,7 +375,7 @@ SEXP foo_add1(SEXP x, SEXP y) {
 }
 
 
-[[cpp11::register]]
+[[cpp20::register]]
 SEXP foo_add(SEXP x){
   return internal::visit_vector(x, [&](auto xvec) -> SEXP {
     using data_t = typename decltype(xvec)::data_type;
@@ -397,7 +393,7 @@ SEXP foo_add(SEXP x){
   });
 }
 
-[[cpp11::register]]
+[[cpp20::register]]
 SEXP foo_vec_add(SEXP x, SEXP y){
     return internal::visit_vector(x, [=](auto xvec) -> SEXP {
       return internal::visit_vector(y, [=](auto yvec) -> SEXP {
@@ -415,7 +411,7 @@ SEXP foo_vec_add(SEXP x, SEXP y){
     });
 }
 
-[[cpp11::register]]
+[[cpp20::register]]
 SEXP foo_vec_subtract(SEXP x, SEXP y){
   auto xvec = as<r_vec<r_int>>(x);
   auto yvec = as<r_vec<r_int>>(y);
@@ -423,33 +419,33 @@ SEXP foo_vec_subtract(SEXP x, SEXP y){
 }
 
 
-[[cpp11::register]]
+[[cpp20::register]]
 SEXP foo_vec_multiply(SEXP x, SEXP y){
   auto xvec = as<r_vec<r_int>>(x);
   auto yvec = as<r_vec<r_int>>(y);
   return xvec * yvec;
 }
 
-[[cpp11::register]]
+[[cpp20::register]]
 SEXP foo_vec_divide(SEXP x, SEXP y){
   auto xvec = as<r_vec<r_int>>(x);
   auto yvec = as<r_vec<r_int>>(y);
   return xvec / yvec;
 }
 
-[[cpp11::register]]
+[[cpp20::register]]
 SEXP foo_factor(SEXP x){
   return internal::visit_vector(x, [&](auto xvec) -> SEXP {
     return r_factors(xvec);
   });
 }
-[[cpp11::register]]
+[[cpp20::register]]
 SEXP foo_factor2(SEXP x, SEXP levels){
   return r_factors(as<r_vec<r_str_view>>(x), as<r_vec<r_str_view>>(levels));
 }
 
 
-[[cpp11::register]]
+[[cpp20::register]]
 SEXP foo_gcd(SEXP x, bool na_rm){
   return internal::visit_vector(x, [&](auto xvec) -> SEXP {
     using data_t = typename decltype(xvec)::data_type;
@@ -461,7 +457,7 @@ SEXP foo_gcd(SEXP x, bool na_rm){
   });
 }
 
-[[cpp11::register]]
+[[cpp20::register]]
 SEXP foo_lcm(SEXP x, bool na_rm){
   return internal::visit_vector(x, [&](auto xvec) -> SEXP {
     using data_t = typename decltype(xvec)::data_type;
@@ -474,7 +470,7 @@ SEXP foo_lcm(SEXP x, bool na_rm){
 }
 
 
-[[cpp11::register]]
+[[cpp20::register]]
 SEXP foo_sset(SEXP x, SEXP i){
   return internal::visit_vector(x, [&](auto xvec) -> SEXP {
     return xvec.subset(as<r_vec<r_int>>(i));
@@ -482,7 +478,7 @@ SEXP foo_sset(SEXP x, SEXP i){
 }
 
 
-[[cpp11::register]]
+[[cpp20::register]]
 SEXP foo_lgl(){
   r_lgl a = r_true;
   r_lgl b = r_false;
@@ -506,21 +502,21 @@ SEXP foo_lgl(){
   );
 }
 
-[[cpp11::register]]
+[[cpp20::register]]
 SEXP foo_unique(SEXP x) {
   return internal::visit_vector(x, [&](auto xvec) -> SEXP {
     return unique(xvec);
   });
 }
 
-[[cpp11::register]]
+[[cpp20::register]]
 SEXP foo_sorted_unique(SEXP x) {
   return internal::visit_vector(x, [&](auto xvec) -> SEXP {
     return sorted_unique(xvec);
   });
 }
 
-[[cpp11::register]]
+[[cpp20::register]]
 SEXP foo_as_str(SEXP x) {
   return internal::visit_vector(x, [&](auto xvec) -> SEXP {
     if constexpr (any<decltype(xvec), r_vec<r_sexp>>){
@@ -532,7 +528,7 @@ SEXP foo_as_str(SEXP x) {
 }
 
 
-[[cpp11::register]]
+[[cpp20::register]]
 SEXP foo_match(SEXP x, SEXP table) {
   return internal::visit_vector(x, [&](auto xvec) -> SEXP {
     return match(xvec, as<decltype(xvec)>(table));
@@ -540,28 +536,28 @@ SEXP foo_match(SEXP x, SEXP table) {
 }
 
 
-[[cpp11::register]]
+[[cpp20::register]]
 SEXP foo_all_whole(SEXP x) {
   return internal::visit_vector(x, [&](auto xvec) -> SEXP {
     return as_vector(all_whole_numbers(xvec));
   });
 }
 
-[[cpp11::register]]
+[[cpp20::register]]
 SEXP foo_copy(SEXP x) {
   return internal::visit_vector(x, [&](auto xvec) -> SEXP {
     return deep_copy(xvec);
   });
 }
 
-[[cpp11::register]]
+[[cpp20::register]]
 SEXP foo_group_id(SEXP x){
   return internal::visit_vector(x, [&](auto xvec) -> SEXP {
     return make_groups(xvec).ids;
   });
 }
 
-[[cpp11::register]]
+[[cpp20::register]]
 SEXP foo_n_groups(SEXP x){
   return internal::visit_vector(x, [&](auto xvec) -> SEXP {
     using data_t = typename decltype(xvec)::data_type;
@@ -573,7 +569,7 @@ SEXP foo_n_groups(SEXP x){
   });
 }
 
-[[cpp11::register]]
+[[cpp20::register]]
 SEXP foo_groups_sorted(SEXP x){
   return internal::visit_vector(x, [&](auto xvec) -> SEXP {
     using data_t = typename decltype(xvec)::data_type;
@@ -585,7 +581,7 @@ SEXP foo_groups_sorted(SEXP x){
   });
 }
 
-[[cpp11::register]]
+[[cpp20::register]]
 SEXP foo_group_starts(SEXP x, int n_groups, bool sorted){
   return internal::visit_vector(x, [&](auto xvec) -> SEXP {
     using data_t = typename decltype(xvec)::data_type;
@@ -600,7 +596,7 @@ SEXP foo_group_starts(SEXP x, int n_groups, bool sorted){
 }
 
 
-[[cpp11::register]]
+[[cpp20::register]]
 SEXP foo_remainder(){
   return make_vec<r_dbl>(
     r_dbl(5) % 2.0, 
@@ -623,7 +619,7 @@ SEXP foo_remainder(){
 }
 
 
-[[cpp11::register]]
+[[cpp20::register]]
 SEXP foo_between(SEXP x, SEXP lo, SEXP hi){
   return internal::visit_vector(x, [&](auto xvec) -> SEXP {
     using data_t = typename decltype(xvec)::data_type;
@@ -637,33 +633,33 @@ SEXP foo_between(SEXP x, SEXP lo, SEXP hi){
   
 }
 
-[[cpp11::register]]
+[[cpp20::register]]
 SEXP foo_make_vec_test(){
   return make_vec<r_int>(make_vec<r_int>(1, 2, 3));
 }
 
-[[cpp11::register]]
+[[cpp20::register]]
 SEXP foofoofoo(){
   return make_vec<r_lgl>(is_nan(r_dbl(R_NaN)), is_nan(r_dbl(NA_REAL)), is_nan(r_dbl(std::sqrt(-1.0))), is_nan(r_dbl(NA_REAL)));
 }
 
-[[cpp11::register]]
+[[cpp20::register]]
 SEXP foo_which(SEXP x){
   return which(as<r_vec<r_lgl>>(x));
 }
 
 
-[[cpp11::register]]
+[[cpp20::register]]
 SEXP foo_which_inverted(SEXP x){
   return which(as<r_vec<r_lgl>>(x), true);
 }
 
-[[cpp11::register]]
+[[cpp20::register]]
 SEXP foo_asint64(SEXP x) {
   return as<r_vec<r_int64>>(x);
 }
 
-[[cpp11::register]]
+[[cpp20::register]]
 SEXP foo_order(SEXP x){
   return internal::visit_vector(x, [&](auto xvec) -> SEXP {
     using T = typename decltype(xvec)::data_type;
@@ -675,7 +671,7 @@ SEXP foo_order(SEXP x){
   });
 }
 
-[[cpp11::register]]
+[[cpp20::register]]
 SEXP foo_stable_order(SEXP x){
   return internal::visit_vector(x, [&](auto xvec) -> SEXP {
     using T = typename decltype(xvec)::data_type;
@@ -686,7 +682,7 @@ SEXP foo_stable_order(SEXP x){
     }
   });
 }
-[[cpp11::register]]
+[[cpp20::register]]
 SEXP foo_slow_order(SEXP x){
   return internal::visit_vector(x, [&](auto xvec) -> SEXP {
     using T = typename decltype(xvec)::data_type;
@@ -698,7 +694,7 @@ SEXP foo_slow_order(SEXP x){
   });
 }
 
-[[cpp11::register]]
+[[cpp20::register]]
 SEXP foo_group_id2(SEXP x){
   return internal::visit_vector(x, [&](auto xvec) -> SEXP {
     using T = typename decltype(xvec)::data_type;
@@ -711,12 +707,12 @@ SEXP foo_group_id2(SEXP x){
 }
 
 
-[[cpp11::register]]
+[[cpp20::register]]
 SEXP foo_sorted(SEXP x){
   return as<r_sexp>(is_sorted(as<r_vec<r_int>>(x)));
 }
 
-[[cpp11::register]]
+[[cpp20::register]]
 void test1(){
   // internal::as_r<r_str_view>(r_null);
   // std::string_view x = "ok";
@@ -729,7 +725,7 @@ void test1(){
 }
 
 
-[[cpp11::register]]
+[[cpp20::register]]
 SEXP foo_str_vectors(SEXP x){
   auto a = r_vec<r_str>(x);
   auto b = as<r_vec<r_str_view>>(a);
@@ -737,11 +733,11 @@ SEXP foo_str_vectors(SEXP x){
   return make_vec<r_sexp>(a, b, c);
 }
 
-[[cpp11::register]]
+[[cpp20::register]]
 SEXP foo_seqs(SEXP sizes, SEXP from, SEXP by){
   return sequences(as<r_vec<r_int>>(sizes), as<r_vec<r_int>>(from), as<r_vec<r_int>>(by));
 }
-[[cpp11::register]]
+[[cpp20::register]]
 SEXP foo_seqs2(SEXP sizes, SEXP from, SEXP by){
   // 1. Capture by value [=] to safely capture 'sizes' (SEXP pointer)
   return internal::visit_vector(from, [=](auto fromvec) -> SEXP {
@@ -762,12 +758,12 @@ SEXP foo_seqs2(SEXP sizes, SEXP from, SEXP by){
 
 
 
-[[cpp11::register]]
+[[cpp20::register]]
 SEXP foo_test(){
   return as<r_sexp>(int(1));
 }
 
-[[cpp11::register]]
+[[cpp20::register]]
 SEXP foo_abs(SEXP x){
   return internal::visit_vector(x, [&](auto xvec) -> SEXP {
     using data_t = typename decltype(xvec)::data_type;
