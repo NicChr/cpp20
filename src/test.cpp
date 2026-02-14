@@ -9,6 +9,8 @@ void dummy() {}
 r_int foo(r_int x) {
   return x + 1;
 }
-int bar(int x, double y, SEXP z) {
-  return x + 1;
+[[cpp20::register]]
+r_vec<r_int> bar(const r_vec<r_int>& x) { 
+  return x + r_int(2);
 }
+

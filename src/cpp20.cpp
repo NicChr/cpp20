@@ -17,9 +17,17 @@ extern "C" SEXP _cpp20_foo(SEXP x) {
     return cpp20::unwrap(cpp20::as<cpp20::r_sexp>(foo(cpp20::as<std::decay_t<r_int>>(x))));
   END_CPP20
 }
+// test.cpp
+r_vec<r_int> bar(const r_vec<r_int>& x);
+extern "C" SEXP _cpp20_bar(SEXP x) {
+  BEGIN_CPP20
+    return cpp20::unwrap(cpp20::as<cpp20::r_sexp>(bar(cpp20::as<std::decay_t<const r_vec<r_int>&>>(x))));
+  END_CPP20
+}
 
 extern "C" {
 static const R_CallMethodDef CallEntries[] = {
+    {"_cpp20_bar", (DL_FUNC) &_cpp20_bar, 1},
     {"_cpp20_foo", (DL_FUNC) &_cpp20_foo, 1},
     {NULL, NULL, 0}
 };

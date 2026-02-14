@@ -3,3 +3,7 @@
 foo <- function(x) {
   .Call(`_cpp20_foo`, x)
 }
+
+bar <- function(x) {
+  .Call(`_cpp20_bar`, x)
+}
