@@ -5,14 +5,18 @@
 #define R_NO_REMAP 
 #endif
 
-#include <cpp11/sexp.hpp>
-#include <type_traits>
-#include <ankerl/unordered_dense.h> // Unique + match
+#include <cpp11/sexp.hpp> // For cpp11::sexp
+#include <type_traits> // For concepts
+#include <ankerl/unordered_dense.h> // Hash maps for group IDs + unique + match
 #include <cstring> // For strcmp
-#include <complex>
-#include <limits>
-#include <vector>
-#include <algorithm>
+#include <charconv> // For to_chars
+#include <complex> // For complex<double>
+#include <limits> // For numeric limits
+#include <vector> // For C++ vectors
+#include <algorithm> // For sort + other utilities
+#include <bit> // For bit_cast
+#include <variant> // For variant
+#include <ska_sort/ska_sort.hpp> // For radix sorting via ska_sort
 
 #ifdef _MSC_VER
 #define RESTRICT __restrict

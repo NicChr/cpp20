@@ -6,9 +6,11 @@
 
 namespace cpp20 {
 
-inline r_sexp eval(r_sexp expr, r_sexp env){
+inline r_sexp eval(const r_sexp& expr, const r_sexp& env){
   return r_sexp(cpp11::safe[Rf_eval](expr, env));
 }
+
+namespace internal {
 
 template<typename... Args>
 inline r_sexp make_pairlist(Args... args) {
@@ -41,6 +43,8 @@ inline r_sexp make_expr(Args... args) {
 
   r_sexp pairlist = make_pairlist(args...);
   return r_sexp(Rf_lcons(r_null, pairlist));
+}
+
 }
 
 }

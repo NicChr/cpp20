@@ -4,7 +4,6 @@
 
 #include <cpp20/internal/r_vec.h>
 #include <cpp20/internal/r_coerce.h>
-#include <variant>
 
 namespace cpp20 {
 

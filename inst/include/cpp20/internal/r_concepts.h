@@ -2,7 +2,6 @@
 #define CPP20_R_CONCEPTS_H
 
 #include <cpp20/internal/r_setup.h>
-#include <complex> // For std::complex
 
 namespace cpp20 {
 

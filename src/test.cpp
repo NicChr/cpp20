@@ -664,11 +664,12 @@ SEXP foo_order(SEXP x){
   return internal::visit_vector(x, [&](auto xvec) -> SEXP {
     using T = typename decltype(xvec)::data_type;
     if constexpr (RSortable<T>){
+      Rprintf("test3");
       return order(xvec);
     } else {
       return r_null;
     }
-  });
+  }); 
 }
 
 [[cpp20::register]]
@@ -724,6 +725,10 @@ void test1(){
   // r_str_view c = b;
 }
 
+[[cpp20::register]]
+r_sexp foo_null(){
+  return r_null;
+}
 
 [[cpp20::register]]
 SEXP foo_str_vectors(SEXP x){
@@ -734,8 +739,8 @@ SEXP foo_str_vectors(SEXP x){
 }
 
 [[cpp20::register]]
-SEXP foo_seqs(SEXP sizes, SEXP from, SEXP by){
-  return sequences(as<r_vec<r_int>>(sizes), as<r_vec<r_int>>(from), as<r_vec<r_int>>(by));
+r_vec<r_sexp> foo_seqs(r_vec<r_int> sizes, r_vec<r_int> from, r_vec<r_int> by){
+  return sequences(sizes, from, by);
 }
 [[cpp20::register]]
 SEXP foo_seqs2(SEXP sizes, SEXP from, SEXP by){

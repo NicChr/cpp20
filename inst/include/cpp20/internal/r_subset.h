@@ -3,7 +3,6 @@
 
 #include <cpp20/internal/r_match.h>
 
-
 namespace cpp20 {
 
 template <typename U>

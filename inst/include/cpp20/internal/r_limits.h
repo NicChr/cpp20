@@ -3,7 +3,13 @@
 
 #include <cpp20/internal/r_setup.h>
 #include <cpp20/internal/r_types.h>
-#include <limits>
+
+// R-specific numerical limits
+// Currently include the following members
+// min
+// max
+// epsilon
+// tolerance (typically sqrt(epsilon))
 
 namespace cpp20 {
     

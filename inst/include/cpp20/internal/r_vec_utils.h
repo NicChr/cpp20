@@ -1,10 +1,7 @@
 #ifndef CPP20_VECTOR_UTILS_H
 #define CPP20_VECTOR_UTILS_H
 
-#include <cpp20/internal/r_setup.h>
-#include <cpp20/internal/r_concepts.h>
 #include <cpp20/internal/r_types.h>
-
 
 namespace cpp20 {
 

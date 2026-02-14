@@ -496,6 +496,13 @@ extern "C" SEXP _cpp20_test1() {
   END_CPP20
 }
 // test.cpp
+r_sexp foo_null();
+extern "C" SEXP _cpp20_foo_null() {
+  BEGIN_CPP20
+    return cpp20::unwrap(cpp20::as<cpp20::r_sexp>(foo_null()));
+  END_CPP20
+}
+// test.cpp
 SEXP foo_str_vectors(SEXP x);
 extern "C" SEXP _cpp20_foo_str_vectors(SEXP x) {
   BEGIN_CPP20
@@ -503,10 +510,10 @@ extern "C" SEXP _cpp20_foo_str_vectors(SEXP x) {
   END_CPP20
 }
 // test.cpp
-SEXP foo_seqs(SEXP sizes, SEXP from, SEXP by);
+r_vec<r_sexp> foo_seqs(r_vec<r_int> sizes, r_vec<r_int> from, r_vec<r_int> by);
 extern "C" SEXP _cpp20_foo_seqs(SEXP sizes, SEXP from, SEXP by) {
   BEGIN_CPP20
-    return cpp20::unwrap(cpp20::as<cpp20::r_sexp>(foo_seqs(cpp20::as<std::decay_t<SEXP>>(sizes), cpp20::as<std::decay_t<SEXP>>(from), cpp20::as<std::decay_t<SEXP>>(by))));
+    return cpp20::unwrap(cpp20::as<cpp20::r_sexp>(foo_seqs(cpp20::as<std::decay_t<r_vec<r_int>>>(sizes), cpp20::as<std::decay_t<r_vec<r_int>>>(from), cpp20::as<std::decay_t<r_vec<r_int>>>(by))));
   END_CPP20
 }
 // test.cpp
@@ -580,6 +587,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"_cpp20_foo_mean",           (DL_FUNC) &_cpp20_foo_mean,           2},
     {"_cpp20_foo_n_groups",       (DL_FUNC) &_cpp20_foo_n_groups,       1},
     {"_cpp20_foo_na_count",       (DL_FUNC) &_cpp20_foo_na_count,       1},
+    {"_cpp20_foo_null",           (DL_FUNC) &_cpp20_foo_null,           0},
     {"_cpp20_foo_order",          (DL_FUNC) &_cpp20_foo_order,          1},
     {"_cpp20_foo_range",          (DL_FUNC) &_cpp20_foo_range,          2},
     {"_cpp20_foo_remainder",      (DL_FUNC) &_cpp20_foo_remainder,      0},

@@ -2,7 +2,6 @@
 #define CPP20_DECLARATIONS_HPP
 
 #include <cpp20.hpp>
-#include <cstring>             // for strncpy
 #include <exception>           // for std::exception
 
 using namespace cpp20;

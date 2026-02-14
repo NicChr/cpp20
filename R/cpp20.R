@@ -276,6 +276,10 @@ test1 <- function() {
   invisible(.Call(`_cpp20_test1`))
 }
 
+foo_null <- function() {
+  .Call(`_cpp20_foo_null`)
+}
+
 foo_str_vectors <- function(x) {
   .Call(`_cpp20_foo_str_vectors`, x)
 }
