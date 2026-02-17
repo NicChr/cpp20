@@ -212,8 +212,20 @@ generate_cpp_functions <- function(funs, package = "cpp20") {
                              "",
                              glue::glue_data(funs, "{return_type} {name}({real_params});"))
 
-  out <- glue::glue_data(funs,
-                         '
+  out <- ifelse(
+    funs$is_template,
+    glue::glue_data(funs,
+                    '
+    // {basename(file)}
+    extern "C" SEXP _{package}_{name}({sexp_params}) {{
+      BEGIN_CPP20
+      {calls}
+      END_CPP20
+    }}
+    '
+    ),
+    glue::glue_data(funs,
+                    '
     // {basename(file)}
     {declaration}
     extern "C" SEXP _{package}_{name}({sexp_params}) {{
@@ -222,6 +234,7 @@ generate_cpp_functions <- function(funs, package = "cpp20") {
       END_CPP20
     }}
     '
+    )
   )
 
   out <- glue::glue_collapse(out, sep = "\n")
@@ -342,7 +355,7 @@ wrap_call_template <- function(name, args, template_params) {
     );
   ')
 
-  as.character(result)
+  unclass(result)
 }
 
 
