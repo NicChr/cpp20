@@ -69,7 +69,7 @@ decltype(auto) get_nth(Args&&... args) {
 }
 
 // Base case: All types selected, try to call the functor
-template <size_t Remaining, typename... SelectedTypes>
+template <size_t Remaining, auto Indices, typename... SelectedTypes>
 struct MultiDispatcher {
     template <typename Functor, typename... SexpArgs>
     static SEXP dispatch(Functor&& functor, SexpArgs&&... sexp_args) {
@@ -83,16 +83,19 @@ struct MultiDispatcher {
 };
 
 // Recursive case: Still have arguments to dispatch
-template <size_t Remaining, typename... SelectedTypes>
+template <size_t Remaining, auto Indices, typename... SelectedTypes>
 requires (Remaining > 0)
-struct MultiDispatcher<Remaining, SelectedTypes...> {
+struct MultiDispatcher<Remaining, Indices, SelectedTypes...> {
     template <typename Functor, typename... SexpArgs>
     static SEXP dispatch(Functor&& functor, SexpArgs&&... sexp_args) {
-        // Which argument are we dispatching? (0-indexed from left)
-        constexpr size_t current_index = sizeof...(SexpArgs) - Remaining;
+        // Which template param are we on?
+        constexpr size_t template_param_index = Indices.size() - Remaining;
         
-        // Get the current SEXP
-        SEXP current_sexp = get_nth<current_index>(sexp_args...);
+        // Which actual argument position does this correspond to?
+        constexpr size_t arg_position = Indices[template_param_index];
+        
+        // Get the SEXP at that position
+        SEXP current_sexp = get_nth<arg_position>(sexp_args...);
         int type = CPP20_TYPEOF(current_sexp);
         
         SEXP result = R_NilValue;
@@ -103,14 +106,14 @@ struct MultiDispatcher<Remaining, SelectedTypes...> {
             if (type != r_type_id_v<T>) return;
             
             // Try scalar T
-            result = MultiDispatcher<Remaining - 1, SelectedTypes..., T>::dispatch(
+            result = MultiDispatcher<Remaining - 1, Indices, SelectedTypes..., T>::dispatch(
                 std::forward<Functor>(functor), 
                 std::forward<SexpArgs>(sexp_args)...
             );
             
             // If scalar didn't work, try r_vec<T>
             if (result == R_NilValue) {
-                result = MultiDispatcher<Remaining - 1, SelectedTypes..., r_vec<T>>::dispatch(
+                result = MultiDispatcher<Remaining - 1, Indices, SelectedTypes..., r_vec<T>>::dispatch(
                     std::forward<Functor>(functor), 
                     std::forward<SexpArgs>(sexp_args)...
                 );
@@ -128,11 +131,9 @@ struct MultiDispatcher<Remaining, SelectedTypes...> {
 };
 
 // Entry point: dispatch_template_impl<N>(functor, sexp1, sexp2, ...)
-template <size_t N, typename Functor, typename... SexpArgs>
+template <size_t N, std::array<size_t, N> Indices, typename Functor, typename... SexpArgs>
 SEXP dispatch_template_impl(Functor&& functor, SexpArgs&&... sexp_args) {
-    static_assert(sizeof...(SexpArgs) == N, "Number of SEXPs must match N");
-    
-    SEXP result = MultiDispatcher<N>::dispatch(
+    SEXP result = MultiDispatcher<N, Indices>::dispatch(
         std::forward<Functor>(functor), 
         std::forward<SexpArgs>(sexp_args)...
     );

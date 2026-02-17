@@ -28,6 +28,13 @@ r_vec<r_str> test4(const char *x){
   return as<r_vec<r_str>>(x);
 }
 
+
+// // Auto return?
+// [[cpp20::register]]
+// auto test5(r_int n){
+//   return n + 100;
+// }
+
 r_int cpp_get_threads(){
   return r_int(get_threads());
 }

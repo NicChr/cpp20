@@ -43,3 +43,19 @@ foo3 <- function(x, y) {
 foo4 <- function(x) {
   .Call(`_cpp20_foo4`, x)
 }
+
+foo5 <- function(a, b) {
+  .Call(`_cpp20_foo5`, a, b)
+}
+
+foo6 <- function(z, x, y, a) {
+  .Call(`_cpp20_foo6`, z, x, y, a)
+}
+
+foo7 <- function(x, y) {
+  .Call(`_cpp20_foo7`, x, y)
+}
+
+foo8 <- function(x, y) {
+  .Call(`_cpp20_foo8`, x, y)
+}

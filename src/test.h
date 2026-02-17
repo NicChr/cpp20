@@ -45,10 +45,35 @@ SEXP foo4(T x){
   return x.sexp;
 }
 
+template <RMathType T, RMathType U>
+[[cpp20::register]]
+r_vec<T> foo5(r_vec<T> a, U b){
+  return as<r_vec<T>>(a + b);
+}
+
+template <RMathType T, RMathType U>
+[[cpp20::register]]
+r_vec<T> foo6(r_vec<T> z, T x, U y, r_vec<U> a){
+  return as<r_vec<T>>(x + y + z + a);
+}
+
+template <RMathType T>
+[[cpp20::register]]
+r_vec<T> foo7(r_vec<T> x, T y){
+  return as<r_vec<T>>(x + y);
+}
+
+
+template <RMathType T, RMathType U>
+[[cpp20::register]]
+r_vec<T> foo8(r_vec<T> x, r_vec<U> y){
+  return as<r_vec<T>>(x + y);
+}
+
 // template <RMathType T, RMathType U>
 // [[cpp20::register]]
-// r_vec<unwrap_t<T>> foo4(r_vec<T> z, T x, U y, r_vec<U> a){
-//   return as<r_vec<T>>(x + y + z + a);
+// auto foo9(r_vec<T> x, r_vec<U> y){
+//   return as<r_vec<T>>(x + y);
 // }
 
 // template <RMathType T, RMathType U>

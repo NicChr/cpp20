@@ -304,13 +304,23 @@ wrap_call <- function(name, return_type, args, is_template, template_params) {
 
 wrap_call_template <- function(name, args, template_params) {
 
-  #  Number of types to dispatch (N)
+  # Number of template types
   N <- length(template_params)
 
-  # Construct the lambda signature using the REAL names (T, U)
+  # Find which argument positions use template types
+  # Only dispatch on "independent" template params (not wrapped like r_vec<T>)
+  is_independent_template <- args$type %in% template_params
+
+  # Get indices of independent template args (0-indexed for C++)
+  template_indices <- which(is_independent_template) - 1L
+
+  # Format as C++ array: {0, 2} or {1, 2, 3}
+  indices_str <- paste0("{", paste(template_indices, collapse = ", "), "}")
+
+  # Construct the lambda signature using the real names
   template_args_def <- paste(paste0("typename ", template_params), collapse = ", ")
 
-  # Construct the lambda parameters
+  # Construct the lambda parameters (ALL args, not just template ones)
   lambda_params <- glue::glue_collapse(glue::glue("SEXP {args$name}_internal"), ", ")
 
   # Conversion logic
@@ -318,21 +328,21 @@ wrap_call_template <- function(name, args, template_params) {
   call_args_str <- paste(conversions, collapse = ", ")
 
   call_str <- paste0(name, "(", call_args_str, ")")
-
   full_expr <- glue::glue("cpp20::unwrap(cpp20::as<cpp20::r_sexp>({call_str}))")
 
   outer_args <- glue::glue_collapse(args$name, ", ")
 
-  # Generate code
+  # Generate code with indices
   result <- glue::glue('
-    return cpp20::internal::dispatch_template_impl<{N}>(
+    return cpp20::internal::dispatch_template_impl<{N}, std::array<size_t, {N}>{indices_str}>(
       []<{template_args_def}>({lambda_params}) -> decltype({full_expr}) {{
           return {full_expr};
       }},
       {outer_args}
     );
   ')
-  result
+
+  as.character(result)
 }
 
 
