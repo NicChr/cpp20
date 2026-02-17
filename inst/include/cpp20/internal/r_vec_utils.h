@@ -125,6 +125,10 @@ template <>
 inline r_sexp new_vec_impl<r_sexp>(r_size_t n){
   return internal::new_vec(VECSXP, n);
 }
+template <>
+inline r_sexp new_vec_impl<r_sym>(r_size_t n){
+  return new_vec_impl<r_sexp>(n);
+}
 
 
 template <RVal T>
@@ -175,6 +179,11 @@ inline r_sexp new_scalar_vec<r_sexp>(r_sexp default_value){
   r_sexp out = new_vec_impl<r_sexp>(1);
   SET_VECTOR_ELT(out.value, 0, unwrap(default_value));
   return out;
+}
+
+template <>
+inline r_sexp new_scalar_vec<r_sym>(r_sym default_value){
+  return new_scalar_vec<r_sexp>(r_sexp(unwrap(default_value), view_tag{}));
 }
 
 }
