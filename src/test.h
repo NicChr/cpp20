@@ -2,12 +2,9 @@
 
 using namespace cpp20;
 
-// template <RIntegerType T>
-// requires (is<T, r_int>)
-// int foo(T n){
-//   return n + 1;
-// }
-
-template <typename T>
+template <RIntegerType T>
+requires (is<T, r_int>)
 [[cpp20::register]]
-int foo(T n) { return 0; }
+int foo(T n){
+  return n + 1;
+}

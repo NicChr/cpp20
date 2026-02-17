@@ -64,6 +64,14 @@ is_interactive <- function() {
   interactive()
 }
 
+file_extension <- function(x){
+  str_extract(x, "(\\.[^.]+)$")
+}
+
+is_header <- function(x){
+  file_extension(x) %in% c(".h", ".hpp")
+}
+
 # Tweaked version of cpp11::cpp_register
 
 #' Generates wrappers for registered C++ functions
@@ -118,25 +126,13 @@ cpp_register <- function(path = ".", quiet = !is_interactive(), extension = c(".
 
   cpp_function_registration <- glue::glue_collapse(cpp_function_registration, sep  = "\n")
 
-  extra_includes <-  character()
-  # if (pkg_links_to_rcpp(path)) {
-  #   # extra_includes <- c(extra_includes, "#include <cpp11/R.hpp>", "#include <Rcpp.h>", "using namespace Rcpp;")
-  # }
-  #
-  # pkg_types <- c(
-  #   file.path(path, "src", paste0(package, "_types.h")),
-  #   file.path(path, "src", paste0(package, "_types.hpp")),
-  #   file.path(path, "inst", "include", paste0(package, "_types.h")),
-  #   file.path(path, "inst", "include", paste0(package, "_types.hpp"))
-  # )
-  #
-  # pkg_types_exist <- file.exists(pkg_types)
-  # if (any(pkg_types_exist)) {
-  #   extra_includes <- c(
-  #     sprintf('#include "%s"', basename(pkg_types[pkg_types_exist])),
-  #     extra_includes
-  #   )
-  # }
+  extra_includes <- character()
+  if (pkg_links_to_rcpp(path)) {
+    extra_includes <- c(extra_includes, "#include <cpp11/R.hpp>", "#include <Rcpp.h>", "using namespace Rcpp;")
+  }
+
+  user_header_files <- funs$file[is_header(funs$file)]
+  extra_includes <- c(extra_includes, glue::glue('#include "{basename(user_header_files)}"'))
 
   extra_includes <- paste0(extra_includes, collapse = "\n")
 
@@ -302,16 +298,16 @@ wrap_call_template <- function(name, args) {
 
   # We need to construct the lambda body
 
-  conversions <- glue::glue("cpp20::as<cpp11::decay_t<{args$type}>>({args$name}_raw)")
+  conversions <- glue::glue("cpp20::as<cpp11::decay_t<{args$type}>>({args$name}_internal)")
+  call_args_str <- paste(conversions, collapse=", ")
+  call_str <- paste0(name, "(", call_args_str, ")")
 
-  call_str <- paste0(name, "(", paste(conversions, collapse=", "), ")")
+  full_expr <- glue::glue("cpp20::unwrap(cpp20::as<cpp20::r_sexp>({call_str}))")
 
   glue::glue('
     return cpp20::internal::dispatch_template_impl(
-      []<typename T>(SEXP {args$name}_raw) {{
-          return cpp20::unwrap(cpp20::as<cpp20::r_sexp>(
-             {call_str}
-          ));
+      []<typename T>(SEXP {args$name}_internal...) -> decltype({full_expr}) {{
+          return {full_expr};
       }},
       {glue::glue_collapse(args$name, ", ")}
     );
