@@ -4,10 +4,22 @@ cpp_set_threads <- function(n) {
   invisible(.Call(`_cpp20_cpp_set_threads`, n))
 }
 
+test1 <- function(n) {
+  .Call(`_cpp20_test1`, n)
+}
+
+foo <- function(x) {
+  .Call(`_cpp20_foo`, x)
+}
+
+foo2 <- function(x) {
+  .Call(`_cpp20_foo2`, x)
+}
+
 bar <- function(x) {
   .Call(`_cpp20_bar`, x)
 }
 
-foo <- function(n) {
-  .Call(`_cpp20_foo`, n)
+foobar <- function(x) {
+  .Call(`_cpp20_foobar`, x)
 }

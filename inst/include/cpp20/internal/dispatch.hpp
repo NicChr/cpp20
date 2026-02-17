@@ -27,12 +27,12 @@ T sexp_to_cpp(SEXP x) {
 
 using r_types = std::tuple<
     r_lgl, r_int, r_int64, r_dbl, r_str, r_str_view, r_cplx, r_raw, r_sym, r_sexp,
+    r_vec<r_lgl>, r_vec<r_int>, r_vec<r_int64>, r_vec<r_dbl>, r_vec<r_str>, r_vec<r_str_view>, r_vec<r_cplx>, r_vec<r_raw>, r_vec<r_sexp>,
     bool, int, int64_t, double, const char*, std::complex<double>, Rbyte
 >;
 
 // Helper to get the runtime R type ID for a C++ type
 template<typename T> constexpr int r_type_id_v = -1;
-
 
 template<> constexpr int r_type_id_v<r_lgl> = LGLSXP;
 template<> constexpr int r_type_id_v<r_int> = INTSXP;
@@ -45,13 +45,15 @@ template<> constexpr int r_type_id_v<r_raw> = RAWSXP;
 template<> constexpr int r_type_id_v<r_sym> = SYMSXP;
 template<> constexpr int r_type_id_v<r_sexp> = VECSXP;
 
-template<> constexpr int r_type_id_v<bool> = LGLSXP;
-template<> constexpr int r_type_id_v<int> = INTSXP;
-template<> constexpr int r_type_id_v<int64_t> = CPP20_INT64SXP;
-template<> constexpr int r_type_id_v<double> = REALSXP;
-template<> constexpr int r_type_id_v<const char*> = STRSXP;
-template<> constexpr int r_type_id_v<std::complex<double>> = CPLXSXP;
-template<> constexpr int r_type_id_v<Rbyte> = RAWSXP;
+
+// r_vec<T> should also map to types above
+template <typename T>
+constexpr int r_type_id_v<r_vec<T>> = r_type_id_v<T>;
+
+// Pure C++ types (like int or std::string)
+template <typename T>
+requires (CastableToRVal<T>)
+constexpr int r_type_id_v<T> = r_type_id_v<as_r_val_t<T>>;
 
 
 template <typename Functor, typename... Args>
