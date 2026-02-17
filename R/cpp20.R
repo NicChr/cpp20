@@ -39,3 +39,7 @@ foobar <- function(x) {
 foo3 <- function(x, y) {
   .Call(`_cpp20_foo3`, x, y)
 }
+
+foo4 <- function(x) {
+  .Call(`_cpp20_foo4`, x)
+}

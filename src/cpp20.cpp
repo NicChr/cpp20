@@ -103,6 +103,18 @@ extern "C" SEXP _cpp20_foo3(SEXP x, SEXP y) {
   );
   END_CPP20
 }
+// test.h
+
+extern "C" SEXP _cpp20_foo4(SEXP x) {
+  BEGIN_CPP20
+    return cpp20::internal::dispatch_template_impl<1>(
+    []<typename T>(SEXP x_internal) -> decltype(cpp20::unwrap(cpp20::as<cpp20::r_sexp>(foo4(cpp20::as<std::remove_cvref_t<T>>(x_internal))))) {
+        return cpp20::unwrap(cpp20::as<cpp20::r_sexp>(foo4(cpp20::as<std::remove_cvref_t<T>>(x_internal))));
+    },
+    x
+  );
+  END_CPP20
+}
 
 extern "C" {
 static const R_CallMethodDef CallEntries[] = {
@@ -111,6 +123,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"_cpp20_foo",             (DL_FUNC) &_cpp20_foo,             1},
     {"_cpp20_foo2",            (DL_FUNC) &_cpp20_foo2,            1},
     {"_cpp20_foo3",            (DL_FUNC) &_cpp20_foo3,            2},
+    {"_cpp20_foo4",            (DL_FUNC) &_cpp20_foo4,            1},
     {"_cpp20_foobar",          (DL_FUNC) &_cpp20_foobar,          1},
     {"_cpp20_test1",           (DL_FUNC) &_cpp20_test1,           1},
     {"_cpp20_test2",           (DL_FUNC) &_cpp20_test2,           1},

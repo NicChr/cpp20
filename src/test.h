@@ -38,3 +38,21 @@ template <RMathType T, RMathType U>
 r_dbl foo3(T x, U y){
   return as<r_dbl>(x + y);
 }
+
+template <RVector T>
+[[cpp20::register]]
+SEXP foo4(T x){
+  return x.sexp;
+}
+
+// template <RMathType T, RMathType U>
+// [[cpp20::register]]
+// r_vec<unwrap_t<T>> foo4(r_vec<T> z, T x, U y, r_vec<U> a){
+//   return as<r_vec<T>>(x + y + z + a);
+// }
+
+// template <RMathType T, RMathType U>
+// [[cpp20::register]]
+// unwrap_t<T> foo4(int z, T x, U y, double a){
+//   return as<T>(x + y + z + a);
+// }
