@@ -55,70 +55,78 @@ template <typename T>
 requires (CastableToRVal<T>)
 constexpr int r_type_id_v<T> = r_type_id_v<as_r_val_t<T>>;
 
-
-template <typename Functor, typename... Args>
-SEXP dispatch_template_impl(Functor&& functor, SEXP x, Args... args) {
-    int type = CPP20_TYPEOF(x);
-    SEXP result = R_NilValue;
-    bool found = false;
-
-    // Helper to process one type T
-    auto try_type = [&]<typename T>() {
-        if (!found && type == r_type_id_v<T>) {
-            if constexpr (requires { functor.template operator()<T>(x, args...); }) {
-                result = functor.template operator()<T>(x, args...);
-                found = true;
-            }
-        }
-    };
-
-    // Iterate over types using index sequence
-    constexpr size_t N = std::tuple_size_v<r_types>;
-    [&]<size_t... Is>(std::index_sequence<Is...>) {
-        (try_type.template operator()<std::tuple_element_t<Is, r_types>>(), ...);
-    }(std::make_index_sequence<N>{});
-
-    if (!found) abort("No matching template instantiation found for input type");
-    return result;
+// Helper to get Nth element from parameter pack
+template <size_t N, typename... Args>
+decltype(auto) get_nth(Args&&... args) {
+    return std::get<N>(std::forward_as_tuple(std::forward<Args>(args)...));
 }
 
-// template <typename Functor>
-// SEXP dispatch_template_impl(Functor&& functor, SEXP x) {
-//     int type = CPP20_TYPEOF(x);
+// Base case: All types selected, try to call the functor
+template <size_t Remaining, typename... SelectedTypes>
+struct MultiDispatcher {
+    template <typename Functor, typename... SexpArgs>
+    static SEXP dispatch(Functor&& functor, SexpArgs&&... sexp_args) {
+        // All types selected - check if functor accepts this combination
+        if constexpr (requires { functor.template operator()<SelectedTypes...>(sexp_args...); }) {
+            return functor.template operator()<SelectedTypes...>(sexp_args...);
+        } else {
+            return R_NilValue;
+        }
+    }
+};
 
-//     SEXP result = R_NilValue;
-//     bool found = false;
+// Recursive case: Still have arguments to dispatch
+template <size_t Remaining, typename... SelectedTypes>
+requires (Remaining > 0)
+struct MultiDispatcher<Remaining, SelectedTypes...> {
+    template <typename Functor, typename... SexpArgs>
+    static SEXP dispatch(Functor&& functor, SexpArgs&&... sexp_args) {
+        // Which argument are we dispatching? (0-indexed from left)
+        constexpr size_t current_index = sizeof...(SexpArgs) - Remaining;
+        
+        // Get the current SEXP
+        SEXP current_sexp = get_nth<current_index>(sexp_args...);
+        int type = CPP20_TYPEOF(current_sexp);
+        
+        SEXP result = R_NilValue;
+        
+        // Try each type in r_types for this argument
+        auto try_type = [&]<typename T>() {
+            if (result == R_NilValue && type == r_type_id_v<T>) {
+                // Type matches! Recurse to dispatch remaining arguments
+                result = MultiDispatcher<Remaining - 1, SelectedTypes..., T>::dispatch(
+                    std::forward<Functor>(functor), 
+                    std::forward<SexpArgs>(sexp_args)...
+                );
+            }
+        };
+        
+        // Iterate over all types
+        constexpr size_t N = std::tuple_size_v<r_types>;
+        [&]<size_t... Is>(std::index_sequence<Is...>) {
+            (try_type.template operator()<std::tuple_element_t<Is, r_types>>(), ...);
+        }(std::make_index_sequence<N>{});
+        
+        return result;
+    }
+};
 
-//     // Iterate through all known types
-//     std::apply([&](auto... dummy) {
-//         ((
-//             !found && (type == r_type_id_v<std::decay_t<decltype(dummy)>>) ? 
-//             (
-//                 [&]() {
-//                     using T = decltype(dummy);
-                    
-//                     // CHECK 1: Does C++ Type match R Type? (Done by ternary above)
-                    
-//                     // CHECK 2: Does the user function accept T? (SFINAE/Concepts)
-//                     // The lambda body generates the call. If user's template constraints fail
-//                     // for T, this block is invalid and discarded by 'if constexpr'.
-//                     if constexpr (requires { functor.template operator()<T>(); }) {
-//                         // Call the lambda, which calls the user function
-//                         result = functor.template operator()<T>();
-//                         found = true;
-//                     }
-//                 }(), 
-//                 0 
-//             ) : 0
-//         ), ...);
-//     }, r_types{});
-
-//     if (!found) {
-//         abort("No matching template instantiation found for input type");
-//     }
-//     return result;
-// }
-
+// Entry point: dispatch_template_impl<N>(functor, sexp1, sexp2, ...)
+template <size_t N, typename Functor, typename... SexpArgs>
+SEXP dispatch_template_impl(Functor&& functor, SexpArgs&&... sexp_args) {
+    static_assert(sizeof...(SexpArgs) == N, "Number of SEXPs must match N");
+    
+    SEXP result = MultiDispatcher<N>::dispatch(
+        std::forward<Functor>(functor), 
+        std::forward<SexpArgs>(sexp_args)...
+    );
+    
+    if (result == R_NilValue) {
+        abort("No matching template instantiation found for input types");
+    }
+    
+    return result;
+}
 
 
 // Invoke with index sequence

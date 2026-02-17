@@ -8,6 +8,18 @@ test1 <- function(n) {
   .Call(`_cpp20_test1`, n)
 }
 
+test2 <- function(x) {
+  .Call(`_cpp20_test2`, x)
+}
+
+test3 <- function(x) {
+  .Call(`_cpp20_test3`, x)
+}
+
+test4 <- function(x) {
+  .Call(`_cpp20_test4`, x)
+}
+
 foo <- function(x) {
   .Call(`_cpp20_foo`, x)
 }
@@ -22,4 +34,8 @@ bar <- function(x) {
 
 foobar <- function(x) {
   .Call(`_cpp20_foobar`, x)
+}
+
+foo3 <- function(x, y) {
+  .Call(`_cpp20_foo3`, x, y)
 }

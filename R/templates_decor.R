@@ -32,54 +32,74 @@ is_requires_signature <- function(x){
 
 # Once string has been confirmed to be a template signature
 # extract the typenames
-template_typenames <- function(x){
+# template_typenames <- function(x){
+#
+#   if (!is_template_signature(x)){
+#     cli_abort("{.arg x} must be a valid template signature of the form 'template <typename T>'")
+#   }
+#
+#   text <- gsub("^template\\s*(\\<.*\\>)$", "\\1", x, perl = TRUE)
+#
+#   multiple_params <- str_detect(text, "\\<.+,.+\\>")
+#
+#
+#   if (multiple_params){
+#     # Typenames followed by a comma and preceded by '<
+#     first_params <- str_extract(text, "(?<=\\<)(.+(?=,))")
+#     type_strs <- c(
+#       first_params,
+#       # Typenames preceded by a comma and followed by >
+#       str_extract_all(text, "(?<=,)(.+(?=\\>))")
+#     )
+#   } else {
+#     # case - Only one param
+#     type_strs <- gsub("\\<(.+)\\>", "\\1", text, perl = TRUE)
+#   }
+#   type_strs <- trimws(type_strs)
+#
+#   # Empty template
+#   if (type_strs == "<>"){
+#     return(tibble(type_names = character(), arg_names = character()))
+#   }
+#
+#   # Separate out the type names from the arg names
+#
+#   # type_names <- regmatches(type_strs, m = regexpr(".+(?=(\\s+.+))", type_strs, perl = TRUE))
+#
+#   # Anything followed by whitespace
+#   type_names <- regmatches(type_strs, m = regexpr(".+(?=\\s+)", type_strs, perl = TRUE))
+#
+#   # Match whitespace + anything
+#   arg_names <- trimws(regmatches(type_strs, m = regexpr("\\s+.+", type_strs, perl = TRUE)))
+#
+#   if ((length(type_strs) != length(type_names)) || (length(type_strs) != length(type_names))){
+#     cli_abort(c(
+#       "{.arg x} must be a valid template signature of the form 'template <first_type T, second_type U, ...>'",
+#        "not: {x}"
+#     ))
+#   }
+#
+#   tibble(template_type = type_names, type = arg_names)
+# }
 
-  if (!is_template_signature(x)){
-    cli_abort("{.arg x} must be a valid template signature of the form 'template <typename T>'")
-  }
+get_template_params <- function(context) {
+  # Extract content between template < ... >
+  # Handles "template <typename T, RVector U>"
+  pattern <- "template\\s*<([^>]+)>"
+  match <- regmatches(context, regexpr(pattern, context))
 
-  text <- gsub("^template\\s*(\\<.*\\>)$", "\\1", x, perl = TRUE)
+  if (length(match) == 0) return(character(0))
 
-  multiple_params <- str_detect(text, "\\<.+,.+\\>")
+  # Remove 'template <' and '>'
+  inner <- sub("template\\s*<", "", sub(">$", "", match))
 
+  # Split by comma
+  parts <- strsplit(inner, ",")[[1]]
 
-  if (multiple_params){
-    # Typenames followed by a comma and preceded by '<
-    first_params <- str_extract(text, "(?<=\\<)(.+(?=,))")
-    type_strs <- c(
-      first_params,
-      # Typenames preceded by a comma and followed by >
-      str_extract_all(text, "(?<=,)(.+(?=\\>))")
-    )
-  } else {
-    # case - Only one param
-    type_strs <- gsub("\\<(.+)\\>", "\\1", text, perl = TRUE)
-  }
-  type_strs <- trimws(type_strs)
-
-  # Empty template
-  if (type_strs == "<>"){
-    return(tibble(type_names = character(), arg_names = character()))
-  }
-
-  # Separate out the type names from the arg names
-
-  # type_names <- regmatches(type_strs, m = regexpr(".+(?=(\\s+.+))", type_strs, perl = TRUE))
-
-  # Anything followed by whitespace
-  type_names <- regmatches(type_strs, m = regexpr(".+(?=\\s+)", type_strs, perl = TRUE))
-
-  # Match whitespace + anything
-  arg_names <- trimws(regmatches(type_strs, m = regexpr("\\s+.+", type_strs, perl = TRUE)))
-
-  if ((length(type_strs) != length(type_names)) || (length(type_strs) != length(type_names))){
-    cli_abort(c(
-      "{.arg x} must be a valid template signature of the form 'template <first_type T, second_type U, ...>'",
-       "not: {x}"
-    ))
-  }
-
-  tibble(template_type = type_names, type = arg_names)
+  # Extract the last word of each part (the variable name)
+  # e.g., "typename T" -> "T", "RVector U" -> "U"
+  params <- trimws(sub(".*\\s+(\\w+)$", "\\1", parts))
+  params
 }
 
 # adjust_context <- function(context){

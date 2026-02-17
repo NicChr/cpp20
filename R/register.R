@@ -182,6 +182,11 @@ get_registered_functions <- function(decorations, tag, quiet = !is_interactive()
   is_template <- vapply(out$functions, \(x) attr(x, "cpp_template"), TRUE)
   out <- vctrs::vec_cbind(out, vctrs::vec_rbind(!!!out$functions))
   out$is_template <- is_template
+  out$template_params <- lapply(out$context, function(x) {
+    # Combine context lines into one string for regex
+    full_ctx <- paste(x, collapse = " ")
+    get_template_params(full_ctx)
+  })
 
   out <- out[!(names(out) %in% "functions")]
   out$decoration <- sub("::[[:alpha:]]+", "", out$decoration)
@@ -196,11 +201,11 @@ get_registered_functions <- function(decorations, tag, quiet = !is_interactive()
 }
 
 generate_cpp_functions <- function(funs, package = "cpp20") {
-  funs <- funs[c("name", "return_type", "args", "file", "line", "decoration", "is_template")]
+  funs <- funs[c("name", "return_type", "args", "file", "line", "decoration", "is_template", "template_params")]
   funs$real_params <- vcapply(funs$args, glue_collapse_data, "{type} {name}")
   funs$sexp_params <- vcapply(funs$args, glue_collapse_data, "SEXP {name}")
 
-  funs$calls <- mapply(wrap_call, funs$name, funs$return_type, funs$args, funs$is_template, SIMPLIFY = TRUE)
+  funs$calls <- mapply(wrap_call, funs$name, funs$return_type, funs$args, funs$is_template, funs$template_params, SIMPLIFY = TRUE)
   funs$package <- package
 
   funs$declaration <- ifelse(funs$is_template,
@@ -283,10 +288,10 @@ generate_r_functions <- function(funs, package = "cpp20", use_package = FALSE) {
   unclass(out)
 }
 
-wrap_call <- function(name, return_type, args, is_template) {
+wrap_call <- function(name, return_type, args, is_template, template_params) {
 
   if (is_template){
-    return(wrap_call_template(name, args))
+    return(wrap_call_template(name, args, template_params))
   }
 
   call <- glue::glue('{name}({list_params})', list_params = glue_collapse_data(args, "cpp20::as<std::decay_t<{type}>>({name})"))
@@ -297,25 +302,39 @@ wrap_call <- function(name, return_type, args, is_template) {
   }
 }
 
-wrap_call_template <- function(name, args) {
+wrap_call_template <- function(name, args, template_params) {
 
-  # We need to construct the lambda body
+  #  Number of types to dispatch (N)
+  N <- length(template_params)
 
+  # Construct the lambda signature using the REAL names (T, U)
+  template_args_def <- paste(paste0("typename ", template_params), collapse = ", ")
+
+  # Construct the lambda parameters
+  lambda_params <- glue::glue_collapse(glue::glue("SEXP {args$name}_internal"), ", ")
+
+  # Conversion logic
   conversions <- glue::glue("cpp20::as<std::decay_t<{args$type}>>({args$name}_internal)")
-  call_args_str <- paste(conversions, collapse=", ")
+  call_args_str <- paste(conversions, collapse = ", ")
+
   call_str <- paste0(name, "(", call_args_str, ")")
 
   full_expr <- glue::glue("cpp20::unwrap(cpp20::as<cpp20::r_sexp>({call_str}))")
 
-  glue::glue('
-    return cpp20::internal::dispatch_template_impl(
-      []<typename T>(SEXP {args$name}_internal...) -> decltype({full_expr}) {{
+  outer_args <- glue::glue_collapse(args$name, ", ")
+
+  # Generate code
+  result <- glue::glue('
+    return cpp20::internal::dispatch_template_impl<{N}>(
+      []<{template_args_def}>({lambda_params}) -> decltype({full_expr}) {{
           return {full_expr};
       }},
-      {glue::glue_collapse(args$name, ", ")}
+      {outer_args}
     );
   ')
+  result
 }
+
 
 get_call_entries <- function(path, names, package) {
   con <- textConnection("res", local = TRUE, open = "w")

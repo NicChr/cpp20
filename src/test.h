@@ -29,7 +29,12 @@ r_dbl foobar(T x){
 }
 
 // template <RMathType U>
-// [[cpp20::register]]
 // r_vec<r_dbl> foo3(r_vec<U> x){
 //   return as<r_vec<r_dbl>>(x);
 // }
+
+template <RMathType T, RMathType U>
+[[cpp20::register]]
+r_dbl foo3(T x, U y){
+  return as<r_dbl>(x + y);
+}
