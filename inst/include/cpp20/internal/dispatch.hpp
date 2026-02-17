@@ -22,12 +22,20 @@ struct fn_traits<Ret(*)(Args...)> {
 // Convert SEXP to C++ type
 template <typename T>
 T sexp_to_cpp(SEXP x) {
-    return as<std::decay_t<T>>(x);
+    return as<std::remove_cvref_t<T>>(x);
 }
 
 using r_types = std::tuple<
-    r_lgl, r_int, r_int64, r_dbl, r_str, r_str_view, r_cplx, r_raw, r_sym, r_sexp,
-    r_vec<r_lgl>, r_vec<r_int>, r_vec<r_int64>, r_vec<r_dbl>, r_vec<r_str>, r_vec<r_str_view>, r_vec<r_cplx>, r_vec<r_raw>, r_vec<r_sexp>
+    r_lgl,
+    r_int, 
+    r_int64, 
+    r_dbl, 
+    r_str, 
+    r_str_view, 
+    r_cplx, 
+    r_raw, 
+    r_sym, 
+    r_sexp
 >;
 
 // Helper to get the runtime R type ID for a C++ type
@@ -91,9 +99,18 @@ struct MultiDispatcher<Remaining, SelectedTypes...> {
         
         // Try each type in r_types for this argument
         auto try_type = [&]<typename T>() {
-            if (result == R_NilValue && type == r_type_id_v<T>) {
-                // Type matches! Recurse to dispatch remaining arguments
-                result = MultiDispatcher<Remaining - 1, SelectedTypes..., T>::dispatch(
+            if (result != R_NilValue) return;
+            if (type != r_type_id_v<T>) return;
+            
+            // Try scalar T
+            result = MultiDispatcher<Remaining - 1, SelectedTypes..., T>::dispatch(
+                std::forward<Functor>(functor), 
+                std::forward<SexpArgs>(sexp_args)...
+            );
+            
+            // If scalar didn't work, try r_vec<T>
+            if (result == R_NilValue) {
+                result = MultiDispatcher<Remaining - 1, SelectedTypes..., r_vec<T>>::dispatch(
                     std::forward<Functor>(functor), 
                     std::forward<SexpArgs>(sexp_args)...
                 );
