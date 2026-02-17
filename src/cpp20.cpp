@@ -11,7 +11,7 @@
 void cpp_set_threads(int n);
 extern "C" SEXP _cpp20_cpp_set_threads(SEXP n) {
   BEGIN_CPP20
-    cpp_set_threads(cpp20::as<std::decay_t<int>>(n));
+    cpp_set_threads(cpp20::as<std::remove_cvref_t<int>>(n));
     return R_NilValue;
   END_CPP20
 }
@@ -19,28 +19,28 @@ extern "C" SEXP _cpp20_cpp_set_threads(SEXP n) {
 double test1(int n);
 extern "C" SEXP _cpp20_test1(SEXP n) {
   BEGIN_CPP20
-    return cpp20::unwrap(cpp20::as<cpp20::r_sexp>(test1(cpp20::as<std::decay_t<int>>(n))));
+    return cpp20::unwrap(cpp20::as<cpp20::r_sexp>(test1(cpp20::as<std::remove_cvref_t<int>>(n))));
   END_CPP20
 }
 // test.cpp
 r_str test2(const char * x);
 extern "C" SEXP _cpp20_test2(SEXP x) {
   BEGIN_CPP20
-    return cpp20::unwrap(cpp20::as<cpp20::r_sexp>(test2(cpp20::as<std::decay_t<const char *>>(x))));
+    return cpp20::unwrap(cpp20::as<cpp20::r_sexp>(test2(cpp20::as<std::remove_cvref_t<const char *>>(x))));
   END_CPP20
 }
 // test.cpp
 const char* test3(const char * x);
 extern "C" SEXP _cpp20_test3(SEXP x) {
   BEGIN_CPP20
-    return cpp20::unwrap(cpp20::as<cpp20::r_sexp>(test3(cpp20::as<std::decay_t<const char *>>(x))));
+    return cpp20::unwrap(cpp20::as<cpp20::r_sexp>(test3(cpp20::as<std::remove_cvref_t<const char *>>(x))));
   END_CPP20
 }
 // test.cpp
 r_vec<r_str> test4(const char * x);
 extern "C" SEXP _cpp20_test4(SEXP x) {
   BEGIN_CPP20
-    return cpp20::unwrap(cpp20::as<cpp20::r_sexp>(test4(cpp20::as<std::decay_t<const char *>>(x))));
+    return cpp20::unwrap(cpp20::as<cpp20::r_sexp>(test4(cpp20::as<std::remove_cvref_t<const char *>>(x))));
   END_CPP20
 }
 // test.h
@@ -48,8 +48,8 @@ extern "C" SEXP _cpp20_test4(SEXP x) {
 extern "C" SEXP _cpp20_foo(SEXP x) {
   BEGIN_CPP20
     return cpp20::internal::dispatch_template_impl<1>(
-    []<typename T>(SEXP x_internal) -> decltype(cpp20::unwrap(cpp20::as<cpp20::r_sexp>(foo(cpp20::as<std::decay_t<T>>(x_internal))))) {
-        return cpp20::unwrap(cpp20::as<cpp20::r_sexp>(foo(cpp20::as<std::decay_t<T>>(x_internal))));
+    []<typename T>(SEXP x_internal) -> decltype(cpp20::unwrap(cpp20::as<cpp20::r_sexp>(foo(cpp20::as<std::remove_cvref_t<T>>(x_internal))))) {
+        return cpp20::unwrap(cpp20::as<cpp20::r_sexp>(foo(cpp20::as<std::remove_cvref_t<T>>(x_internal))));
     },
     x
   );
@@ -60,8 +60,8 @@ extern "C" SEXP _cpp20_foo(SEXP x) {
 extern "C" SEXP _cpp20_foo2(SEXP x) {
   BEGIN_CPP20
     return cpp20::internal::dispatch_template_impl<1>(
-    []<typename T>(SEXP x_internal) -> decltype(cpp20::unwrap(cpp20::as<cpp20::r_sexp>(foo2(cpp20::as<std::decay_t<T>>(x_internal))))) {
-        return cpp20::unwrap(cpp20::as<cpp20::r_sexp>(foo2(cpp20::as<std::decay_t<T>>(x_internal))));
+    []<typename T>(SEXP x_internal) -> decltype(cpp20::unwrap(cpp20::as<cpp20::r_sexp>(foo2(cpp20::as<std::remove_cvref_t<T>>(x_internal))))) {
+        return cpp20::unwrap(cpp20::as<cpp20::r_sexp>(foo2(cpp20::as<std::remove_cvref_t<T>>(x_internal))));
     },
     x
   );
@@ -72,8 +72,8 @@ extern "C" SEXP _cpp20_foo2(SEXP x) {
 extern "C" SEXP _cpp20_bar(SEXP x) {
   BEGIN_CPP20
     return cpp20::internal::dispatch_template_impl<1>(
-    []<typename T>(SEXP x_internal) -> decltype(cpp20::unwrap(cpp20::as<cpp20::r_sexp>(bar(cpp20::as<std::decay_t<r_vec<T>>>(x_internal))))) {
-        return cpp20::unwrap(cpp20::as<cpp20::r_sexp>(bar(cpp20::as<std::decay_t<r_vec<T>>>(x_internal))));
+    []<typename T>(SEXP x_internal) -> decltype(cpp20::unwrap(cpp20::as<cpp20::r_sexp>(bar(cpp20::as<std::remove_cvref_t<r_vec<T>>>(x_internal))))) {
+        return cpp20::unwrap(cpp20::as<cpp20::r_sexp>(bar(cpp20::as<std::remove_cvref_t<r_vec<T>>>(x_internal))));
     },
     x
   );
@@ -84,8 +84,8 @@ extern "C" SEXP _cpp20_bar(SEXP x) {
 extern "C" SEXP _cpp20_foobar(SEXP x) {
   BEGIN_CPP20
     return cpp20::internal::dispatch_template_impl<1>(
-    []<typename T>(SEXP x_internal) -> decltype(cpp20::unwrap(cpp20::as<cpp20::r_sexp>(foobar(cpp20::as<std::decay_t<T>>(x_internal))))) {
-        return cpp20::unwrap(cpp20::as<cpp20::r_sexp>(foobar(cpp20::as<std::decay_t<T>>(x_internal))));
+    []<typename T>(SEXP x_internal) -> decltype(cpp20::unwrap(cpp20::as<cpp20::r_sexp>(foobar(cpp20::as<std::remove_cvref_t<T>>(x_internal))))) {
+        return cpp20::unwrap(cpp20::as<cpp20::r_sexp>(foobar(cpp20::as<std::remove_cvref_t<T>>(x_internal))));
     },
     x
   );
@@ -96,8 +96,8 @@ extern "C" SEXP _cpp20_foobar(SEXP x) {
 extern "C" SEXP _cpp20_foo3(SEXP x, SEXP y) {
   BEGIN_CPP20
     return cpp20::internal::dispatch_template_impl<2>(
-    []<typename T, typename U>(SEXP x_internal, SEXP y_internal) -> decltype(cpp20::unwrap(cpp20::as<cpp20::r_sexp>(foo3(cpp20::as<std::decay_t<T>>(x_internal), cpp20::as<std::decay_t<U>>(y_internal))))) {
-        return cpp20::unwrap(cpp20::as<cpp20::r_sexp>(foo3(cpp20::as<std::decay_t<T>>(x_internal), cpp20::as<std::decay_t<U>>(y_internal))));
+    []<typename T, typename U>(SEXP x_internal, SEXP y_internal) -> decltype(cpp20::unwrap(cpp20::as<cpp20::r_sexp>(foo3(cpp20::as<std::remove_cvref_t<T>>(x_internal), cpp20::as<std::remove_cvref_t<U>>(y_internal))))) {
+        return cpp20::unwrap(cpp20::as<cpp20::r_sexp>(foo3(cpp20::as<std::remove_cvref_t<T>>(x_internal), cpp20::as<std::remove_cvref_t<U>>(y_internal))));
     },
     x, y
   );
