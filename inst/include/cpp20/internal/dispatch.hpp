@@ -27,8 +27,7 @@ T sexp_to_cpp(SEXP x) {
 
 using r_types = std::tuple<
     r_lgl, r_int, r_int64, r_dbl, r_str, r_str_view, r_cplx, r_raw, r_sym, r_sexp,
-    r_vec<r_lgl>, r_vec<r_int>, r_vec<r_int64>, r_vec<r_dbl>, r_vec<r_str>, r_vec<r_str_view>, r_vec<r_cplx>, r_vec<r_raw>, r_vec<r_sexp>,
-    bool, int, int64_t, double, const char*, std::complex<double>, Rbyte
+    r_vec<r_lgl>, r_vec<r_int>, r_vec<r_int64>, r_vec<r_dbl>, r_vec<r_str>, r_vec<r_str_view>, r_vec<r_cplx>, r_vec<r_raw>, r_vec<r_sexp>
 >;
 
 // Helper to get the runtime R type ID for a C++ type
