@@ -5,6 +5,7 @@
 // License: MIT
 // Author: Nick Christofides
 
+#include <cpp20/internal/register.hpp>
 #include <cpp20/internal/r_setup.h>
 #include <cpp20/internal/r_concepts.h>
 #include <cpp20/internal/r_types.h>

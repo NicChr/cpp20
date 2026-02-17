@@ -158,6 +158,10 @@ struct r_str {
   std::string cpp_str() const {
     return static_cast<std::string>(c_str());
   }
+  
+  // Explicit conversions
+  explicit operator const char*() const { return c_str(); }
+  explicit operator std::string() const { return cpp_str(); }
 };
 
 // Unsafe (but fast) r_str type
@@ -178,6 +182,11 @@ struct r_str_view {
   
   const char* c_str() const { return CHAR(value); }
   std::string_view cpp_str() const noexcept { return std::string_view{c_str()}; }
+
+
+  // Explicit conversions
+  explicit operator const char*() const { return c_str(); }
+  explicit operator std::string_view() const { return cpp_str(); }
 };
 
 inline r_str::r_str(r_str_view x) : value(static_cast<SEXP>(x)) {}

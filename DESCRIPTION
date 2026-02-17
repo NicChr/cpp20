@@ -17,7 +17,9 @@ Depends:
 Imports:
     cli,
     decor, 
-    glue
+    glue, 
+    purrr,
+    stringr
 Suggests: 
     bench,
     testthat (>= 3.0.0)
