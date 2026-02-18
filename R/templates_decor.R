@@ -30,6 +30,20 @@ is_requires_signature <- function(x){
   grepl(template_pattern, x, perl = TRUE)
 }
 
+is_template_arg <- function(type, template_param) {
+  pattern <- paste0("^", template_param, "$|<", template_param, "[,>]|,\\s*", template_param, "[,>]")
+  grepl(pattern, type)
+}
+
+is_any_template_arg <- function(type, template_params) {
+  for (param in template_params){
+    if (is_template_arg(type, param)){
+     return(TRUE)
+    }
+  }
+  FALSE
+}
+
 # Once string has been confirmed to be a template signature
 # extract the typenames
 # template_typenames <- function(x){
@@ -119,3 +133,5 @@ parse_cpp_function <- function(context, is_attribute = TRUE){
   out
 
 }
+
+
