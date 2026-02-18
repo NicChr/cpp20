@@ -318,7 +318,7 @@ wrap_call <- function(name, return_type, args, is_template, template_params) {
 wrap_call_template <- function(name, args, template_params) {
 
   # Number of template types
-  N <- length(template_params)
+  N <- sum(vapply(args$type, \(x) !is.na(match(x, template_params)), TRUE, USE.NAMES = FALSE))
 
   # Find which argument positions use template types
   # Only dispatch on "independent" template params (not wrapped like r_vec<T>)
