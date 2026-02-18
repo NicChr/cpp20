@@ -4,6 +4,10 @@ cpp_set_threads <- function(n) {
   invisible(.Call(`_cpp20_cpp_set_threads`, n))
 }
 
+cpp_get_threads <- function() {
+  .Call(`_cpp20_cpp_get_threads`)
+}
+
 test1 <- function(n) {
   .Call(`_cpp20_test1`, n)
 }
@@ -20,42 +24,50 @@ test4 <- function(x) {
   .Call(`_cpp20_test4`, x)
 }
 
-foo <- function(x) {
-  .Call(`_cpp20_foo`, x)
+scalar1 <- function(x) {
+  .Call(`_cpp20_scalar1`, x)
 }
 
-foo2 <- function(x) {
-  .Call(`_cpp20_foo2`, x)
+scalar2 <- function(x) {
+  .Call(`_cpp20_scalar2`, x)
 }
 
-bar <- function(x) {
-  .Call(`_cpp20_bar`, x)
+vector1 <- function(x) {
+  .Call(`_cpp20_vector1`, x)
 }
 
-foobar <- function(x) {
-  .Call(`_cpp20_foobar`, x)
+vector2 <- function(x) {
+  .Call(`_cpp20_vector2`, x)
 }
 
-foo3 <- function(x, y) {
-  .Call(`_cpp20_foo3`, x, y)
+scalar3 <- function(x, y) {
+  .Call(`_cpp20_scalar3`, x, y)
 }
 
-foo4 <- function(x) {
-  .Call(`_cpp20_foo4`, x)
+scalar4 <- function(x, y) {
+  .Call(`_cpp20_scalar4`, x, y)
 }
 
-foo5 <- function(a, b) {
-  .Call(`_cpp20_foo5`, a, b)
+test_sexp <- function(x) {
+  .Call(`_cpp20_test_sexp`, x)
 }
 
-foo6 <- function(z, x, y, a) {
-  .Call(`_cpp20_foo6`, z, x, y, a)
+scalar_vec1 <- function(a, b) {
+  .Call(`_cpp20_scalar_vec1`, a, b)
 }
 
-foo7 <- function(x, y) {
-  .Call(`_cpp20_foo7`, x, y)
+scalar_vec2 <- function(a, b) {
+  .Call(`_cpp20_scalar_vec2`, a, b)
 }
 
-foo8 <- function(x, y) {
-  .Call(`_cpp20_foo8`, x, y)
+scalar_vec3 <- function(z, x, y, a) {
+  .Call(`_cpp20_scalar_vec3`, z, x, y, a)
+}
+
+test_mix2 <- function(a, b, c, d, e, f, g) {
+  .Call(`_cpp20_test_mix2`, a, b, c, d, e, f, g)
+}
+
+test_specialisation <- function(x) {
+  .Call(`_cpp20_test_specialisation`, x)
 }

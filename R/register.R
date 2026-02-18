@@ -317,23 +317,29 @@ wrap_call <- function(name, return_type, args, is_template, template_params) {
 
 wrap_call_template <- function(name, args, template_params) {
 
-  # Number of template types
-  N <- sum(vapply(args$type, \(x) !is.na(match(x, template_params)), TRUE, USE.NAMES = FALSE))
+  # Number of unique template parameters
+  num_template_params <- length(template_params)
 
-  # Find which argument positions use template types
-  # Only dispatch on "independent" template params (not wrapped like r_vec<T>)
-  is_independent_template <- args$type %in% template_params
+  # Total number of arguments
+  num_args <- length(args$type)
 
-  # Get indices of independent template args (0-indexed for C++)
-  template_indices <- which(is_independent_template) - 1L
+  # Map each arg to its template param index (-1 if not template)
+  arg_to_template <- vapply(args$type, function(type) {
+    for (i in seq_along(template_params)) {
+      if (is_template_arg(type, template_params[i])) {
+        return(i - 1L)  # 0-indexed
+      }
+    }
+    return(-1L)
+  }, integer(1))
 
-  # Format as C++ array: {0, 2} or {1, 2, 3}
-  indices_str <- paste0("{", paste(template_indices, collapse = ", "), "}")
+  # Format as C++ array: {0, 0, 1, 1} or {-1, 0, -1, 1}
+  map_str <- paste0("{", paste(arg_to_template, collapse = ", "), "}")
 
-  # Construct the lambda signature using the real names
+  # Construct the lambda signature using template param names
   template_args_def <- paste(paste0("typename ", template_params), collapse = ", ")
 
-  # Construct the lambda parameters (ALL args, not just template ones)
+  # Construct the lambda parameters (ALL args)
   lambda_params <- glue::glue_collapse(glue::glue("SEXP {args$name}_internal"), ", ")
 
   # Conversion logic
@@ -347,7 +353,7 @@ wrap_call_template <- function(name, args, template_params) {
 
   # Generate code with indices
   result <- glue::glue('
-    return cpp20::internal::dispatch_template_impl<{N}, std::array<size_t, {N}>{indices_str}>(
+    return cpp20::internal::dispatch_template_impl<{num_template_params}, {num_args}, std::array<int, {num_args}>{map_str}>(
       []<{template_args_def}>({lambda_params}) -> decltype({full_expr}) {{
           return {full_expr};
       }},
@@ -357,6 +363,7 @@ wrap_call_template <- function(name, args, template_params) {
 
   unclass(result)
 }
+
 
 
 get_call_entries <- function(path, names, package) {

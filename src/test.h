@@ -4,80 +4,94 @@
 
 using namespace cpp20;
 
+// 1 scalar arg
 template <RMathType T>
 [[cpp20::register]]
-r_dbl foo(T x){
+r_dbl scalar1(T x){
   return as<r_dbl>(x);
 }
 
+// 1 scalar arg + more complex return value
 template <RMathType T>
 [[cpp20::register]]
-unwrap_t<T> foo2(T x){
+unwrap_t<T> scalar2(T x){
   return unwrap(x);
 }
 
+// 1 vector arg
 template <RMathType T>
 [[cpp20::register]]
-r_dbl bar(r_vec<T> x){
+r_dbl vector1(r_vec<T> x){
   return as<r_dbl>(x.get(0));
 }
 
+// RVector template typename
 template <RVector T>
 [[cpp20::register]]
-r_dbl foobar(T x){
+r_dbl vector2(T x){
   return as<r_dbl>(x.get(1));
 }
 
-// template <RMathType U>
-// r_vec<r_dbl> foo3(r_vec<U> x){
-//   return as<r_vec<r_dbl>>(x);
-// }
-
-template <RMathType T, RMathType U>
+// 2 scalar args (same typename)
+template <RMathType T>
 [[cpp20::register]]
-r_dbl foo3(T x, U y){
+r_dbl scalar3(T x, T y){
   return as<r_dbl>(x + y);
 }
-
+// 2 scalar args (different typenames)
+template <RMathType T, RMathType U>
+[[cpp20::register]]
+r_dbl scalar4(T x, U y){
+  return as<r_dbl>(x + y);
+}
+// SEXP return
 template <RVector T>
 [[cpp20::register]]
-SEXP foo4(T x){
+SEXP test_sexp(T x){
   return x.sexp;
 }
 
-template <RMathType T, RMathType U>
+// scalar and vector args (same typenames)
+template <RMathType T>
 [[cpp20::register]]
-r_vec<T> foo5(r_vec<T> a, U b){
+r_vec<T> scalar_vec1(r_vec<T> a, T b){
   return as<r_vec<T>>(a + b);
 }
 
+// scalar and vector args (different typenames)
 template <RMathType T, RMathType U>
 [[cpp20::register]]
-r_vec<T> foo6(r_vec<T> z, T x, U y, r_vec<U> a){
+r_vec<T> scalar_vec2(r_vec<T> a, U b){
+  return as<r_vec<T>>(a + b);
+}
+// scalar and vector args 
+template <RMathType T, RMathType U>
+[[cpp20::register]]
+r_vec<T> scalar_vec3(r_vec<T> z, T x, U y, r_vec<U> a){
   return as<r_vec<T>>(x + y + z + a);
 }
+// Complicated mix of scalar, vector and plain C types
+// template <RMathType T, RMathType U, typename V>
+// requires (RMathType<V>)
+// [[cpp20::register]]
+// r_vec<T> test_mix(r_vec<T> a, double b, T c, int d, T e, U f, U g, T h, r_vec<U> i, r_vec<V> j){
+//   return as<r_vec<T>>(a + b + c + d + e + f + g + h + i + j);
+// }
+template <RMathType T, RVector V>
+requires (RMathType<typename V::data_type>)
+[[cpp20::register]]
+r_vec<T> test_mix2(r_vec<T> a, double b, T c, int d, T e, T f, V g){
+  return as<r_vec<T>>(a + b + c + d + e + f + g);
+}
 
+// Testing template specialisations
 template <RMathType T>
 [[cpp20::register]]
-r_vec<T> foo7(r_vec<T> x, T y){
-  return as<r_vec<T>>(x + y);
+r_vec<T> test_specialisation(r_vec<T> x) {
+  return r_vec<T>(1, T(0)); 
 }
 
-
-template <RMathType T, RMathType U>
-[[cpp20::register]]
-r_vec<T> foo8(r_vec<T> x, r_vec<U> y){
-  return as<r_vec<T>>(x + y);
+template <> 
+inline r_vec<r_int> test_specialisation<r_int>(r_vec<r_int> x) { 
+  return r_vec<r_int>(1, r_int(1)); 
 }
-
-// template <RMathType T, RMathType U>
-// [[cpp20::register]]
-// auto foo9(r_vec<T> x, r_vec<U> y){
-//   return as<r_vec<T>>(x + y);
-// }
-
-// template <RMathType T, RMathType U>
-// [[cpp20::register]]
-// unwrap_t<T> foo4(int z, T x, U y, double a){
-//   return as<T>(x + y + z + a);
-// }
