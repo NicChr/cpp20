@@ -29,7 +29,18 @@ inline T as(U x) {
       return static_cast<SEXP>(x);
     }
   } else if constexpr (RVal<T> && is_sexp<U>){
-    return internal::visit_maybe_vector(x, [&](auto xvec) -> T {
+
+      // since r_sym is a special case in general (there is no vector of symbols except for a list)
+      // We check the case that r_sym is being constructed from a valid SEXP (SYMSXP)
+      // Will likely remove r_sym in the future and encourage usage of r_str/r_str_view
+      
+      if constexpr (is<T, r_sym>){
+        if (TYPEOF(x) == SYMSXP){
+        return r_sym(x);
+      }
+    }
+    
+    return internal::visit_vector(x, [&](auto xvec) -> T {
       // Use branch below current branch
       return as<T>(xvec);
     });
