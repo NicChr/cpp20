@@ -84,6 +84,48 @@ r_vec<T> test_mix2(r_vec<T> a, double b, T c, int d, T e, T f, V g){
   return as<r_vec<T>>(a + b + c + d + e + f + g);
 }
 
+// R strings
+[[cpp20::register]]
+inline r_vec<r_str> test_str1(r_str x){
+  return as<r_vec<r_str>>(x);
+}
+
+[[cpp20::register]]
+inline r_vec<r_str> test_str2(r_str_view x){
+  return as<r_vec<r_str>>(x);
+}
+template <RStringType T>
+[[cpp20::register]]
+inline r_vec<r_str> test_str3(T x){
+  return as<r_vec<r_str>>(x);
+}
+template <RStringType T>
+[[cpp20::register]]
+inline r_vec<r_str> test_str4(T x){
+  return as<r_vec<r_str>>(x);
+}
+
+template <typename T>
+[[cpp20::register]]
+inline r_sym test_as_sym(T x){
+  return as<r_sym>(x);
+}
+
+// R list elements
+
+// template <typename T>
+// requires (is<T, r_sexp>)
+// [[cpp20::register]]
+// inline r_sexp test_sexp1(T x){
+//   return x;
+// }
+// template <typename T>
+// requires (is<T, r_sexp>)
+// [[cpp20::register]]
+// inline r_sexp test_sexp2(T x){
+//   return x;
+// }
+
 // Testing template specialisations
 template <RMathType T>
 [[cpp20::register]]

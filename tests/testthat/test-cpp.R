@@ -33,5 +33,10 @@ test_that("Correct registration of cpp to R", {
   expect_identical(test_specialisation(c(1, 2, 3)), 0)
 
 
+  expect_equal(test_str1("hi"), "hi")
+  expect_equal(test_str2("hi"), "hi")
+  expect_equal(test_str3("hi"), "hi")
+  expect_equal(test_str4("hi"), "hi")
 
+  expect_equal(test_as_sym("hi"), as.symbol("hi"))
 })

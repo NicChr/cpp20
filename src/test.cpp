@@ -3,6 +3,12 @@
 
 using namespace cpp20;
 
+// Basic SEXP to SEXP
+[[cpp20::register]]
+SEXP cpp_test(SEXP x){
+  return x;
+}
+
 [[cpp20::register]]
 void cpp_set_threads(int n){
   set_threads(n);
@@ -32,3 +38,20 @@ const char* test3(const char *x){
 r_vec<r_str> test4(const char *x){
   return as<r_vec<r_str>>(x);
 }
+
+[[cpp20::register]]
+r_vec<r_dbl> test_mix(r_int a, int b, double c, r_dbl d){
+  return make_vec<r_dbl>(a, b, c, d);
+}
+
+
+[[cpp20::register]]
+r_vec<r_str> test_mix1(r_int a, int b, double c, r_dbl d, r_str e, r_str_view f){
+  return make_vec<r_str>(a, b, c, d, e, f);
+}
+
+[[cpp20::register]]
+r_sym test_sym(r_sym x){
+  return x;
+}
+
