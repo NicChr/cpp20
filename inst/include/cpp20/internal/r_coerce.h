@@ -44,15 +44,15 @@ inline T as(U x) {
       // Use branch below current branch
       return as<T>(xvec);
     });
-  } else if constexpr (RVector<U> && RVal<T>){
+  } else if constexpr (RVal<T> && RVector<U>){
     if (x.length() != 1){
       abort("Vector must be length-1 to be coerced to requested scalar type");
     }
-    return internal::as_r<T>(x.get(0));
+    return as<T>(x.get(0));
   } else if constexpr (RVector<T> && RVal<U>){
     using data_t = typename T::data_type;
     return r_vec<data_t>(1, internal::as_r<data_t>(x));
-  } else if constexpr (RVector<U> && RVector<T>){
+  } else if constexpr (RVector<T> && RVector<U>){
 
     using to_data_t = typename T::data_type;
     using from_data_t = typename U::data_type;
@@ -68,11 +68,11 @@ inline T as(U x) {
     if constexpr (internal::RPtrWritableType<to_data_t>){
       OMP_SIMD
       for (r_size_t i = 0; i < n; ++i){
-      out.set(i, internal::as_r<to_data_t>(x.view(i)));
+      out.set(i, as<to_data_t>(x.view(i)));
       }
     } else {
       for (r_size_t i = 0; i < n; ++i){
-      out.set(i, internal::as_r<to_data_t>(x.view(i)));
+      out.set(i, as<to_data_t>(x.view(i)));
       }
     }
     return out;
