@@ -35,26 +35,27 @@ using r_types = std::tuple<
     r_cplx,
     r_raw,
     r_sym,
-    r_sexp
+    r_sexp // Catch-all type
 >;
 
 // Helper to get the runtime R type ID for a C++ type
 template<typename T> constexpr uint16_t r_type_id_v = std::numeric_limits<uint16_t>::max();
 
-template<> constexpr uint16_t r_type_id_v<r_lgl> = LGLSXP;
-template<> constexpr uint16_t r_type_id_v<r_int> = INTSXP;
-template<> constexpr uint16_t r_type_id_v<r_int64> = CPP20_INT64SXP;
-template<> constexpr uint16_t r_type_id_v<r_dbl> = REALSXP;
-template<> constexpr uint16_t r_type_id_v<r_str_view> = STRSXP;
-template<> constexpr uint16_t r_type_id_v<r_str> = STRSXP;
-template<> constexpr uint16_t r_type_id_v<r_cplx> = CPLXSXP;
-template<> constexpr uint16_t r_type_id_v<r_raw> = RAWSXP;
-template<> constexpr uint16_t r_type_id_v<r_sym> = SYMSXP;
-template<> constexpr uint16_t r_type_id_v<r_sexp> = VECSXP;
+template<> constexpr uint16_t r_type_id_v<r_lgl> =          LGLSXP;
+template<> constexpr uint16_t r_type_id_v<r_int> =          INTSXP;
+template<> constexpr uint16_t r_type_id_v<r_int64> =        CPP20_INT64SXP;
+template<> constexpr uint16_t r_type_id_v<r_dbl> =          REALSXP;
+template<> constexpr uint16_t r_type_id_v<r_str_view> =     STRSXP;
+template<> constexpr uint16_t r_type_id_v<r_str> =          STRSXP;
+template<> constexpr uint16_t r_type_id_v<r_cplx> =         CPLXSXP;
+template<> constexpr uint16_t r_type_id_v<r_raw> =          RAWSXP;
+template<> constexpr uint16_t r_type_id_v<r_sym> =          SYMSXP;
+template <> constexpr uint16_t r_type_id_v<r_vec<r_sexp>> = static_cast<uint16_t>(VECSXP); // VECSXP should NOT map to r_sexp automatically
 
-template <typename T>
+template <typename T> 
 constexpr uint16_t r_type_id_v<r_vec<T>> = r_type_id_v<T>;
 
+// Pure C/C++ types that are constructible to an RVal
 template <typename T>
 requires (CastableToRVal<T>)
 constexpr uint16_t r_type_id_v<T> = r_type_id_v<as_r_val_t<T>>;
@@ -133,7 +134,10 @@ struct GroupedDispatcher<Remaining, NumArgs, ArgToTemplateMap, SelectedTypes...>
         // Try each type in r_types
         auto try_type = [&]<typename T>() {
             if (result != R_NilValue) return;
-            if (type != r_type_id_v<T>) return;
+
+            if constexpr (!is_sexp<T>) {
+                if (type != r_type_id_v<T>) return;
+            }
             
             // Verify ALL arguments using this template param have the same type
             if (!verify_template_param_consistency<CurrentTemplateIdx, NumArgs, ArgToTemplateMap>(

@@ -55,3 +55,17 @@ r_sym test_sym(r_sym x){
   return x;
 }
 
+[[cpp20::register]]
+r_sexp test_sexp2(r_sexp x){
+  return x;
+}
+
+[[cpp20::register]]
+r_vec<r_sexp> test_sexp3(r_vec<r_sexp> x){
+  return x;
+}
+
+[[cpp20::register]]
+SEXP test_list_to_scalars(r_vec<r_sexp> x){
+  return make_vec<r_sexp>(as<r_lgl>(x), as<r_int>(x), as<r_dbl>(x), make_vec<r_str>(as<r_str>(x)), as<r_sexp>(x), as<r_sym>(x));
+}

@@ -78,6 +78,49 @@ extern "C" SEXP _cpp20_test_sym(SEXP x) {
     return cpp20::unwrap(cpp20::as<cpp20::r_sexp>(test_sym(cpp20::as<std::remove_cvref_t<r_sym>>(x))));
   END_CPP20
 }
+// test.cpp
+r_sexp test_sexp2(r_sexp x);
+extern "C" SEXP _cpp20_test_sexp2(SEXP x) {
+  BEGIN_CPP20
+    return cpp20::unwrap(cpp20::as<cpp20::r_sexp>(test_sexp2(cpp20::as<std::remove_cvref_t<r_sexp>>(x))));
+  END_CPP20
+}
+// test.cpp
+r_vec<r_sexp> test_sexp3(r_vec<r_sexp> x);
+extern "C" SEXP _cpp20_test_sexp3(SEXP x) {
+  BEGIN_CPP20
+    return cpp20::unwrap(cpp20::as<cpp20::r_sexp>(test_sexp3(cpp20::as<std::remove_cvref_t<r_vec<r_sexp>>>(x))));
+  END_CPP20
+}
+// test.cpp
+SEXP test_list_to_scalars(r_vec<r_sexp> x);
+extern "C" SEXP _cpp20_test_list_to_scalars(SEXP x) {
+  BEGIN_CPP20
+    return cpp20::unwrap(cpp20::as<cpp20::r_sexp>(test_list_to_scalars(cpp20::as<std::remove_cvref_t<r_vec<r_sexp>>>(x))));
+  END_CPP20
+}
+// test.h
+extern "C" SEXP _cpp20_test_identity(SEXP x) {
+  BEGIN_CPP20
+    return cpp20::internal::dispatch_template_impl<1, 1, std::array<int, 1>{0}>(
+    []<typename T>(SEXP x_internal) -> decltype(cpp20::unwrap(cpp20::as<cpp20::r_sexp>(test_identity(cpp20::as<std::remove_cvref_t<T>>(x_internal))))) {
+        return cpp20::unwrap(cpp20::as<cpp20::r_sexp>(test_identity(cpp20::as<std::remove_cvref_t<T>>(x_internal))));
+    },
+    x
+  );
+  END_CPP20
+}
+// test.h
+extern "C" SEXP _cpp20_test_rval_identity(SEXP x) {
+  BEGIN_CPP20
+    return cpp20::internal::dispatch_template_impl<1, 1, std::array<int, 1>{0}>(
+    []<typename T>(SEXP x_internal) -> decltype(cpp20::unwrap(cpp20::as<cpp20::r_sexp>(test_rval_identity(cpp20::as<std::remove_cvref_t<T>>(x_internal))))) {
+        return cpp20::unwrap(cpp20::as<cpp20::r_sexp>(test_rval_identity(cpp20::as<std::remove_cvref_t<T>>(x_internal))));
+    },
+    x
+  );
+  END_CPP20
+}
 // test.h
 extern "C" SEXP _cpp20_scalar1(SEXP x) {
   BEGIN_CPP20
@@ -156,6 +199,28 @@ extern "C" SEXP _cpp20_test_sexp(SEXP x) {
   END_CPP20
 }
 // test.h
+extern "C" SEXP _cpp20_test_sexp4(SEXP x) {
+  BEGIN_CPP20
+    return cpp20::internal::dispatch_template_impl<1, 1, std::array<int, 1>{0}>(
+    []<typename T>(SEXP x_internal) -> decltype(cpp20::unwrap(cpp20::as<cpp20::r_sexp>(test_sexp4(cpp20::as<std::remove_cvref_t<T>>(x_internal))))) {
+        return cpp20::unwrap(cpp20::as<cpp20::r_sexp>(test_sexp4(cpp20::as<std::remove_cvref_t<T>>(x_internal))));
+    },
+    x
+  );
+  END_CPP20
+}
+// test.h
+extern "C" SEXP _cpp20_test_sexp5(SEXP x) {
+  BEGIN_CPP20
+    return cpp20::internal::dispatch_template_impl<1, 1, std::array<int, 1>{0}>(
+    []<typename T>(SEXP x_internal) -> decltype(cpp20::unwrap(cpp20::as<cpp20::r_sexp>(test_sexp5(cpp20::as<std::remove_cvref_t<r_vec<T>>>(x_internal))))) {
+        return cpp20::unwrap(cpp20::as<cpp20::r_sexp>(test_sexp5(cpp20::as<std::remove_cvref_t<r_vec<T>>>(x_internal))));
+    },
+    x
+  );
+  END_CPP20
+}
+// test.h
 extern "C" SEXP _cpp20_scalar_vec1(SEXP a, SEXP b) {
   BEGIN_CPP20
     return cpp20::internal::dispatch_template_impl<1, 2, std::array<int, 2>{0, 0}>(
@@ -207,7 +272,7 @@ extern "C" SEXP _cpp20_test_str1(SEXP x) {
   END_CPP20
 }
 // test.h
-inline r_vec<r_str> test_str2(r_str_view x);
+inline r_vec<r_str_view> test_str2(r_str_view x);
 extern "C" SEXP _cpp20_test_str2(SEXP x) {
   BEGIN_CPP20
     return cpp20::unwrap(cpp20::as<cpp20::r_sexp>(test_str2(cpp20::as<std::remove_cvref_t<r_str_view>>(x))));
@@ -257,36 +322,55 @@ extern "C" SEXP _cpp20_test_specialisation(SEXP x) {
   );
   END_CPP20
 }
+// test.h
+extern "C" SEXP _cpp20_test_coerce(SEXP x, SEXP ptype) {
+  BEGIN_CPP20
+    return cpp20::internal::dispatch_template_impl<2, 2, std::array<int, 2>{0, 1}>(
+    []<typename T, typename U>(SEXP x_internal, SEXP ptype_internal) -> decltype(cpp20::unwrap(cpp20::as<cpp20::r_sexp>(test_coerce(cpp20::as<std::remove_cvref_t<r_vec<T>>>(x_internal), cpp20::as<std::remove_cvref_t<r_vec<U>>>(ptype_internal))))) {
+        return cpp20::unwrap(cpp20::as<cpp20::r_sexp>(test_coerce(cpp20::as<std::remove_cvref_t<r_vec<T>>>(x_internal), cpp20::as<std::remove_cvref_t<r_vec<U>>>(ptype_internal))));
+    },
+    x, ptype
+  );
+  END_CPP20
+}
 
 extern "C" {
 static const R_CallMethodDef CallEntries[] = {
-    {"_cpp20_cpp_get_threads",     (DL_FUNC) &_cpp20_cpp_get_threads,     0},
-    {"_cpp20_cpp_set_threads",     (DL_FUNC) &_cpp20_cpp_set_threads,     1},
-    {"_cpp20_cpp_test",            (DL_FUNC) &_cpp20_cpp_test,            1},
-    {"_cpp20_scalar1",             (DL_FUNC) &_cpp20_scalar1,             1},
-    {"_cpp20_scalar2",             (DL_FUNC) &_cpp20_scalar2,             1},
-    {"_cpp20_scalar3",             (DL_FUNC) &_cpp20_scalar3,             2},
-    {"_cpp20_scalar4",             (DL_FUNC) &_cpp20_scalar4,             2},
-    {"_cpp20_scalar_vec1",         (DL_FUNC) &_cpp20_scalar_vec1,         2},
-    {"_cpp20_scalar_vec2",         (DL_FUNC) &_cpp20_scalar_vec2,         2},
-    {"_cpp20_scalar_vec3",         (DL_FUNC) &_cpp20_scalar_vec3,         4},
-    {"_cpp20_test1",               (DL_FUNC) &_cpp20_test1,               1},
-    {"_cpp20_test2",               (DL_FUNC) &_cpp20_test2,               1},
-    {"_cpp20_test3",               (DL_FUNC) &_cpp20_test3,               1},
-    {"_cpp20_test4",               (DL_FUNC) &_cpp20_test4,               1},
-    {"_cpp20_test_as_sym",         (DL_FUNC) &_cpp20_test_as_sym,         1},
-    {"_cpp20_test_mix",            (DL_FUNC) &_cpp20_test_mix,            4},
-    {"_cpp20_test_mix1",           (DL_FUNC) &_cpp20_test_mix1,           6},
-    {"_cpp20_test_mix2",           (DL_FUNC) &_cpp20_test_mix2,           7},
-    {"_cpp20_test_sexp",           (DL_FUNC) &_cpp20_test_sexp,           1},
-    {"_cpp20_test_specialisation", (DL_FUNC) &_cpp20_test_specialisation, 1},
-    {"_cpp20_test_str1",           (DL_FUNC) &_cpp20_test_str1,           1},
-    {"_cpp20_test_str2",           (DL_FUNC) &_cpp20_test_str2,           1},
-    {"_cpp20_test_str3",           (DL_FUNC) &_cpp20_test_str3,           1},
-    {"_cpp20_test_str4",           (DL_FUNC) &_cpp20_test_str4,           1},
-    {"_cpp20_test_sym",            (DL_FUNC) &_cpp20_test_sym,            1},
-    {"_cpp20_vector1",             (DL_FUNC) &_cpp20_vector1,             1},
-    {"_cpp20_vector2",             (DL_FUNC) &_cpp20_vector2,             1},
+    {"_cpp20_cpp_get_threads",      (DL_FUNC) &_cpp20_cpp_get_threads,      0},
+    {"_cpp20_cpp_set_threads",      (DL_FUNC) &_cpp20_cpp_set_threads,      1},
+    {"_cpp20_cpp_test",             (DL_FUNC) &_cpp20_cpp_test,             1},
+    {"_cpp20_scalar1",              (DL_FUNC) &_cpp20_scalar1,              1},
+    {"_cpp20_scalar2",              (DL_FUNC) &_cpp20_scalar2,              1},
+    {"_cpp20_scalar3",              (DL_FUNC) &_cpp20_scalar3,              2},
+    {"_cpp20_scalar4",              (DL_FUNC) &_cpp20_scalar4,              2},
+    {"_cpp20_scalar_vec1",          (DL_FUNC) &_cpp20_scalar_vec1,          2},
+    {"_cpp20_scalar_vec2",          (DL_FUNC) &_cpp20_scalar_vec2,          2},
+    {"_cpp20_scalar_vec3",          (DL_FUNC) &_cpp20_scalar_vec3,          4},
+    {"_cpp20_test1",                (DL_FUNC) &_cpp20_test1,                1},
+    {"_cpp20_test2",                (DL_FUNC) &_cpp20_test2,                1},
+    {"_cpp20_test3",                (DL_FUNC) &_cpp20_test3,                1},
+    {"_cpp20_test4",                (DL_FUNC) &_cpp20_test4,                1},
+    {"_cpp20_test_as_sym",          (DL_FUNC) &_cpp20_test_as_sym,          1},
+    {"_cpp20_test_coerce",          (DL_FUNC) &_cpp20_test_coerce,          2},
+    {"_cpp20_test_identity",        (DL_FUNC) &_cpp20_test_identity,        1},
+    {"_cpp20_test_list_to_scalars", (DL_FUNC) &_cpp20_test_list_to_scalars, 1},
+    {"_cpp20_test_mix",             (DL_FUNC) &_cpp20_test_mix,             4},
+    {"_cpp20_test_mix1",            (DL_FUNC) &_cpp20_test_mix1,            6},
+    {"_cpp20_test_mix2",            (DL_FUNC) &_cpp20_test_mix2,            7},
+    {"_cpp20_test_rval_identity",   (DL_FUNC) &_cpp20_test_rval_identity,   1},
+    {"_cpp20_test_sexp",            (DL_FUNC) &_cpp20_test_sexp,            1},
+    {"_cpp20_test_sexp2",           (DL_FUNC) &_cpp20_test_sexp2,           1},
+    {"_cpp20_test_sexp3",           (DL_FUNC) &_cpp20_test_sexp3,           1},
+    {"_cpp20_test_sexp4",           (DL_FUNC) &_cpp20_test_sexp4,           1},
+    {"_cpp20_test_sexp5",           (DL_FUNC) &_cpp20_test_sexp5,           1},
+    {"_cpp20_test_specialisation",  (DL_FUNC) &_cpp20_test_specialisation,  1},
+    {"_cpp20_test_str1",            (DL_FUNC) &_cpp20_test_str1,            1},
+    {"_cpp20_test_str2",            (DL_FUNC) &_cpp20_test_str2,            1},
+    {"_cpp20_test_str3",            (DL_FUNC) &_cpp20_test_str3,            1},
+    {"_cpp20_test_str4",            (DL_FUNC) &_cpp20_test_str4,            1},
+    {"_cpp20_test_sym",             (DL_FUNC) &_cpp20_test_sym,             1},
+    {"_cpp20_vector1",              (DL_FUNC) &_cpp20_vector1,              1},
+    {"_cpp20_vector2",              (DL_FUNC) &_cpp20_vector2,              1},
     {NULL, NULL, 0}
 };
 }

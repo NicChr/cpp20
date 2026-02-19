@@ -4,6 +4,19 @@
 
 using namespace cpp20;
 
+// Super permissive identity fn
+template <typename T>
+[[cpp20::register]]
+T test_identity(T x){
+  return x;
+}
+
+template <RVal T>
+[[cpp20::register]]
+T test_rval_identity(T x){
+  return x;
+}
+
 // 1 scalar arg
 template <RMathType T>
 [[cpp20::register]]
@@ -51,6 +64,20 @@ SEXP test_sexp(T x){
   return x.sexp;
 }
 
+template <typename T>
+requires (is_sexp<T>)
+[[cpp20::register]]
+T test_sexp4(T x){
+  return x;
+}
+
+template <typename T>
+requires (is_sexp<T>)
+[[cpp20::register]]
+SEXP test_sexp5(r_vec<T> x){
+  return x;
+}
+
 // scalar and vector args (same typenames)
 template <RMathType T>
 [[cpp20::register]]
@@ -91,8 +118,8 @@ inline r_vec<r_str> test_str1(r_str x){
 }
 
 [[cpp20::register]]
-inline r_vec<r_str> test_str2(r_str_view x){
-  return as<r_vec<r_str>>(x);
+inline r_vec<r_str_view> test_str2(r_str_view x){
+  return as<r_vec<r_str_view>>(x);
 }
 template <RStringType T>
 [[cpp20::register]]
@@ -137,3 +164,10 @@ template <>
 inline r_vec<r_int> test_specialisation<r_int>(r_vec<r_int> x) { 
   return r_vec<r_int>(1, r_int(1)); 
 }
+
+
+template <RScalar T, RScalar U>
+[[cpp20::register]]
+auto test_coerce(r_vec<T> x, r_vec<U> ptype) {
+  return as<r_vec<U>>(x);
+} 

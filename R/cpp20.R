@@ -40,6 +40,26 @@ test_sym <- function(x) {
   .Call(`_cpp20_test_sym`, x)
 }
 
+test_sexp2 <- function(x) {
+  .Call(`_cpp20_test_sexp2`, x)
+}
+
+test_sexp3 <- function(x) {
+  .Call(`_cpp20_test_sexp3`, x)
+}
+
+test_list_to_scalars <- function(x) {
+  .Call(`_cpp20_test_list_to_scalars`, x)
+}
+
+test_identity <- function(x) {
+  .Call(`_cpp20_test_identity`, x)
+}
+
+test_rval_identity <- function(x) {
+  .Call(`_cpp20_test_rval_identity`, x)
+}
+
 scalar1 <- function(x) {
   .Call(`_cpp20_scalar1`, x)
 }
@@ -66,6 +86,14 @@ scalar4 <- function(x, y) {
 
 test_sexp <- function(x) {
   .Call(`_cpp20_test_sexp`, x)
+}
+
+test_sexp4 <- function(x) {
+  .Call(`_cpp20_test_sexp4`, x)
+}
+
+test_sexp5 <- function(x) {
+  .Call(`_cpp20_test_sexp5`, x)
 }
 
 scalar_vec1 <- function(a, b) {
@@ -106,4 +134,8 @@ test_as_sym <- function(x) {
 
 test_specialisation <- function(x) {
   .Call(`_cpp20_test_specialisation`, x)
+}
+
+test_coerce <- function(x, ptype) {
+  .Call(`_cpp20_test_coerce`, x, ptype)
 }
