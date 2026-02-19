@@ -1,10 +1,8 @@
 #ifndef CPP20_DECLARATIONS_HPP
 #define CPP20_DECLARATIONS_HPP
 
-#include <cpp20.hpp>
+#include <cpp20/internal/r_setup.h>
 #include <exception>           // for std::exception
-
-using namespace cpp20;
 
 // Buffer size for error messages (matches cpp11 default)
 #define CPP20_ERROR_BUFSIZE 8192

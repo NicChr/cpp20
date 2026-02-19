@@ -1,12 +1,13 @@
 #ifndef CPP20_DISPATCH_HPP
 #define CPP20_DISPATCH_HPP
 
-#include <cpp20.hpp>
+#include <cpp20/internal/r_coerce.h>
 #include <tuple>
 #include <utility>
 #include <array>
 
 namespace cpp20 {
+
 namespace internal {
 
 // Function traits

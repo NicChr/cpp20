@@ -1,7 +1,4 @@
-#include <cpp20.hpp>
 #include "test.h"
-
-using namespace cpp20;
 
 // Basic SEXP to SEXP
 [[cpp20::register]]
