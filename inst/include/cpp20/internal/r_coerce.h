@@ -13,6 +13,17 @@ template<typename T, typename U>
 inline T as(U x) {
   if constexpr (is<U, T>){
     return x;
+  } else if constexpr (is<T, SEXP>){
+    // Special case for SEXP
+    // While it's not an RVal or a type that is generally explicitly supported in cpp20, it's needed for
+    // registering C++ functions in R
+    // So we want to avoid going through r_sexp and its protection management if we can
+    if constexpr (RObject<U>){ // Is implicitly convertible to SEXP
+      return static_cast<SEXP>(x);
+    } else {
+      // If it isn't implicitly convertible to SEXP, then rely on as<r_sexp> conversion
+      return static_cast<SEXP>(as<r_sexp>(x));
+    }
   } else if constexpr (RVector<U> && is<T, r_sexp>){
     return x.sexp;
   } else if constexpr (RVector<T> && is_sexp<U>){
