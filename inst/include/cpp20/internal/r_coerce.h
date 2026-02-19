@@ -75,15 +75,14 @@ inline T as(U x) {
 
     r_size_t n = x.length();
     auto out = T(n);
-
-    if constexpr (internal::RPtrWritableType<to_data_t>){
+    if constexpr (internal::RPtrWritableType<to_data_t> && internal::RPtrWritableType<from_data_t>){
       OMP_SIMD
       for (r_size_t i = 0; i < n; ++i){
-      out.set(i, as<to_data_t>(x.view(i)));
+        out.set(i, as<to_data_t>(x.view(i)));
       }
     } else {
       for (r_size_t i = 0; i < n; ++i){
-      out.set(i, as<to_data_t>(x.view(i)));
+        out.set(i, as<to_data_t>(x.view(i)));
       }
     }
     return out;
