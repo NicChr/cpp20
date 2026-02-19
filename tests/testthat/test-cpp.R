@@ -65,8 +65,9 @@ test_that("Correct registration of cpp fns to R", {
   expect_identical(test_list_to_scalars(list(0)), list(FALSE, 0L, 0, "0", list(0), as.symbol("0")))
 
 
-  # expect_identical(test_as_int(1:10), 1:10)
-  # expect_identical(test_as_int(as.double(1:10)), 1:10)
-  # expect_identical(test_as_int(letters), rep(NA_integer_, 26))
-  # expect_error(test_as_int(list(1)))
+  expect_identical(test_coerce(1:10, integer()), 1:10)
+  expect_identical(test_coerce(1:10, numeric()), as.double(1:10))
+  expect_identical(test_coerce(letters, integer()), rep(NA_integer_, 26))
+  expect_identical(test_coerce(1:10, character()), as.character(1:10))
+  expect_error(test_coerce(list(1), integer()))
 })
