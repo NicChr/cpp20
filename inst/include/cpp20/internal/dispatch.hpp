@@ -200,7 +200,7 @@ SEXP invoke_impl(SEXP* sexp_args, std::index_sequence<Is...>) {
         Fn(sexp_to_cpp<Args>(sexp_args[Is])...);
         return R_NilValue;
     } else {
-        return unwrap(as<r_sexp>(Fn(sexp_to_cpp<Args>(sexp_args[Is])...)));
+        return as<SEXP>(Fn(sexp_to_cpp<Args>(sexp_args[Is])...));
     }
 }
 
