@@ -75,6 +75,7 @@ inline T as(U x) {
 
     r_size_t n = x.length();
     auto out = T(n);
+    // Lists sometimes can't be converted to atomic vectors so we can't run the coercion under an SIMD clause
     if constexpr (internal::RPtrWritableType<to_data_t> && internal::RPtrWritableType<from_data_t>){
       OMP_SIMD
       for (r_size_t i = 0; i < n; ++i){
