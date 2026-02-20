@@ -156,6 +156,17 @@ extern "C" SEXP _cpp20_test_set_strs2(SEXP x) {
   END_CPP20
 }
 // test.h
+extern "C" SEXP _cpp20_test_deduced_type(SEXP x) {
+  BEGIN_CPP20
+    return cpp20::internal::dispatch_template_impl<1, 1, std::array<int, 1>{0}>(
+    []<typename T>(SEXP x_internal) -> decltype(cpp20::as<SEXP>(test_deduced_type(cpp20::as<std::remove_cvref_t<T>>(x_internal)))) {
+        return cpp20::as<SEXP>(test_deduced_type(cpp20::as<std::remove_cvref_t<T>>(x_internal)));
+    },
+    x
+  );
+  END_CPP20
+}
+// test.h
 extern "C" SEXP _cpp20_test_identity(SEXP x) {
   BEGIN_CPP20
     return cpp20::internal::dispatch_template_impl<1, 1, std::array<int, 1>{0}>(
@@ -163,6 +174,28 @@ extern "C" SEXP _cpp20_test_identity(SEXP x) {
         return cpp20::as<SEXP>(test_identity(cpp20::as<std::remove_cvref_t<T>>(x_internal)));
     },
     x
+  );
+  END_CPP20
+}
+// test.h
+extern "C" SEXP _cpp20_test_scalar(SEXP x, SEXP y) {
+  BEGIN_CPP20
+    return cpp20::internal::dispatch_template_impl<1, 2, std::array<int, 2>{-1, 0}>(
+    []<typename T>(SEXP x_internal, SEXP y_internal) -> decltype(cpp20::as<SEXP>(test_scalar(cpp20::as<std::remove_cvref_t<int>>(x_internal), cpp20::as<std::remove_cvref_t<T>>(y_internal)))) {
+        return cpp20::as<SEXP>(test_scalar(cpp20::as<std::remove_cvref_t<int>>(x_internal), cpp20::as<std::remove_cvref_t<T>>(y_internal)));
+    },
+    x, y
+  );
+  END_CPP20
+}
+// test.h
+extern "C" SEXP _cpp20_test_scalar2(SEXP x, SEXP y) {
+  BEGIN_CPP20
+    return cpp20::internal::dispatch_template_impl<1, 2, std::array<int, 2>{-1, 0}>(
+    []<typename T>(SEXP x_internal, SEXP y_internal) -> decltype(cpp20::as<SEXP>(test_scalar2(cpp20::as<std::remove_cvref_t<r_int>>(x_internal), cpp20::as<std::remove_cvref_t<T>>(y_internal)))) {
+        return cpp20::as<SEXP>(test_scalar2(cpp20::as<std::remove_cvref_t<r_int>>(x_internal), cpp20::as<std::remove_cvref_t<T>>(y_internal)));
+    },
+    x, y
   );
   END_CPP20
 }
@@ -414,12 +447,15 @@ static const R_CallMethodDef CallEntries[] = {
     {"_cpp20_test_constructions2",  (DL_FUNC) &_cpp20_test_constructions2,  1},
     {"_cpp20_test_constructions3",  (DL_FUNC) &_cpp20_test_constructions3,  1},
     {"_cpp20_test_constructions4",  (DL_FUNC) &_cpp20_test_constructions4,  1},
+    {"_cpp20_test_deduced_type",    (DL_FUNC) &_cpp20_test_deduced_type,    1},
     {"_cpp20_test_identity",        (DL_FUNC) &_cpp20_test_identity,        1},
     {"_cpp20_test_list_to_scalars", (DL_FUNC) &_cpp20_test_list_to_scalars, 1},
     {"_cpp20_test_mix",             (DL_FUNC) &_cpp20_test_mix,             4},
     {"_cpp20_test_mix1",            (DL_FUNC) &_cpp20_test_mix1,            6},
     {"_cpp20_test_mix2",            (DL_FUNC) &_cpp20_test_mix2,            7},
     {"_cpp20_test_rval_identity",   (DL_FUNC) &_cpp20_test_rval_identity,   1},
+    {"_cpp20_test_scalar",          (DL_FUNC) &_cpp20_test_scalar,          2},
+    {"_cpp20_test_scalar2",         (DL_FUNC) &_cpp20_test_scalar2,         2},
     {"_cpp20_test_set_strs",        (DL_FUNC) &_cpp20_test_set_strs,        1},
     {"_cpp20_test_set_strs2",       (DL_FUNC) &_cpp20_test_set_strs2,       1},
     {"_cpp20_test_sexp",            (DL_FUNC) &_cpp20_test_sexp,            1},

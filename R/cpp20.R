@@ -84,8 +84,20 @@ test_set_strs2 <- function(x) {
   .Call(`_cpp20_test_set_strs2`, x)
 }
 
+test_deduced_type <- function(x) {
+  .Call(`_cpp20_test_deduced_type`, x)
+}
+
 test_identity <- function(x) {
   .Call(`_cpp20_test_identity`, x)
+}
+
+test_scalar <- function(x, y) {
+  .Call(`_cpp20_test_scalar`, x, y)
+}
+
+test_scalar2 <- function(x, y) {
+  .Call(`_cpp20_test_scalar2`, x, y)
 }
 
 test_rval_identity <- function(x) {

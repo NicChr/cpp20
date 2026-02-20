@@ -4,6 +4,19 @@ test_that("Correct registration of cpp fns to R", {
   cpp_set_threads(1)
   expect_equal(cpp_get_threads(), 1)
 
+  expect_identical(test_deduced_type(1:3), "r_vec<r_int>")
+  expect_identical(test_deduced_type(1L), "r_vec<r_int>")
+  expect_identical(test_deduced_type(0), "r_vec<r_dbl>")
+  expect_identical(test_deduced_type(letters), "r_vec<r_str>")
+  expect_identical(test_deduced_type(list(1)), "r_vec<r_sexp>")
+  expect_identical(test_deduced_type(as.symbol("a")), "r_sym")
+  expect_identical(test_deduced_type(mean), "r_sexp")
+
+
+  expect_error(test_scalar(1, "2"))
+  expect_error(test_scalar(1, 2))
+  expect_identical(test_scalar(1, 2L), 3L)
+
 
   expect_equal(scalar1(10), 10)
   expect_equal(scalar2(10), 10)
@@ -57,10 +70,14 @@ test_that("Correct registration of cpp fns to R", {
   expect_error(test_rval_identity(1:3))
 
   expect_identical(test_rval_identity(list(1L)), list(1L)) # Not sure about this
-  # expect_error(test_rval_identity(list(1:3))) # Should definitely error!
+
+  # Doesn't error because it deduces as `r_sexp` (catch-all) :)
+  expect_identical(test_rval_identity(list(1:3)), list(1:3))
 
   expect_identical(test_identity(1L), 1L)
-  # expect_identical(test_identity(1:3), 1:3) # Should not error!
+  expect_identical(test_identity(1:3), 1:3)
+  expect_identical(test_identity(letters), letters)
+  expect_identical(test_identity("a"), "a")
 
   expect_identical(test_list_to_scalars(list(0)), list(FALSE, 0L, 0, "0", list(0), as.symbol("0")))
 

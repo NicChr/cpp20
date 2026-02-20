@@ -4,11 +4,31 @@
 
 using namespace cpp20;
 
+// What type is deduced by dispatch?
+template <typename T>
+[[cpp20::register]]
+r_vec<r_str> test_deduced_type(T x){
+  Rprintf("deduced type: %s", r_type_str<decltype(x)>());
+  return r_vec<r_str>(1, r_str(r_type_str<decltype(x)>()));
+}
+
 // Super permissive identity fn
 template <typename T>
 [[cpp20::register]]
 T test_identity(T x){
   return x;
+}
+
+// Generic type, non RVal input + output
+template <RIntegerType T>
+[[cpp20::register]]
+inline int test_scalar(int x, T y){
+  return x + unwrap(y);
+}
+template <CppIntegerType T>
+[[cpp20::register]]
+inline int test_scalar2(r_int x, T y){
+  return x + unwrap(y);
 }
 
 template <RVal T>
