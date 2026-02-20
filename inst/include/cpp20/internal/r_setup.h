@@ -16,7 +16,6 @@
 #include <vector> // For C++ vectors
 #include <algorithm> // For sort + other utilities
 #include <bit> // For bit_cast
-#include <variant> // For variant
 #include <ska_sort/ska_sort.hpp> // For radix sorting via ska_sort
 
 #ifdef _MSC_VER
