@@ -132,6 +132,12 @@ concept RFactor = is<T, r_factors>;
 template <typename T> 
 concept RObject = std::is_convertible_v<T, SEXP>;
 
+template <typename T> 
+concept RType = RVal<T> || RObject<T>;
+
+template <typename T>
+concept CppType = !RType<T>;
+
 template <typename T>
 concept CppScalar = std::is_scalar_v<T>;
 
@@ -321,7 +327,8 @@ template <> inline const char* r_type_str<r_sym>(){return "r_sym";}
 template <> inline const char* r_type_str<r_sexp>(){return "r_sexp";}
 template<RVector T> inline const char* r_type_str(){
     using r_t = typename T::data_type;
-    return (std::string("r_vec<") + r_type_str<r_t>() + ">").c_str();
+    static const std::string out = std::string("r_vec<") + r_type_str<r_t>() + ">";
+    return out.c_str();
 }
 
 namespace internal {
