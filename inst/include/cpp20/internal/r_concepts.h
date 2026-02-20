@@ -283,6 +283,58 @@ template <MathType T, MathType U>
 requires AtLeastOneRMathType<T, U>
 using common_r_math_t = typename internal::common_r_math_impl<T, U>::type;
 
+
+// Mapping from C++ type to R TYPEOF
+
+// Helper to get the runtime R typeoffor a C++ type
+template<typename T> constexpr uint16_t r_typeof = std::numeric_limits<uint16_t>::max();
+template<> constexpr uint16_t r_typeof<r_vec<r_lgl>> =          LGLSXP;
+template<> constexpr uint16_t r_typeof<r_vec<r_int>> =          INTSXP;
+template<> constexpr uint16_t r_typeof<r_vec<r_int64>> =        internal::CPP20_INT64SXP;
+template<> constexpr uint16_t r_typeof<r_vec<r_dbl>> =          REALSXP;
+template<> constexpr uint16_t r_typeof<r_vec<r_str_view>> =     STRSXP;
+template<> constexpr uint16_t r_typeof<r_vec<r_str>> =          STRSXP;
+template<> constexpr uint16_t r_typeof<r_vec<r_cplx>> =         CPLXSXP;
+template<> constexpr uint16_t r_typeof<r_vec<r_raw>> =          RAWSXP;
+template<> constexpr uint16_t r_typeof<r_vec<r_sexp>> =         VECSXP;
+
+template<> constexpr uint16_t r_typeof<r_str_view> =            CHARSXP;
+template<> constexpr uint16_t r_typeof<r_str> =                 CHARSXP;
+template<> constexpr uint16_t r_typeof<r_sym> =                 SYMSXP;
+
+
+template <typename T>
+inline const char* r_type_str() {
+    static_assert(always_false<T>, "Unsupported type passed to `r_type_str()`");
+    return ""; // Unreachable
+}
+
+template <> inline const char* r_type_str<r_lgl>(){return "r_lgl";}
+template <> inline const char* r_type_str<r_int>(){return "r_int";}
+template <> inline const char* r_type_str<r_int64>(){return "r_int64";}
+template <> inline const char* r_type_str<r_dbl>(){return "r_dbl";}
+template <> inline const char* r_type_str<r_str>(){return "r_str";}
+template <> inline const char* r_type_str<r_str_view>(){return "r_str_view";}
+template <> inline const char* r_type_str<r_cplx>(){return "r_cplx";}
+template <> inline const char* r_type_str<r_raw>(){return "r_raw";}
+template <> inline const char* r_type_str<r_sym>(){return "r_sym";}
+template <> inline const char* r_type_str<r_sexp>(){return "r_sexp";}
+template<RVector T> inline const char* r_type_str(){
+    using r_t = typename T::data_type;
+    return (std::string("r_vec<") + r_type_str<r_t>() + ">").c_str();
+}
+
+namespace internal {
+
+template <typename T>
+inline void check_valid_construction(SEXP x){
+    if (r_typeof<T> != CPP20_TYPEOF(x)){
+      abort("Bad construction from R type %s to C++ type %s", r_type_to_str(CPP20_TYPEOF(x)), r_type_str<T>());
+    }
+  }
+
+}
+
 }
 
 #endif
