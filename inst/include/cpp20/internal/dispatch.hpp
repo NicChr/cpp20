@@ -25,6 +25,16 @@ template <typename T>
 T sexp_to_cpp(SEXP x) {
     return as<std::remove_cvref_t<T>>(x);
 }
+// The reverse of above
+// Special case - never return CHARSXP
+template <typename T>
+SEXP cpp_to_sexp(T x) {
+    if constexpr (RStringType<T>){
+        return unwrap(as<r_vec<r_str>>(x));
+    } else {
+        return as<SEXP>(x);
+    }
+}
 
 using r_types = std::tuple<
     r_lgl,
@@ -54,6 +64,12 @@ template <typename T>
 requires (CastableToRVal<T> && CppType<T>)
 inline constexpr uint16_t r_cpp_boundary_map_v<T> = r_cpp_boundary_map_v<as_r_val_t<T>>;
 
+template <typename T>
+inline void check_r_cpp_mapping(SEXP x){
+    if (r_cpp_boundary_map_v<T> != CPP20_TYPEOF(x)){
+        abort("Bad construction from R type %s to C++ type %s", r_type_to_str(CPP20_TYPEOF(x)), r_type_str<T>());
+    }
+}
 
 // Helper to get Nth element from parameter pack
 template <size_t N, typename... Args>
@@ -194,7 +210,7 @@ SEXP invoke_impl(SEXP* sexp_args, std::index_sequence<Is...>) {
         Fn(sexp_to_cpp<Args>(sexp_args[Is])...);
         return R_NilValue;
     } else {
-        return as<SEXP>(Fn(sexp_to_cpp<Args>(sexp_args[Is])...));
+        return cpp_to_sexp(Fn(sexp_to_cpp<Args>(sexp_args[Is])...));
     }
 }
 

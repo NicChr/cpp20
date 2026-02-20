@@ -65,7 +65,7 @@ test_that("Correct registration of cpp fns to R", {
   expect_identical(test_sexp4(list(1:10)), list(1:10))
 
   expect_identical(test_rval_identity(3), 3)
-  expect_type(test_rval_identity("a"), "char") # Expects r_str (CHARSXP) and returns r_str (CHARSXP)
+  expect_identical(test_rval_identity("a"), "a") # Expects r_str output to be STRSXP and NOT CHARSXP!
   expect_identical(test_rval_identity(as.symbol("a")), as.symbol("a"))
   expect_error(test_rval_identity(1:3))
 

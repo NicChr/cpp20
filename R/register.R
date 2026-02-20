@@ -311,7 +311,7 @@ wrap_call <- function(name, return_type, args, is_template, template_params) {
   if (return_type == "void") {
     unclass(glue::glue("  {call};\n    return R_NilValue;", .trim = FALSE))
   } else {
-    unclass(glue::glue("  return cpp20::as<SEXP>({call});"))
+    unclass(glue::glue("  return cpp20::internal::cpp_to_sexp({call});"))
   }
 }
 
@@ -347,7 +347,7 @@ wrap_call_template <- function(name, args, template_params) {
   call_args_str <- paste(conversions, collapse = ", ")
 
   call_str <- paste0(name, "(", call_args_str, ")")
-  full_expr <- glue::glue("cpp20::as<SEXP>({call_str})")
+  full_expr <- glue::glue("cpp20::internal::cpp_to_sexp({call_str})")
 
   outer_args <- glue::glue_collapse(args$name, ", ")
 
