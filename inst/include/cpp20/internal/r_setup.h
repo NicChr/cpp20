@@ -9,6 +9,7 @@
 #include <type_traits> // For concepts
 #include <ankerl/unordered_dense.h> // Hash maps for group IDs + unique + match
 #include <cstring> // For strcmp
+#include <string> // For C++ strings
 #include <charconv> // For to_chars
 #include <complex> // For complex<double>
 #include <limits> // For numeric limits
@@ -62,8 +63,29 @@ inline constexpr int64_t CPP20_OMP_THRESHOLD = 100000;
 inline constexpr SEXPTYPE CPP20_INT64SXP = 64;
 inline int cpp20_n_threads = 1;
 
-inline SEXPTYPE CPP20_TYPEOF(SEXP x){
-  return Rf_inherits(x, "integer64") ? internal::CPP20_INT64SXP : TYPEOF(x);
+[[noexcept]] inline SEXPTYPE CPP20_TYPEOF(SEXP x){
+
+  auto xtype = TYPEOF(x);
+
+  switch (xtype){
+    case REALSXP: {
+      return Rf_inherits(x, "integer64") ? CPP20_INT64SXP : xtype;
+    }
+    default: {
+      return xtype;
+    }
+  }
+}
+
+inline const char* r_type_to_str(SEXPTYPE x){
+  switch (x){
+    case CPP20_INT64SXP: {
+      return "CPP20_INT64SXP";
+    }
+    default: {
+      return Rf_type2char(x);
+    }
+  }
 }
 
 template<typename T, typename U>
