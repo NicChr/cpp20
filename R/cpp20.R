@@ -100,6 +100,10 @@ test_scalar2 <- function(x, y) {
   .Call(`_cpp20_test_scalar2`, x, y)
 }
 
+test_scalar3 <- function(x, y) {
+  .Call(`_cpp20_test_scalar3`, x, y)
+}
+
 test_rval_identity <- function(x) {
   .Call(`_cpp20_test_rval_identity`, x)
 }

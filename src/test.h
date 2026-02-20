@@ -31,6 +31,13 @@ inline int test_scalar2(r_int x, T y){
   return x + unwrap(y);
 }
 
+template <IntegerType T>
+[[cpp20::register]]
+inline r_int test_scalar3(r_int x, T y){
+  return as<r_int>(x + y);
+}
+
+
 template <RVal T>
 [[cpp20::register]]
 T test_rval_identity(T x){
