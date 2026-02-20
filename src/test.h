@@ -166,7 +166,7 @@ inline r_vec<r_int> test_specialisation<r_int>(r_vec<r_int> x) {
 }
 
 
-template <RScalar T, RScalar U>
+template <RVal T, RVal U>
 [[cpp20::register]]
 auto test_coerce(r_vec<T> x, r_vec<U> ptype) {
   return as<r_vec<U>>(x);

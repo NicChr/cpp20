@@ -52,6 +52,18 @@ test_list_to_scalars <- function(x) {
   .Call(`_cpp20_test_list_to_scalars`, x)
 }
 
+test_coerce1 <- function(x) {
+  .Call(`_cpp20_test_coerce1`, x)
+}
+
+test_construction <- function(x) {
+  .Call(`_cpp20_test_construction`, x)
+}
+
+test_constructions <- function(x) {
+  .Call(`_cpp20_test_constructions`, x)
+}
+
 test_identity <- function(x) {
   .Call(`_cpp20_test_identity`, x)
 }

@@ -99,6 +99,27 @@ extern "C" SEXP _cpp20_test_list_to_scalars(SEXP x) {
     return cpp20::as<SEXP>(test_list_to_scalars(cpp20::as<std::remove_cvref_t<r_vec<r_sexp>>>(x)));
   END_CPP20
 }
+// test.cpp
+r_vec<r_int> test_coerce1(const r_vec<r_sexp>& x);
+extern "C" SEXP _cpp20_test_coerce1(SEXP x) {
+  BEGIN_CPP20
+    return cpp20::as<SEXP>(test_coerce1(cpp20::as<std::remove_cvref_t<const r_vec<r_sexp>&>>(x)));
+  END_CPP20
+}
+// test.cpp
+r_vec<r_int> test_construction(SEXP x);
+extern "C" SEXP _cpp20_test_construction(SEXP x) {
+  BEGIN_CPP20
+    return cpp20::as<SEXP>(test_construction(cpp20::as<std::remove_cvref_t<SEXP>>(x)));
+  END_CPP20
+}
+// test.cpp
+r_vec<r_sexp> test_constructions(SEXP x);
+extern "C" SEXP _cpp20_test_constructions(SEXP x) {
+  BEGIN_CPP20
+    return cpp20::as<SEXP>(test_constructions(cpp20::as<std::remove_cvref_t<SEXP>>(x)));
+  END_CPP20
+}
 // test.h
 extern "C" SEXP _cpp20_test_identity(SEXP x) {
   BEGIN_CPP20
@@ -352,6 +373,9 @@ static const R_CallMethodDef CallEntries[] = {
     {"_cpp20_test4",                (DL_FUNC) &_cpp20_test4,                1},
     {"_cpp20_test_as_sym",          (DL_FUNC) &_cpp20_test_as_sym,          1},
     {"_cpp20_test_coerce",          (DL_FUNC) &_cpp20_test_coerce,          2},
+    {"_cpp20_test_coerce1",         (DL_FUNC) &_cpp20_test_coerce1,         1},
+    {"_cpp20_test_construction",    (DL_FUNC) &_cpp20_test_construction,    1},
+    {"_cpp20_test_constructions",   (DL_FUNC) &_cpp20_test_constructions,   1},
     {"_cpp20_test_identity",        (DL_FUNC) &_cpp20_test_identity,        1},
     {"_cpp20_test_list_to_scalars", (DL_FUNC) &_cpp20_test_list_to_scalars, 1},
     {"_cpp20_test_mix",             (DL_FUNC) &_cpp20_test_mix,             4},

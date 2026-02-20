@@ -57,15 +57,17 @@ struct r_vec {
   // Constructors from existing r_sexp/SEXP
   explicit r_vec(r_sexp s) : sexp(std::move(s)) {
     if (!is_null()) {
+      internal::check_valid_construction<r_vec<T>>(sexp);
       initialise_ptr();
     }
   }
 
-  explicit r_vec(const r_sexp& s, internal::view_tag) 
-    : sexp(s.value, internal::view_tag{}) 
-{
-    if (!is_null()) initialise_ptr();
-}
+  explicit r_vec(const r_sexp& s, internal::view_tag) : sexp(s.value, internal::view_tag{}){
+    if (!is_null()){
+      initialise_ptr();
+      internal::check_valid_construction<r_vec<T>>(sexp);
+    }
+  }
 
   explicit r_vec(SEXP s) : r_vec(r_sexp(s)) {}
   explicit r_vec(SEXP s, internal::view_tag) : r_vec(r_sexp(s, internal::view_tag{}), internal::view_tag{}) {}

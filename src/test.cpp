@@ -66,3 +66,23 @@ r_vec<r_sexp> test_sexp3(r_vec<r_sexp> x){
 SEXP test_list_to_scalars(r_vec<r_sexp> x){
   return make_vec<r_sexp>(as<r_lgl>(x), as<r_int>(x), as<r_dbl>(x), make_vec<r_str>(as<r_str>(x)), as<r_sexp>(x), as<r_sym>(x));
 }
+
+[[cpp20::register]]
+r_vec<r_int> test_coerce1(const r_vec<r_sexp>& x){
+  return as<r_vec<r_int>>(x);
+}
+
+[[cpp20::register]]
+r_vec<r_int> test_construction(SEXP x){
+  return r_vec<r_int>(x);
+}
+
+[[cpp20::register]]
+r_vec<r_sexp> test_constructions(SEXP x){
+  r_vec<r_sexp> out(100000);
+
+  for (int i = 0; i < 100000; ++i){
+    out.set(i, r_vec<r_int>(x));
+  }
+  return out;
+}

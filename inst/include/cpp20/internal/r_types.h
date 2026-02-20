@@ -3,7 +3,6 @@
 
 #include <cpp20/internal/r_setup.h>
 #include <cpp20/internal/r_concepts.h>
-#include <string>
 
 // R-based C++ types that closely align with their R equivalents
 // Further methods (e.g. operators) are defined in r_methods.h
@@ -141,8 +140,12 @@ struct r_str {
   // r_str() : value{internal::blank_string_constant, internal::view_tag{}} {}
   r_str() : value{R_BlankString, internal::view_tag{}} {}
   // Explicit SEXP/const char* -> r_str
-  explicit r_str(SEXP x) : value{x} {}
-  explicit r_str(SEXP x, internal::view_tag) : value(x, internal::view_tag{}) {}
+  explicit r_str(SEXP x) : value{x} {
+    internal::check_valid_construction<r_str>(value);
+  }
+  explicit r_str(SEXP x, internal::view_tag) : value(x, internal::view_tag{}) {
+    internal::check_valid_construction<r_str>(value);
+  }
   explicit r_str(r_sexp x) : value(std::move(x)) {}
   explicit r_str(const char *x) : value(Rf_mkCharCE(x, CE_UTF8)) {}
   // Implicit r_str -> SEXP 
@@ -172,7 +175,9 @@ struct r_str_view {
 
   // Constructors
   r_str_view() : value{R_BlankString} {}
-  explicit r_str_view(SEXP x) : value{x} {}
+  explicit r_str_view(SEXP x) : value{x} {
+    internal::check_valid_construction<r_str_view>(value);
+  }
   // explicit r_str_view(const char *x) : value(Rf_mkCharCE(x, CE_UTF8)) {}
   // Implicit r_str_view -> SEXP
   constexpr operator SEXP() const noexcept { return value; }
@@ -197,7 +202,9 @@ struct r_sym {
   using value_type = r_sexp;
 
   r_sym() : value{R_MissingArg} {}
-  explicit r_sym(SEXP x) : value{x} {}
+  explicit r_sym(SEXP x) : value{x} {
+    internal::check_valid_construction<r_sym>(value);
+  }
   explicit r_sym(const char *x) : value(Rf_installChar(Rf_mkCharCE(x, CE_UTF8))) {}
   constexpr operator SEXP() const noexcept { return value; }
 };
