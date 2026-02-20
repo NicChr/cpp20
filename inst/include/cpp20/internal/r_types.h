@@ -146,7 +146,9 @@ struct r_str {
   explicit r_str(SEXP x, internal::view_tag) : value(x, internal::view_tag{}) {
     internal::check_valid_construction<r_str>(value);
   }
-  explicit r_str(r_sexp x) : value(std::move(x)) {}
+  explicit r_str(r_sexp x) : value(std::move(x)) {
+    internal::check_valid_construction<r_str>(value);
+  }
   explicit r_str(const char *x) : value(Rf_mkCharCE(x, CE_UTF8)) {}
   // Implicit r_str -> SEXP 
   constexpr operator SEXP() const noexcept { return value; }
