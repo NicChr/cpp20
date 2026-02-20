@@ -74,4 +74,7 @@ test_that("Correct registration of cpp fns to R", {
   expect_identical(test_coerce(list(1), integer()), 1L)
   expect_identical(test_coerce(as.list(1:3), integer()), 1:3)
   expect_error(test_coerce(list(1:3), integer()))
+  expect_identical(test_coerce(as.list(1:3), character()), c("1", "2", "3"))
+
+  expect_identical(test_coerce(1:3, list()), as.list(1:3))
 })
