@@ -1,5 +1,3 @@
-
-
 # To be used on decor context
 is_template_signature <- function(x){
   if (!is.character(x)){
@@ -33,15 +31,6 @@ is_requires_signature <- function(x){
 is_template_arg <- function(type, template_param) {
   pattern <- paste0("^", template_param, "$|<", template_param, "[,>]|,\\s*", template_param, "[,>]")
   stringr::str_detect(type, pattern)
-}
-
-is_any_template_arg <- function(type, template_params) {
-  for (param in template_params){
-    if (is_template_arg(type, param)){
-     return(TRUE)
-    }
-  }
-  FALSE
 }
 
 get_template_params <- function(context) {
