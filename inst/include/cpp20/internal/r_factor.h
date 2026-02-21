@@ -5,7 +5,6 @@
 #include <cpp20/internal/r_match.h>
 #include <cpp20/internal/r_unique.h>
 #include <cpp20/internal/r_attrs.h>
-#include <vector>
 
 namespace cpp20 {
 

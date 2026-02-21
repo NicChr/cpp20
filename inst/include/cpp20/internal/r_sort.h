@@ -3,9 +3,6 @@
 
 #include <cpp20/internal/r_groups.h>
 #include <cpp20/internal/r_unique.h>
-#include <numeric>
-#include <algorithm>
-#include <ska_sort/ska_sort.hpp>
 
 namespace cpp20 {
 
@@ -18,7 +15,8 @@ template <RSortable T>
 r_vec<r_int> cpp_order(const r_vec<T>& x) {
     int n = x.size();
     r_vec<r_int> p(n);
-    std::iota(p.begin(), p.end(), 0);
+    OMP_SIMD
+    for (r_size_t i = 0; i < n; ++i) p.set(i, n);
 
     auto *p_x = x.data();
 
@@ -49,7 +47,8 @@ template <RSortable T>
 r_vec<r_int> cpp_stable_order(const r_vec<T>& x) {
     int n = x.size();
     r_vec<r_int> p(n);
-    std::iota(p.begin(), p.end(), 0);
+    OMP_SIMD
+    for (r_size_t i = 0; i < n; ++i) p.set(i, n);
 
     auto *p_x = x.data();
 
@@ -189,7 +188,7 @@ r_vec<r_int> stable_order(const r_vec<T>& x) {
 
 // order function (doesn't preserve order of ties)
 template <RSortable T>
-r_vec<r_int> order(const r_vec<T>& x) {
+inline r_vec<r_int> order(const r_vec<T>& x) {
     int n = x.size();
 
     if (n < 500){

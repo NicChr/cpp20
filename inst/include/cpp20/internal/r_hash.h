@@ -1,11 +1,8 @@
 #ifndef CPP20_R_HASH_H
 #define CPP20_R_HASH_H
 
-#include <ankerl/unordered_dense.h>
-#include <cpp20/internal/r_nas.h>
 #include <cpp20/internal/r_vec.h>
 #include <cpp20/internal/r_attrs.h>
-#include <bit>
 
 // Hash functions + hash equality operators for RVal and RVector
 

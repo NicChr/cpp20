@@ -2,7 +2,6 @@
 #define CPP20_R_CONCEPTS_H
 
 #include <cpp20/internal/r_setup.h>
-#include <complex> // For std::complex
 
 namespace cpp20 {
 
@@ -87,6 +86,12 @@ concept AtLeastOneRMathType =
 (RMathType<T> || RMathType<U>) && (MathType<T> && MathType<U>);
 
 template <typename T>
+concept RSymbolType = is<T, r_sym>;
+
+template <typename T>
+concept RRawType = is<T, r_raw>;
+
+template <typename T>
 concept RScalar = RMathType<T> || any<T, r_cplx, r_str, r_str_view, r_raw, r_sym>;
 
 // RVal is anything that can be stored in `r_vec<>`
@@ -132,6 +137,12 @@ concept RFactor = is<T, r_factors>;
 // Also, these are all implicitly convertible to `SEXP`
 template <typename T> 
 concept RObject = std::is_convertible_v<T, SEXP>;
+
+template <typename T> 
+concept RType = RVal<T> || RObject<T>;
+
+template <typename T>
+concept CppType = !RType<T>;
 
 template <typename T>
 concept CppScalar = std::is_scalar_v<T>;
@@ -283,6 +294,82 @@ struct common_r_math_impl {
 template <MathType T, MathType U>
 requires AtLeastOneRMathType<T, U>
 using common_r_math_t = typename internal::common_r_math_impl<T, U>::type;
+
+
+// Mapping from C++ type to R TYPEOF
+
+// Helper to get the runtime R typeof for a C++ type
+template<typename T> constexpr uint16_t r_typeof = std::numeric_limits<uint16_t>::max();
+template<> constexpr uint16_t r_typeof<r_vec<r_lgl>> =          LGLSXP;
+template<> constexpr uint16_t r_typeof<r_vec<r_int>> =          INTSXP;
+template<> constexpr uint16_t r_typeof<r_vec<r_int64>> =        internal::CPP20_INT64SXP;
+template<> constexpr uint16_t r_typeof<r_vec<r_dbl>> =          REALSXP;
+template<> constexpr uint16_t r_typeof<r_vec<r_str_view>> =     STRSXP;
+template<> constexpr uint16_t r_typeof<r_vec<r_str>> =          STRSXP;
+template<> constexpr uint16_t r_typeof<r_vec<r_cplx>> =         CPLXSXP;
+template<> constexpr uint16_t r_typeof<r_vec<r_raw>> =          RAWSXP;
+template<> constexpr uint16_t r_typeof<r_vec<r_sexp>> =         VECSXP;
+
+template<> constexpr uint16_t r_typeof<r_str_view> =            CHARSXP;
+template<> constexpr uint16_t r_typeof<r_str> =                 CHARSXP;
+template<> constexpr uint16_t r_typeof<r_sym> =                 SYMSXP;
+
+
+template <typename T>
+inline const char* type_str() {
+    return "Unknown";
+}
+
+template <> inline const char* type_str<r_lgl>(){return "r_lgl";}
+template <> inline const char* type_str<r_int>(){return "r_int";}
+template <> inline const char* type_str<r_int64>(){return "r_int64";}
+template <> inline const char* type_str<r_dbl>(){return "r_dbl";}
+template <> inline const char* type_str<r_str>(){return "r_str";}
+template <> inline const char* type_str<r_str_view>(){return "r_str_view";}
+template <> inline const char* type_str<r_cplx>(){return "r_cplx";}
+template <> inline const char* type_str<r_raw>(){return "r_raw";}
+template <> inline const char* type_str<r_sym>(){return "r_sym";}
+template <> inline const char* type_str<r_sexp>(){return "r_sexp";}
+template<RVector T> 
+inline const char* type_str(){
+    using r_t = typename T::data_type;
+    static const std::string out = std::string("r_vec<") + type_str<r_t>() + ">";
+    return out.c_str();
+}
+template<CppFloatType T> 
+inline const char* type_str(){
+    return "float";
+}
+template<CppIntegerType T> 
+requires (!is<T, Rbyte>)
+inline const char* type_str(){
+    return "integer";
+}
+template<> 
+inline const char* type_str<const char*>(){
+    return "C string";
+}
+template<>
+inline const char* type_str<std::string>(){
+    return "C++ string";
+}
+template<CppComplexType T> 
+inline const char* type_str(){
+    return "complex";
+}
+template<> inline const char* type_str<Rboolean>(){return "Rboolean";}
+template<> inline const char* type_str<Rbyte>(){return "Rbyte";}
+template<> inline const char* type_str<Rcomplex>(){return "Rcomplex";}
+
+namespace internal {
+
+template <typename T>
+inline void check_valid_construction(SEXP x){
+    if (r_typeof<T> != CPP20_TYPEOF(x)){
+      abort("Bad construction from R type %s to C++ type %s", r_type_to_str(CPP20_TYPEOF(x)), type_str<T>());
+    }
+  }
+}
 
 }
 

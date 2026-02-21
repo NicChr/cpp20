@@ -1,23 +1,27 @@
 #ifndef CPP20_R_SETUP_H
 #define CPP20_R_SETUP_H
 
-#include <cpp11.hpp>
-#include <type_traits>
-#include <ankerl/unordered_dense.h> // Unique + match
+#ifndef R_NO_REMAP
+#define R_NO_REMAP 
+#endif
+
+#include <cpp11/sexp.hpp> // For cpp11::sexp
+#include <type_traits> // For concepts
+#include <ankerl/unordered_dense.h> // Hash maps for group IDs + unique + match
 #include <cstring> // For strcmp
-#include <complex>
-#include <limits>
-#include <vector>
-#include <algorithm>
+#include <string> // For C++ strings
+#include <charconv> // For to_chars
+#include <complex> // For complex<double>
+#include <limits> // For numeric limits
+#include <vector> // For C++ vectors
+#include <algorithm> // For sort + other utilities
+#include <bit> // For bit_cast
+#include <ska_sort/ska_sort.hpp> // For radix sorting via ska_sort
 
 #ifdef _MSC_VER
 #define RESTRICT __restrict
 #else
 #define RESTRICT __restrict__
-#endif
-
-#ifndef R_NO_REMAP
-#define R_NO_REMAP 
 #endif
 
 #if !defined(OBJSXP) && defined(S4SXP) 
@@ -58,8 +62,29 @@ inline constexpr int64_t CPP20_OMP_THRESHOLD = 100000;
 inline constexpr SEXPTYPE CPP20_INT64SXP = 64;
 inline int cpp20_n_threads = 1;
 
-inline SEXPTYPE CPP20_TYPEOF(SEXP x){
-  return Rf_inherits(x, "integer64") ? internal::CPP20_INT64SXP : TYPEOF(x);
+[[noexcept]] inline SEXPTYPE CPP20_TYPEOF(SEXP x){
+
+  auto xtype = TYPEOF(x);
+
+  switch (xtype){
+    case REALSXP: {
+      return Rf_inherits(x, "integer64") ? CPP20_INT64SXP : xtype;
+    }
+    default: {
+      return xtype;
+    }
+  }
+}
+
+inline const char* r_type_to_str(SEXPTYPE x){
+  switch (x){
+    case CPP20_INT64SXP: {
+      return "CPP20_INT64SXP";
+    }
+    default: {
+      return Rf_type2char(x);
+    }
+  }
 }
 
 template<typename T, typename U>
@@ -154,26 +179,5 @@ template <typename... Args>
 }
 
 } // end of cpp20 namespace
-
-// Making complex numbers hashable
-namespace ankerl {
-namespace unordered_dense {
-
-template <>
-struct hash<std::complex<double>> {
-    using is_avalanching = void;
-
-    [[nodiscard]] auto operator()(std::complex<double> const& x) const noexcept -> uint64_t {
-        // Use ankerl's built-in hash for doubles
-        auto h1 = hash<double>{}(x.real());
-        auto h2 = hash<double>{}(x.imag());
-        
-        // We combine them using a mixing function
-        return ankerl::unordered_dense::detail::wyhash::mix(h1, h2);
-    }
-};
-
-} // namespace unordered_dense
-} // namespace ankerl
 
 #endif

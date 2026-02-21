@@ -11,7 +11,7 @@ namespace env {
 inline const r_sexp empty_env = r_sexp(R_EmptyEnv);
 inline const r_sexp base_env = r_sexp(R_BaseEnv);
 
-inline r_sexp get(r_sym sym, r_sexp env, bool inherits = true){
+inline r_sexp get(r_sym sym, const r_sexp& env, bool inherits = true){
 
   if (TYPEOF(env) != ENVSXP){
     abort("second argument to '%s' must be an environment", __func__);

@@ -8,18 +8,30 @@ Maintainer: Nick Christofides <nick.christofides.r@gmail.com>
 Description: A header-only API designed for advanced R data manipulation
     within C++. cpp20 emphasises safety, modern C++ syntax and
     high-performance computing through SIMD vectorisation and
-    parallelisation.  Leveraging C++20 concepts specific to R, it enables
+    parallelisation. Leveraging C++20 concepts specific to R, it enables
     seamless template programming with a highly efficient API.
 License: MIT + file LICENSE
 BugReports: https://github.com/NicChr/cpp20/issues
 Depends:
     R (>= 4.1.0)
+Imports:
+    brio,
+    cli,
+    decor, 
+    desc,
+    glue, 
+    purrr,
+    readr,
+    stringr,
+    vctrs,
+    withr
 Suggests: 
     bench,
+    pkgload,
+    rstudioapi,
     testthat (>= 3.0.0)
-LinkingTo: 
-    cpp11
 Config/testthat/edition: 3
+Config/Needs/cpp20/cpp_register:
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.3.3

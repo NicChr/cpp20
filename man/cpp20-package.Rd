@@ -4,7 +4,7 @@
 \name{cpp20-package}
 \alias{cpp20}
 \alias{cpp20-package}
-\title{cpp20: A C++20 API for interacting with R}
+\title{cpp20: A C++20 API For Interacting With R}
 \description{
 A header-only API designed for advanced R data manipulation within C++. cpp20 emphasises safety, modern C++ syntax and high-performance computing through SIMD vectorisation and parallelisation. Leveraging C++20 concepts specific to R, it enables seamless template programming with a highly efficient API.
 }

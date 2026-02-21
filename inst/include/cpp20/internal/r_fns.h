@@ -16,17 +16,17 @@ inline r_sexp find_pkg_fun(const char *name, const char *pkg, bool all_fns){
   r_sexp expr = r_null;
 
   if (all_fns){
-    expr = make_expr(symbol::triple_colon_sym, as<r_sym>(pkg), as<r_sym>(name));
+    expr = internal::make_expr(symbol::triple_colon_sym, as<r_sym>(pkg), as<r_sym>(name));
   } else {
-    expr = make_expr(symbol::double_colon_sym, as<r_sym>(pkg), as<r_sym>(name));
+    expr = internal::make_expr(symbol::double_colon_sym, as<r_sym>(pkg), as<r_sym>(name));
   }
   return eval(expr, env::base_env);
 }
 
 template<typename... Args>
-inline r_sexp eval_fn(r_sexp r_fn, r_sexp envir, Args... args){
+inline r_sexp eval_fn(const r_sexp& r_fn, const r_sexp& envir, Args... args){
   // Expression
-  r_sexp expr = make_expr(r_fn, args...);
+  r_sexp expr = internal::make_expr(r_fn, args...);
   // Evaluate expression
   return eval(expr, envir);
 }
