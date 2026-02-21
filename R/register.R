@@ -11,8 +11,6 @@ glue_collapse_data <- function(data, ..., sep = ", ", last = "") {
   unclass(res)
 }
 
-`%||%` <- function(x, y) if (is.null(x)) y else x
-
 viapply <- function(x, f, ...) vapply(x, f, integer(1), ...)
 vcapply <- function(x, f, ...) vapply(x, f, character(1), ...)
 
@@ -40,10 +38,6 @@ stop_unless_installed <- function(pkgs) {
   }
 }
 
-is_windows <- function() {
-  .Platform$OS.type == "windows"
-}
-
 # This is basically the same as rlang::is_interactive(), which we can't really
 # use for stop_if_not_installed(), because rlang itself could be one of the
 # input pkgs.
@@ -65,7 +59,7 @@ is_interactive <- function() {
 }
 
 file_extension <- function(x){
-  str_extract(x, "(\\.[^.]+)$")
+  stringr::str_extract(x, "(\\.[^.]+)$")
 }
 
 is_header <- function(x){
@@ -74,7 +68,7 @@ is_header <- function(x){
 
 # Tweaked version of cpp11::cpp_register
 
-#' Generates wrappers for registered C++ functions
+# Generates wrappers for registered C++ functions
 cpp_register <- function(path = ".", quiet = !is_interactive(), extension = c(".cpp", ".cc")) {
   stop_unless_installed(get_cpp_register_needs())
   extension <- match.arg(extension)
@@ -174,7 +168,7 @@ utils::globalVariables(c("name", "return_type", "line", "decoration", "context",
 
 get_registered_functions <- function(decorations, tag, quiet = !is_interactive()) {
   if (NROW(decorations) == 0) {
-    return(tibble::tibble(file = character(), line = integer(), decoration = character(), params = list(), context = list(), name = character(), return_type = character(), args = list()))
+    return(vctrs::data_frame(file = character(), line = integer(), decoration = character(), params = list(), context = list(), name = character(), return_type = character(), args = list()))
   }
 
   out <- decorations[decorations$decoration == tag, ]

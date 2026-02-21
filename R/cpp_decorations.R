@@ -9,19 +9,21 @@ cpp_decorations <- function(pkg = ".", files = decor::cpp_files(pkg = pkg), is_a
 
   res <- lapply(files, function(file) {
     if (!file.exists(file)) {
-      return(tibble(file = character(), line = integer(),
-                    decoration = character(), params = list(), context = list()))
+      return(vctrs::data_frame(
+        file = character(), line = integer(),
+        decoration = character(), params = list(), context = list()
+      ))
     }
 
-    lines <- if (is_attribute) read_lines(file) else readLines(file)
+    lines <- if (is_attribute) readr::read_lines(file) else readLines(file)
 
     start <- grep(cpp_attribute_pattern(is_attribute), lines)
     if (!length(start)) {
-      return(tibble(file = character(), line = integer(),
+      return(vctrs::data_frame(file = character(), line = integer(),
                     decoration = character(), params = list(), context = list()))
     }
 
-    end <- c(tail(start, -1L) - 1L, length(lines))
+    end <- c(utils::tail(start, -1L) - 1L, length(lines))
 
     # Adjust 'start' to include preceding 'template <...>' line(s)
     # This effectively pulls the template definition into the 'context'
@@ -65,12 +67,12 @@ cpp_decorations <- function(pkg = ".", files = decor::cpp_files(pkg = pkg), is_a
     content <- sub(paste0(cpp_attribute_pattern(is_attribute), ".*"), "\\1", text)
     decoration <- sub("\\(.*$", "", content)
     has_args <- grepl("\\(", content)
-    params <- map_if(content, has_args, function(.x) {
-      set_names(as.list(parse(text = .x)[[1]][-1]))
+    params <- purrr::map_if(content, has_args, function(.x) {
+      purrr::set_names(as.list(parse(text = .x)[[1]][-1]))
     })
 
     # Context uses real start/end
-    context <- map2(real_start, real_end, \(.x, .y) lines[seq(.x, .y)])
+    context <- purrr::map2(real_start, real_end, \(.x, .y) lines[seq(.x, .y)])
 
     # Remove empty characters (at the end)
     n_empty <- integer(length(context))
@@ -84,9 +86,12 @@ cpp_decorations <- function(pkg = ".", files = decor::cpp_files(pkg = pkg), is_a
         n_empty[j] <- n_empty[j] + 1L
       }
     }
-    context <- map2(context, n_empty, \(x, y) x[seq_len(length(x) - y)])
+    context <- purrr::map2(context, n_empty, \(x, y) x[seq_len(length(x) - y)])
 
-    tibble(file, line = start, decoration, params, context)
+    vctrs::data_frame(
+      file = file, line = start, decoration = decoration,
+      params = params, context = context
+      )
   })
 
   vctrs::vec_rbind(!!!res)

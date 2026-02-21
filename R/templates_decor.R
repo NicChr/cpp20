@@ -3,20 +3,20 @@
 # To be used on decor context
 is_template_signature <- function(x){
   if (!is.character(x)){
-    stop("`x` must be a character vector")
+    cli::cli_abort("{.arg x} must be a {.cls character} vector")
   }
   # Remove whitespace from start/end
   x <- trimws(x)
 
   # Match template<>
   template_pattern <- "^template\\s*\\<.*\\>$"
-  grepl(template_pattern, x, perl = TRUE)
+  stringr::str_detect(x, template_pattern)
 }
 
 # To be used on decor context
 is_requires_signature <- function(x){
   if (!is.character(x)){
-    stop("`x` must be a character vector")
+    cli::cli_abort("{.arg x} must be a {.cls character} vector")
   }
   # Remove whitespace from start/end
   x <- trimws(x)
@@ -26,13 +26,13 @@ is_requires_signature <- function(x){
   # it won't allow lines like: requires () {
   # or requires {}
   # which should separate it from being detected as a function
-  template_pattern <- "^requires\\s*.+"
-  grepl(template_pattern, x, perl = TRUE)
+  requires_pattern <- "^requires\\s*.+"
+  stringr::str_detect(x, requires_pattern)
 }
 
 is_template_arg <- function(type, template_param) {
   pattern <- paste0("^", template_param, "$|<", template_param, "[,>]|,\\s*", template_param, "[,>]")
-  grepl(pattern, type)
+  stringr::str_detect(type, pattern)
 }
 
 is_any_template_arg <- function(type, template_params) {
@@ -43,58 +43,6 @@ is_any_template_arg <- function(type, template_params) {
   }
   FALSE
 }
-
-# Once string has been confirmed to be a template signature
-# extract the typenames
-# template_typenames <- function(x){
-#
-#   if (!is_template_signature(x)){
-#     cli_abort("{.arg x} must be a valid template signature of the form 'template <typename T>'")
-#   }
-#
-#   text <- gsub("^template\\s*(\\<.*\\>)$", "\\1", x, perl = TRUE)
-#
-#   multiple_params <- str_detect(text, "\\<.+,.+\\>")
-#
-#
-#   if (multiple_params){
-#     # Typenames followed by a comma and preceded by '<
-#     first_params <- str_extract(text, "(?<=\\<)(.+(?=,))")
-#     type_strs <- c(
-#       first_params,
-#       # Typenames preceded by a comma and followed by >
-#       str_extract_all(text, "(?<=,)(.+(?=\\>))")
-#     )
-#   } else {
-#     # case - Only one param
-#     type_strs <- gsub("\\<(.+)\\>", "\\1", text, perl = TRUE)
-#   }
-#   type_strs <- trimws(type_strs)
-#
-#   # Empty template
-#   if (type_strs == "<>"){
-#     return(tibble(type_names = character(), arg_names = character()))
-#   }
-#
-#   # Separate out the type names from the arg names
-#
-#   # type_names <- regmatches(type_strs, m = regexpr(".+(?=(\\s+.+))", type_strs, perl = TRUE))
-#
-#   # Anything followed by whitespace
-#   type_names <- regmatches(type_strs, m = regexpr(".+(?=\\s+)", type_strs, perl = TRUE))
-#
-#   # Match whitespace + anything
-#   arg_names <- trimws(regmatches(type_strs, m = regexpr("\\s+.+", type_strs, perl = TRUE)))
-#
-#   if ((length(type_strs) != length(type_names)) || (length(type_strs) != length(type_names))){
-#     cli_abort(c(
-#       "{.arg x} must be a valid template signature of the form 'template <first_type T, second_type U, ...>'",
-#        "not: {x}"
-#     ))
-#   }
-#
-#   tibble(template_type = type_names, type = arg_names)
-# }
 
 get_template_params <- function(context) {
   # Extract content between template < ... >
@@ -115,11 +63,6 @@ get_template_params <- function(context) {
   params <- trimws(sub(".*\\s+(\\w+)$", "\\1", parts))
   params
 }
-
-# adjust_context <- function(context){
-#   which_template <- which(map_lgl(unname(context), is_template_signature))
-#   template_str <- context[which_template]
-# }
 
 parse_cpp_function <- function(context, is_attribute = TRUE){
 
