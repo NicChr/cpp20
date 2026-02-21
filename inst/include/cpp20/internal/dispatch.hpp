@@ -177,10 +177,14 @@ struct GroupedDispatcher<Remaining, NumArgs, ArgToTemplateMap, SelectedTypes...>
                 std::forward<SexpArgs>(sexp_args)...
             );
         };
-        
+
         auto try_type = [&]<typename T>() {
-            // Try vector form first (it will be rejected early if type != VECSXP/STRSXP/etc)
-            try_candidate.template operator()<r_vec<T>>();
+        
+            // Only try to deduce (vec) type if there is an explicit mapping (not catch-all)
+            if constexpr (r_cpp_boundary_map_v<r_vec<T>> != std::numeric_limits<uint16_t>::max()) {
+                // Try vector first (it will be rejected early if type != VECSXP/STRSXP/etc)
+                try_candidate.template operator()<r_vec<T>>();
+            }
             
             // If vector form didn't work (or was rejected by type check), try scalar
             if (!result.has_value()) {
