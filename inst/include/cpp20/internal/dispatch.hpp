@@ -56,16 +56,16 @@ template<> constexpr uint16_t r_cpp_boundary_map_v<r_vec<r_lgl>> =          LGLS
 template<> constexpr uint16_t r_cpp_boundary_map_v<r_vec<r_int>> =          INTSXP;
 template<> constexpr uint16_t r_cpp_boundary_map_v<r_vec<r_int64>> =        CPP20_INT64SXP;
 template<> constexpr uint16_t r_cpp_boundary_map_v<r_vec<r_dbl>> =          REALSXP;
-// template<> constexpr uint16_t r_cpp_boundary_map_v<r_vec<r_str_view>> =     STRSXP;
+template<> constexpr uint16_t r_cpp_boundary_map_v<r_vec<r_str_view>> =     STRSXP;
 template<> constexpr uint16_t r_cpp_boundary_map_v<r_vec<r_str>> =          STRSXP;
 template<> constexpr uint16_t r_cpp_boundary_map_v<r_vec<r_cplx>> =         CPLXSXP;
 template<> constexpr uint16_t r_cpp_boundary_map_v<r_vec<r_raw>> =          RAWSXP;
 template<> constexpr uint16_t r_cpp_boundary_map_v<r_vec<r_sexp>> =         VECSXP;
 // template<> constexpr uint16_t r_cpp_boundary_map_v<r_vec<r_sym>> =          VECSXP;
-template<> constexpr uint16_t r_cpp_boundary_map_v<r_str> =                 STRSXP;
-template<> constexpr uint16_t r_cpp_boundary_map_v<r_str_view> =            STRSXP;
 template<> constexpr uint16_t r_cpp_boundary_map_v<r_sym> =                 SYMSXP;
 
+// Essentially make it so that scalars (that have natural vector extensions) can be mapped to from R
+// r_sym for example doesn't have a natural vector extension, only a list (VECSXP) can hold it and VECSXP already maps to r_vec<r_sexp>
 template<typename T>
 requires (RMathType<T> || RStringType<T> || RComplexType<T> || is<T, r_raw>)
 inline constexpr uint16_t r_cpp_boundary_map_v<T> = r_cpp_boundary_map_v<r_vec<T>>;
