@@ -10,6 +10,8 @@ using namespace cpp20;
 template <typename T>
 [[cpp20::register]]
 r_sexp test_multiple_deduction(T x, T y){
+  Rprintf("deduced x type: %s\n", type_str<decltype(x)>());
+  Rprintf("deduced y type: %s", type_str<decltype(y)>());
   if (!is<decltype(x), decltype(y)>){
     abort("deduced type of x: %s does not match deduced type of y %s", type_str<decltype(x)>(), type_str<decltype(y)>());
   }

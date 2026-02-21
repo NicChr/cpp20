@@ -165,11 +165,11 @@ struct GroupedDispatcher<Remaining, NumArgs, ArgToTemplateMap, SelectedTypes...>
         
             if constexpr (!is_sexp<Cand>) {
                 if (type != r_cpp_boundary_map_v<Cand>) return;
+            }
 
-                if (!verify_template_param_consistency<CurrentTemplateIdx, NumArgs, ArgToTemplateMap>(
-                    type, std::forward<SexpArgs>(sexp_args)...)) {
-                    return;
-                }
+            if (!verify_template_param_consistency<CurrentTemplateIdx, NumArgs, ArgToTemplateMap>(
+                type, std::forward<SexpArgs>(sexp_args)...)) {
+                return;
             }
         
             result = GroupedDispatcher<Remaining - 1, NumArgs, ArgToTemplateMap, SelectedTypes..., Cand>::dispatch(
