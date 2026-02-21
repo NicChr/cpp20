@@ -1,6 +1,15 @@
 #ifndef CPP20_DISPATCH_HPP
 #define CPP20_DISPATCH_HPP
 
+// Runtime dispatch for templated and non-templated C++ functions registered to R
+// The dispatch is mainly driven by a modified version of R's TYPEOF
+// This is done by providing a map of C++20 types to SEXP tag-types
+//
+// For non-templated functions, inputs are verified via check_r_cpp_mapping()
+// For templated functions, templated arguments are verified by first applying the SEXP/C++ mapping and 
+// then checking that the constraints of the template are satisfied.
+// Where there are one-to-many mappings, vector and scalars are both used to check if either of them can satisfy the constraints
+
 #include <cpp20/internal/r_coerce.h>
 #include <tuple>
 #include <utility>
