@@ -6,6 +6,9 @@ test_that("Correct registration of cpp fns to R", {
 
   expect_null(test_null())
 
+  expect_null(test_multiple_deduction(1, 2))
+  # expect_null(test_multiple_deduction(1, 2L)) # Should maybe error
+
   # Deducing type when template has no constraints (defaults to vectors)
   expect_identical(test_deduced_type(1:3), "r_vec<r_int>")
   expect_identical(test_deduced_type(1L), "r_vec<r_int>")
