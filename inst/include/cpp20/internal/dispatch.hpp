@@ -50,8 +50,7 @@ using r_types = std::tuple<
     r_sexp // Catch-all type
 >;
 
-// Helper to get the runtime R type ID for a C++ type
-
+// A map of C++ types that R types (via typeof) can map to (or be deduced to) via template types
 template<typename T> constexpr uint16_t r_cpp_boundary_map_v =              std::numeric_limits<uint16_t>::max();
 template<> constexpr uint16_t r_cpp_boundary_map_v<r_vec<r_lgl>> =          LGLSXP;
 template<> constexpr uint16_t r_cpp_boundary_map_v<r_vec<r_int>> =          INTSXP;
@@ -107,15 +106,17 @@ constexpr size_t first_arg_for_template() {
 
 // Verify all args for a template param have the same runtime type
 template <size_t TemplateParamIdx, size_t NumArgs, auto ArgToTemplateMap, typename... SexpArgs>
-bool template_args_are_homogeneous(uint16_t expected_type, SexpArgs&&... sexp_args) {
-    bool homogeneous = true;
-    
+void check_template_homogeneity(uint16_t expected_type, SexpArgs&&... sexp_args) {
+
     auto check_arg = [&]<size_t I>() {
         if constexpr (I < NumArgs) {
             if (ArgToTemplateMap[I] == static_cast<int>(TemplateParamIdx)) {
                 SEXP arg = get_nth<I>(std::forward<SexpArgs>(sexp_args)...);
                 if (CPP20_TYPEOF(arg) != expected_type) {
-                    homogeneous = false;
+                    abort(
+                        "R type: %s for arg %d does not match the first R type instance: %s for this template arg",
+                        r_type_to_str(CPP20_TYPEOF(arg)), I + 1, r_type_to_str(expected_type)
+                    );
                 }
             }
         }
@@ -124,8 +125,7 @@ bool template_args_are_homogeneous(uint16_t expected_type, SexpArgs&&... sexp_ar
     [&]<size_t... Is>(std::index_sequence<Is...>) {
         (check_arg.template operator()<Is>(), ...);
     }(std::make_index_sequence<NumArgs>{});
-    
-    return homogeneous;
+
 }
 
 // Grouped dispatcher - selects one type per template parameter
@@ -158,6 +158,9 @@ struct GroupedDispatcher<Remaining, NumArgs, ArgToTemplateMap, SelectedTypes...>
         uint16_t type = CPP20_TYPEOF(representative);
         
         std::optional<SEXP> result = std::nullopt;
+
+        // Checking that template args of the same type (e.g. T) actually get deduced to the same type
+        check_template_homogeneity<CurrentTemplateIdx, NumArgs, ArgToTemplateMap>(type, std::forward<SexpArgs>(sexp_args)...);
         
         // Try each type in r_types
         auto try_candidate = [&]<typename Cand>() {
@@ -165,11 +168,6 @@ struct GroupedDispatcher<Remaining, NumArgs, ArgToTemplateMap, SelectedTypes...>
         
             if constexpr (!is_sexp<Cand>) {
                 if (type != r_cpp_boundary_map_v<Cand>) return;
-            }
-            // Checking that template args of the same type (e.g. T) actually get deduced to the same type
-            if (!template_args_are_homogeneous<CurrentTemplateIdx, NumArgs, ArgToTemplateMap>(
-                type, std::forward<SexpArgs>(sexp_args)...)) {
-                return;
             }
         
             result = GroupedDispatcher<Remaining - 1, NumArgs, ArgToTemplateMap, SelectedTypes..., Cand>::dispatch(
