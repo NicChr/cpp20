@@ -191,6 +191,17 @@ extern "C" SEXP _cpp20_test_set_strs2(SEXP x) {
   END_CPP20
 }
 // test.h
+extern "C" SEXP _cpp20_test_multiple_deduction(SEXP x, SEXP y) {
+  BEGIN_CPP20
+    return cpp20::internal::dispatch_template_impl<1, 2, std::array<int, 2>{0, 0}>(
+    []<typename T>(SEXP x_internal, SEXP y_internal) -> decltype(cpp20::internal::cpp_to_sexp(test_multiple_deduction(cpp20::as<std::remove_cvref_t<T>>(x_internal), cpp20::as<std::remove_cvref_t<T>>(y_internal)))) {
+        return cpp20::internal::cpp_to_sexp(test_multiple_deduction(cpp20::as<std::remove_cvref_t<T>>(x_internal), cpp20::as<std::remove_cvref_t<T>>(y_internal)));
+    },
+    x, y
+  );
+  END_CPP20
+}
+// test.h
 extern "C" SEXP _cpp20_test_deduced_type(SEXP x) {
   BEGIN_CPP20
     return cpp20::internal::dispatch_template_impl<1, 1, std::array<int, 1>{0}>(
@@ -229,6 +240,17 @@ extern "C" SEXP _cpp20_test_identity(SEXP x) {
     return cpp20::internal::dispatch_template_impl<1, 1, std::array<int, 1>{0}>(
     []<typename T>(SEXP x_internal) -> decltype(cpp20::internal::cpp_to_sexp(test_identity(cpp20::as<std::remove_cvref_t<T>>(x_internal)))) {
         return cpp20::internal::cpp_to_sexp(test_identity(cpp20::as<std::remove_cvref_t<T>>(x_internal)));
+    },
+    x
+  );
+  END_CPP20
+}
+// test.h
+extern "C" SEXP _cpp20_test_template_null(SEXP x) {
+  BEGIN_CPP20
+    return cpp20::internal::dispatch_template_impl<1, 1, std::array<int, 1>{0}>(
+    []<typename T>(SEXP x_internal) -> decltype(cpp20::internal::cpp_to_sexp(test_template_null(cpp20::as<std::remove_cvref_t<T>>(x_internal)))) {
+        return cpp20::internal::cpp_to_sexp(test_template_null(cpp20::as<std::remove_cvref_t<T>>(x_internal)));
     },
     x
   );
@@ -525,6 +547,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"_cpp20_test_mix",                 (DL_FUNC) &_cpp20_test_mix,                 4},
     {"_cpp20_test_mix1",                (DL_FUNC) &_cpp20_test_mix1,                6},
     {"_cpp20_test_mix2",                (DL_FUNC) &_cpp20_test_mix2,                7},
+    {"_cpp20_test_multiple_deduction",  (DL_FUNC) &_cpp20_test_multiple_deduction,  2},
     {"_cpp20_test_null",                (DL_FUNC) &_cpp20_test_null,                0},
     {"_cpp20_test_rval_identity",       (DL_FUNC) &_cpp20_test_rval_identity,       1},
     {"_cpp20_test_scalar",              (DL_FUNC) &_cpp20_test_scalar,              2},
@@ -543,6 +566,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"_cpp20_test_str3",                (DL_FUNC) &_cpp20_test_str3,                1},
     {"_cpp20_test_str4",                (DL_FUNC) &_cpp20_test_str4,                1},
     {"_cpp20_test_sym",                 (DL_FUNC) &_cpp20_test_sym,                 1},
+    {"_cpp20_test_template_null",       (DL_FUNC) &_cpp20_test_template_null,       1},
     {"_cpp20_vector1",                  (DL_FUNC) &_cpp20_vector1,                  1},
     {"_cpp20_vector2",                  (DL_FUNC) &_cpp20_vector2,                  1},
     {NULL, NULL, 0}

@@ -88,6 +88,10 @@ test_set_strs2 <- function(x) {
   .Call(`_cpp20_test_set_strs2`, x)
 }
 
+test_multiple_deduction <- function(x, y) {
+  .Call(`_cpp20_test_multiple_deduction`, x, y)
+}
+
 test_deduced_type <- function(x) {
   .Call(`_cpp20_test_deduced_type`, x)
 }
@@ -102,6 +106,10 @@ test_deduced_scalar_type <- function(x) {
 
 test_identity <- function(x) {
   .Call(`_cpp20_test_identity`, x)
+}
+
+test_template_null <- function(x) {
+  .Call(`_cpp20_test_template_null`, x)
 }
 
 test_scalar <- function(x, y) {

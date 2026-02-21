@@ -4,6 +4,18 @@
 
 using namespace cpp20;
 
+// Testing a few things here at once:
+// R_NilValue can be returned
+// Multiple args with the same template deduce to the same type
+template <typename T>
+[[cpp20::register]]
+r_sexp test_multiple_deduction(T x, T y){
+  if (!is<decltype(x), decltype(y)>){
+    abort("deduced type of x: %s does not match deduced type of y %s", r_type_str<decltype(x)>(), r_type_str<decltype(y)>());
+  }
+  return r_null;
+}
+
 // What type is deduced by dispatch?
 template <typename T>
 [[cpp20::register]]
@@ -28,6 +40,13 @@ template <typename T>
 [[cpp20::register]]
 T test_identity(T x){
   return x;
+}
+
+template <typename T>
+[[cpp20::register]]
+r_sexp test_template_null(T x){
+  Rprintf("deduced_type: %s", r_type_str<decltype(x)>());
+  return r_null;
 }
 
 // Generic type, non RVal input + output
@@ -209,3 +228,4 @@ template <RVal T, RVal U>
 auto test_coerce(r_vec<T> x, r_vec<U> ptype) {
   return as<r_vec<U>>(x);
 } 
+
