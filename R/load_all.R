@@ -13,6 +13,6 @@ load_all <- function (path = ".", debug = FALSE, ...){
     rstudioapi::documentSaveAll()
   }
   pkgload::load_all(path = path, debug = debug, compile = FALSE, quiet = TRUE, ...)
-  cpp_register()
+  cpp_register(path = path)
   pkgload::load_all(path = path, debug = debug, ...)
 }
