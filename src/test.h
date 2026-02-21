@@ -44,6 +44,13 @@ T test_identity(T x){
   return x;
 }
 
+// Basic identity fn
+[[cpp20::register]]
+SEXP test_identity2(SEXP x){
+  return x;
+}
+
+
 template <typename T>
 [[cpp20::register]]
 r_sexp test_template_null(T x){
@@ -231,3 +238,47 @@ auto test_coerce(r_vec<T> x, r_vec<U> ptype) {
   return as<r_vec<U>>(x);
 } 
 
+[[cpp20::register]]
+void cpp_set_threads(int n){
+  set_threads(n);
+}
+
+[[cpp20::register]]
+r_int cpp_get_threads(){
+  return r_int(get_threads());
+}
+
+[[cpp20::register]]
+r_sexp test_null(){
+  return r_null;
+}
+
+[[cpp20::register]]
+r_vec<r_str> test4(const char *x){
+  return as<r_vec<r_str>>(x);
+}
+
+[[cpp20::register]]
+r_sym test_sym(r_sym x){
+  return x;
+}
+
+[[cpp20::register]]
+r_sexp test_sexp2(r_sexp x){
+  return x;
+}
+
+[[cpp20::register]]
+r_vec<r_sexp> test_sexp3(r_vec<r_sexp> x){
+  return x;
+}
+
+[[cpp20::register]]
+SEXP test_list_to_scalars(r_vec<r_sexp> x){
+  return make_vec<r_sexp>(as<r_lgl>(x), as<r_int>(x), as<r_dbl>(x), make_vec<r_str>(as<r_str>(x)), as<r_sexp>(x), as<r_sym>(x));
+}
+
+[[cpp20::register]]
+r_vec<r_int> test_coerce1(const r_vec<r_sexp>& x){
+  return as<r_vec<r_int>>(x);
+}
