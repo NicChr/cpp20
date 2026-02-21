@@ -4,6 +4,8 @@ test_that("Correct registration of cpp fns to R", {
   cpp_set_threads(1L)
   expect_equal(cpp_get_threads(), 1)
 
+  expect_null(test_null())
+
   # Deducing type when template has no constraints (defaults to vectors)
   expect_identical(test_deduced_type(1:3), "r_vec<r_int>")
   expect_identical(test_deduced_type(1L), "r_vec<r_int>")

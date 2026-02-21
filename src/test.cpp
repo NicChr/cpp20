@@ -17,6 +17,11 @@ r_int cpp_get_threads(){
 }
 
 [[cpp20::register]]
+r_sexp test_null(){
+  return r_null;
+}
+
+[[cpp20::register]]
 double test1(int n){
   return n + 100;
 }

@@ -32,6 +32,13 @@ extern "C" SEXP _cpp20_cpp_get_threads() {
   END_CPP20
 }
 // test.cpp
+r_sexp test_null();
+extern "C" SEXP _cpp20_test_null() {
+  BEGIN_CPP20
+    return cpp20::internal::cpp_to_sexp(test_null());
+  END_CPP20
+}
+// test.cpp
 double test1(int n);
 extern "C" SEXP _cpp20_test1(SEXP n) {
   BEGIN_CPP20
@@ -518,6 +525,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"_cpp20_test_mix",                 (DL_FUNC) &_cpp20_test_mix,                 4},
     {"_cpp20_test_mix1",                (DL_FUNC) &_cpp20_test_mix1,                6},
     {"_cpp20_test_mix2",                (DL_FUNC) &_cpp20_test_mix2,                7},
+    {"_cpp20_test_null",                (DL_FUNC) &_cpp20_test_null,                0},
     {"_cpp20_test_rval_identity",       (DL_FUNC) &_cpp20_test_rval_identity,       1},
     {"_cpp20_test_scalar",              (DL_FUNC) &_cpp20_test_scalar,              2},
     {"_cpp20_test_scalar2",             (DL_FUNC) &_cpp20_test_scalar2,             2},

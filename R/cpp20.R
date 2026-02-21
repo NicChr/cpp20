@@ -12,6 +12,10 @@ cpp_get_threads <- function() {
   .Call(`_cpp20_cpp_get_threads`)
 }
 
+test_null <- function() {
+  .Call(`_cpp20_test_null`)
+}
+
 test1 <- function(n) {
   .Call(`_cpp20_test1`, n)
 }
