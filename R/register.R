@@ -313,7 +313,7 @@ wrap_call <- function(name, return_type, args, is_template, template_params) {
       args,
       "cpp20::internal::check_r_cpp_mapping<{type}>({name});"
     )
-    checks <- paste0(checks_list, collapse = "\n")
+    checks <- paste0(checks_list, collapse = "\n\t")
     checks <- paste0(checks, "\n")
   }
 
@@ -362,9 +362,22 @@ wrap_call_template <- function(name, args, template_params) {
 
   outer_args <- glue::glue_collapse(args$name, ", ")
 
+  non_template_args <- vctrs::vec_slice(args, arg_to_template == -1L)
+
+  non_template_checks <- ""
+
+  if (nrow(non_template_args) > 0) {
+    checks_list <- glue::glue_data(
+      non_template_args,
+      "cpp20::internal::check_r_cpp_mapping<{type}>({name});"
+    )
+    non_template_checks <- paste0(checks_list, collapse = "\n\t")
+    non_template_checks <- paste0(non_template_checks, "\n")
+  }
+
   # Generate code with indices
   result <- glue::glue('
-    return cpp20::internal::dispatch_template_impl<{num_template_params}, {num_args}, std::array<int, {num_args}>{map_str}>(
+  {non_template_checks}return cpp20::internal::dispatch_template_impl<{num_template_params}, {num_args}, std::array<int, {num_args}>{map_str}>(
       []<{template_args_def}>({lambda_params}) -> decltype({full_expr}) {{
           return {full_expr};
       }},

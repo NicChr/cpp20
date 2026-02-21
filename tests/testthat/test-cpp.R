@@ -40,7 +40,8 @@ test_that("Correct registration of cpp fns to R", {
 
   expect_error(test_scalar(1, "2"))
   expect_error(test_scalar(1, 2))
-  expect_identical(test_scalar(1, 2L), 3L)
+  expect_identical(test_scalar(1L, 2L), 3L)
+  expect_error(test_scalar(1, 2L))
 
 
   expect_equal(scalar1(10), 10)
@@ -65,7 +66,7 @@ test_that("Correct registration of cpp fns to R", {
 
   expect_equal(scalar_vec3(1:2, 3L, 4, 5), c(13, 14))
 
-  expect_equal(test_mix2(1,2,3,4,5,6,7), sum(1:7))
+  expect_equal(test_mix2(1,2,3,4L,5,6,7), sum(1:7))
 
   expect_identical(test_specialisation(1:3), 1L)
   expect_identical(test_specialisation(c(1, 2, 3)), 0)
