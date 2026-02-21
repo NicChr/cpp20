@@ -107,15 +107,15 @@ constexpr size_t first_arg_for_template() {
 
 // Verify all args for a template param have the same runtime type
 template <size_t TemplateParamIdx, size_t NumArgs, auto ArgToTemplateMap, typename... SexpArgs>
-bool verify_template_param_consistency(uint16_t expected_type, SexpArgs&&... sexp_args) {
-    bool consistent = true;
+bool template_args_are_homogeneous(uint16_t expected_type, SexpArgs&&... sexp_args) {
+    bool homogeneous = true;
     
     auto check_arg = [&]<size_t I>() {
         if constexpr (I < NumArgs) {
             if (ArgToTemplateMap[I] == static_cast<int>(TemplateParamIdx)) {
                 SEXP arg = get_nth<I>(std::forward<SexpArgs>(sexp_args)...);
                 if (CPP20_TYPEOF(arg) != expected_type) {
-                    consistent = false;
+                    homogeneous = false;
                 }
             }
         }
@@ -125,7 +125,7 @@ bool verify_template_param_consistency(uint16_t expected_type, SexpArgs&&... sex
         (check_arg.template operator()<Is>(), ...);
     }(std::make_index_sequence<NumArgs>{});
     
-    return consistent;
+    return homogeneous;
 }
 
 // Grouped dispatcher - selects one type per template parameter
@@ -166,8 +166,8 @@ struct GroupedDispatcher<Remaining, NumArgs, ArgToTemplateMap, SelectedTypes...>
             if constexpr (!is_sexp<Cand>) {
                 if (type != r_cpp_boundary_map_v<Cand>) return;
             }
-
-            if (!verify_template_param_consistency<CurrentTemplateIdx, NumArgs, ArgToTemplateMap>(
+            // Checking that template args of the same type (e.g. T) actually get deduced to the same type
+            if (!template_args_are_homogeneous<CurrentTemplateIdx, NumArgs, ArgToTemplateMap>(
                 type, std::forward<SexpArgs>(sexp_args)...)) {
                 return;
             }
