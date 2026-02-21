@@ -1,6 +1,8 @@
 
 # Utils -------------------------------------------------------------------
 
+utils::globalVariables(c("name", "return_type", "line", "decoration", "context", ".", "functions", "res"))
+
 # All credits to cpp11 & decor authors and contributors
 
 glue_collapse_data <- function(data, ..., sep = ", ", last = "") {
@@ -66,7 +68,20 @@ is_header <- function(x){
   file_extension(x) %in% c(".h", ".hpp")
 }
 
-utils::globalVariables(c("name", "return_type", "line", "decoration", "context", ".", "functions", "res"))
+modified_time <- function(file){
+  info <- file.info(file)
+  `names<-`(info[["mtime"]], basename(file))
+}
+
+current_package <- function(path = "."){
+  package <- desc::desc_get("Package", file = file.path(path, "DESCRIPTION"))
+  gsub("[.]", "_", package)
+}
+
+package_dll <- function(path = "."){
+  package <- current_package(path)
+  file.path(path, "src", paste0(unname(package), .Platform$dynlib.ext))
+}
 
 get_registered_functions <- function(decorations, tag, quiet = !is_interactive()) {
   if (NROW(decorations) == 0) {
@@ -379,7 +394,25 @@ cpp_register <- function(path = ".", quiet = !is_interactive(), extension = c(".
   extension <- match.arg(extension)
 
   r_path <- file.path(path, "R", "cpp20.R")
-  cpp_path <- file.path(path, "src", paste0("cpp20", extension))
+  src_path <- file.path(path, "src")
+  cpp_path <- file.path(src_path, paste0("cpp20", extension))
+  dll_path <- package_dll(path)
+  if (file.exists(cpp_path) && file.exists(r_path) && file.exists(dll_path)){
+    # If no C++ code has been modified after package dll, then no need to re-register
+    dll_modified_time <- modified_time(dll_path)
+    cpp_modified_times <- modified_time(list.files(src_path, full.names = TRUE))
+    r_modified_time <- modified_time(r_path)
+
+    # Continue only if any modified times are > dll modified time
+    cpp_no_changes <- isTRUE(all(cpp_modified_times <= dll_modified_time))
+    r_no_changes <- isTRUE(r_modified_time <= dll_modified_time)
+    no_changes <- cpp_no_changes && r_no_changes
+
+    if (no_changes){
+      return(invisible(c(r_path, cpp_path)))
+    }
+  }
+
   unlink(c(r_path, cpp_path))
 
   suppressWarnings(
@@ -394,8 +427,7 @@ cpp_register <- function(path = ".", quiet = !is_interactive(), extension = c(".
 
   funs <- get_registered_functions(all_decorations, "cpp20::register", quiet)
 
-  package <- desc::desc_get("Package", file = file.path(path, "DESCRIPTION"))
-  package <- sub("[.]", "_", package)
+  package <- current_package(path)
 
   cpp_functions_definitions <- generate_cpp_functions(funs, package)
 
