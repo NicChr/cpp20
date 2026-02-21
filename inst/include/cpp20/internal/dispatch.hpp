@@ -51,7 +51,7 @@ using r_types = std::tuple<
 
 // Helper to get the runtime R type ID for a C++ type
 
-template<typename T> constexpr uint16_t r_cpp_boundary_map_v = std::tuple_size_v<r_types> - 1;
+template<typename T> constexpr uint16_t r_cpp_boundary_map_v =              std::numeric_limits<uint16_t>::max();
 template<> constexpr uint16_t r_cpp_boundary_map_v<r_vec<r_lgl>> =          LGLSXP;
 template<> constexpr uint16_t r_cpp_boundary_map_v<r_vec<r_int>> =          INTSXP;
 template<> constexpr uint16_t r_cpp_boundary_map_v<r_vec<r_int64>> =        CPP20_INT64SXP;
@@ -164,11 +164,11 @@ struct GroupedDispatcher<Remaining, NumArgs, ArgToTemplateMap, SelectedTypes...>
         
             if constexpr (!is_sexp<Cand>) {
                 if (type != r_cpp_boundary_map_v<Cand>) return;
-            }
-        
-            if (!verify_template_param_consistency<CurrentTemplateIdx, NumArgs, ArgToTemplateMap>(
-                type, std::forward<SexpArgs>(sexp_args)...)) {
-                return;
+                
+                if (!verify_template_param_consistency<CurrentTemplateIdx, NumArgs, ArgToTemplateMap>(
+                    type, std::forward<SexpArgs>(sexp_args)...)) {
+                    return;
+                }
             }
         
             result = GroupedDispatcher<Remaining - 1, NumArgs, ArgToTemplateMap, SelectedTypes..., Cand>::dispatch(
@@ -240,6 +240,8 @@ SEXP dispatch(SexpArgs... args) {
     
     static_assert(sizeof...(SexpArgs) == Traits::arity, 
                   "Argument count mismatch");
+                  
+    static_assert((std::is_same_v<SexpArgs, SEXP> && ...),  "dispatch<Fn>: all arguments must be SEXP");
     
     SEXP arg_array[] = {args...};
     
