@@ -8,17 +8,6 @@
 #include "test.h"
 
 // test.h
-extern "C" SEXP _cpp20_test_multiple_deduction(SEXP x, SEXP y) {
-  BEGIN_CPP20
-  return cpp20::internal::dispatch_template_impl<1, 2, std::array<int, 2>{0, 0}>(
-    []<typename T>(SEXP x_internal, SEXP y_internal) -> decltype(cpp20::internal::cpp_to_sexp(test_multiple_deduction(cpp20::as<std::remove_cvref_t<T>>(x_internal), cpp20::as<std::remove_cvref_t<T>>(y_internal)))) {
-        return cpp20::internal::cpp_to_sexp(test_multiple_deduction(cpp20::as<std::remove_cvref_t<T>>(x_internal), cpp20::as<std::remove_cvref_t<T>>(y_internal)));
-    },
-    x, y
-  );
-  END_CPP20
-}
-// test.h
 extern "C" SEXP _cpp20_test_deduced_type(SEXP x) {
   BEGIN_CPP20
   return cpp20::internal::dispatch_template_impl<1, 1, std::array<int, 1>{0}>(
@@ -26,6 +15,17 @@ extern "C" SEXP _cpp20_test_deduced_type(SEXP x) {
         return cpp20::internal::cpp_to_sexp(test_deduced_type(cpp20::as<std::remove_cvref_t<T>>(x_internal)));
     },
     x
+  );
+  END_CPP20
+}
+// test.h
+extern "C" SEXP _cpp20_test_multiple_deduction(SEXP x, SEXP y) {
+  BEGIN_CPP20
+  return cpp20::internal::dispatch_template_impl<1, 2, std::array<int, 2>{0, 0}>(
+    []<typename T>(SEXP x_internal, SEXP y_internal) -> decltype(cpp20::internal::cpp_to_sexp(test_multiple_deduction(cpp20::as<std::remove_cvref_t<T>>(x_internal), cpp20::as<std::remove_cvref_t<T>>(y_internal)))) {
+        return cpp20::internal::cpp_to_sexp(test_multiple_deduction(cpp20::as<std::remove_cvref_t<T>>(x_internal), cpp20::as<std::remove_cvref_t<T>>(y_internal)));
+    },
+    x, y
   );
   END_CPP20
 }
@@ -217,17 +217,6 @@ extern "C" SEXP _cpp20_test_sexp4(SEXP x) {
   END_CPP20
 }
 // test.h
-extern "C" SEXP _cpp20_test_sexp5(SEXP x) {
-  BEGIN_CPP20
-  return cpp20::internal::dispatch_template_impl<1, 1, std::array<int, 1>{0}>(
-    []<typename T>(SEXP x_internal) -> decltype(cpp20::internal::cpp_to_sexp(test_sexp5(cpp20::as<std::remove_cvref_t<r_vec<T>>>(x_internal)))) {
-        return cpp20::internal::cpp_to_sexp(test_sexp5(cpp20::as<std::remove_cvref_t<r_vec<T>>>(x_internal)));
-    },
-    x
-  );
-  END_CPP20
-}
-// test.h
 extern "C" SEXP _cpp20_scalar_vec1(SEXP a, SEXP b) {
   BEGIN_CPP20
   return cpp20::internal::dispatch_template_impl<1, 2, std::array<int, 2>{0, 0}>(
@@ -368,14 +357,6 @@ extern "C" SEXP _cpp20_test_null() {
   END_CPP20
 }
 // test.h
-r_vec<r_str> test4(const char * x);
-extern "C" SEXP _cpp20_test4(SEXP x) {
-  BEGIN_CPP20
-  cpp20::internal::check_r_cpp_mapping<const char *>(x);
-  return cpp20::internal::cpp_to_sexp(test4(cpp20::as<std::remove_cvref_t<const char *>>(x)));
-  END_CPP20
-}
-// test.h
 r_sym test_sym(r_sym x);
 extern "C" SEXP _cpp20_test_sym(SEXP x) {
   BEGIN_CPP20
@@ -427,7 +408,6 @@ static const R_CallMethodDef CallEntries[] = {
     {"_cpp20_scalar_vec1",              (DL_FUNC) &_cpp20_scalar_vec1,              2},
     {"_cpp20_scalar_vec2",              (DL_FUNC) &_cpp20_scalar_vec2,              2},
     {"_cpp20_scalar_vec3",              (DL_FUNC) &_cpp20_scalar_vec3,              4},
-    {"_cpp20_test4",                    (DL_FUNC) &_cpp20_test4,                    1},
     {"_cpp20_test_as_sym",              (DL_FUNC) &_cpp20_test_as_sym,              1},
     {"_cpp20_test_coerce",              (DL_FUNC) &_cpp20_test_coerce,              2},
     {"_cpp20_test_coerce1",             (DL_FUNC) &_cpp20_test_coerce1,             1},
@@ -448,7 +428,6 @@ static const R_CallMethodDef CallEntries[] = {
     {"_cpp20_test_sexp2",               (DL_FUNC) &_cpp20_test_sexp2,               1},
     {"_cpp20_test_sexp3",               (DL_FUNC) &_cpp20_test_sexp3,               1},
     {"_cpp20_test_sexp4",               (DL_FUNC) &_cpp20_test_sexp4,               1},
-    {"_cpp20_test_sexp5",               (DL_FUNC) &_cpp20_test_sexp5,               1},
     {"_cpp20_test_specialisation",      (DL_FUNC) &_cpp20_test_specialisation,      1},
     {"_cpp20_test_str1",                (DL_FUNC) &_cpp20_test_str1,                1},
     {"_cpp20_test_str2",                (DL_FUNC) &_cpp20_test_str2,                1},

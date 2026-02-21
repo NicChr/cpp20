@@ -4,6 +4,13 @@
 
 using namespace cpp20;
 
+// What type is deduced by dispatch?
+template <typename T>
+[[cpp20::register]]
+r_vec<r_str> test_deduced_type(T x){
+  return r_vec<r_str>(1, r_str(type_str<decltype(x)>()));
+}
+
 // Testing a few things here at once:
 // R_NilValue can be returned
 // Multiple args with the same template deduce to the same type
@@ -18,19 +25,14 @@ r_sexp test_multiple_deduction(T x, T y){
   return r_null;
 }
 
-// What type is deduced by dispatch?
-template <typename T>
-[[cpp20::register]]
-r_vec<r_str> test_deduced_type(T x){
-  return r_vec<r_str>(1, r_str(type_str<decltype(x)>()));
-}
-
+// Deduced type when constraint is a vector
 template <RVector T>
 [[cpp20::register]]
 r_vec<r_str> test_deduced_vec_type(T x){
   return r_vec<r_str>(1, r_str(type_str<decltype(x)>()));
 }
 
+// Deduced type when constraint is a scalar
 template <RScalar T>
 [[cpp20::register]]
 r_vec<r_str> test_deduced_scalar_type(T x){
@@ -75,7 +77,6 @@ template <IntegerType T>
 inline r_int test_scalar3(r_int x, T y){
   return as<r_int>(x + y);
 }
-
 
 template <RVal T>
 [[cpp20::register]]
@@ -137,13 +138,6 @@ T test_sexp4(T x){
   return x;
 }
 
-template <typename T>
-requires (is_sexp<T>)
-[[cpp20::register]]
-SEXP test_sexp5(r_vec<T> x){
-  return x;
-}
-
 // scalar and vector args (same typenames)
 template <RMathType T>
 [[cpp20::register]]
@@ -164,12 +158,6 @@ r_vec<T> scalar_vec3(r_vec<T> z, T x, U y, r_vec<U> a){
   return as<r_vec<T>>(x + y + z + a);
 }
 // Complicated mix of scalar, vector and plain C types
-// template <RMathType T, RMathType U, typename V>
-// requires (RMathType<V>)
-// [[cpp20::register]]
-// r_vec<T> test_mix(r_vec<T> a, double b, T c, int d, T e, U f, U g, T h, r_vec<U> i, r_vec<V> j){
-//   return as<r_vec<T>>(a + b + c + d + e + f + g + h + i + j);
-// }
 template <RMathType T, RVector V>
 requires (RMathType<typename V::data_type>)
 [[cpp20::register]]
@@ -204,21 +192,6 @@ inline r_sym test_as_sym(T x){
   return as<r_sym>(x);
 }
 
-// R list elements
-
-// template <typename T>
-// requires (is<T, r_sexp>)
-// [[cpp20::register]]
-// inline r_sexp test_sexp1(T x){
-//   return x;
-// }
-// template <typename T>
-// requires (is<T, r_sexp>)
-// [[cpp20::register]]
-// inline r_sexp test_sexp2(T x){
-//   return x;
-// }
-
 // Testing template specialisations
 template <RMathType T>
 [[cpp20::register]]
@@ -251,11 +224,6 @@ r_int cpp_get_threads(){
 [[cpp20::register]]
 r_sexp test_null(){
   return r_null;
-}
-
-[[cpp20::register]]
-r_vec<r_str> test4(const char *x){
-  return as<r_vec<r_str>>(x);
 }
 
 [[cpp20::register]]
