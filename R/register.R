@@ -307,11 +307,22 @@ wrap_call <- function(name, return_type, args, is_template, template_params) {
     return(wrap_call_template(name, args, template_params))
   }
 
+  checks <- ""
+  if (length(args$name) > 0) {
+    checks_list <- glue::glue_data(
+      args,
+      "cpp20::internal::check_r_cpp_mapping<{type}>({name});"
+    )
+    checks <- paste0(checks_list, collapse = "\n")
+    checks <- paste0(checks, "\n")
+  }
+
   call <- glue::glue('{name}({list_params})', list_params = glue_collapse_data(args, "cpp20::as<std::remove_cvref_t<{type}>>({name})"))
+
   if (return_type == "void") {
-    unclass(glue::glue("  {call};\n    return R_NilValue;", .trim = FALSE))
+    unclass(glue::glue("{checks}  {call};\n  return R_NilValue;", .trim = FALSE))
   } else {
-    unclass(glue::glue("  return cpp20::internal::cpp_to_sexp({call});"))
+    unclass(glue::glue("{checks}  return cpp20::internal::cpp_to_sexp({call});"))
   }
 }
 

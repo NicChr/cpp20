@@ -292,7 +292,7 @@ using common_r_math_t = typename internal::common_r_math_impl<T, U>::type;
 
 // Mapping from C++ type to R TYPEOF
 
-// Helper to get the runtime R typeoffor a C++ type
+// Helper to get the runtime R typeof for a C++ type
 template<typename T> constexpr uint16_t r_typeof = std::numeric_limits<uint16_t>::max();
 template<> constexpr uint16_t r_typeof<r_vec<r_lgl>> =          LGLSXP;
 template<> constexpr uint16_t r_typeof<r_vec<r_int>> =          INTSXP;
@@ -311,8 +311,7 @@ template<> constexpr uint16_t r_typeof<r_sym> =                 SYMSXP;
 
 template <typename T>
 inline const char* r_type_str() {
-    static_assert(always_false<T>, "Unsupported type passed to `r_type_str()`");
-    return ""; // Unreachable
+    return "Unknown";
 }
 
 template <> inline const char* r_type_str<r_lgl>(){return "r_lgl";}
@@ -325,10 +324,27 @@ template <> inline const char* r_type_str<r_cplx>(){return "r_cplx";}
 template <> inline const char* r_type_str<r_raw>(){return "r_raw";}
 template <> inline const char* r_type_str<r_sym>(){return "r_sym";}
 template <> inline const char* r_type_str<r_sexp>(){return "r_sexp";}
-template<RVector T> inline const char* r_type_str(){
+template<RVector T> 
+inline const char* r_type_str(){
     using r_t = typename T::data_type;
     static const std::string out = std::string("r_vec<") + r_type_str<r_t>() + ">";
     return out.c_str();
+}
+template<CppFloatType T> 
+inline const char* r_type_str(){
+    return "float";
+}
+template<CppIntegerType> 
+inline const char* r_type_str(){
+    return "integer";
+}
+template<> 
+inline const char* r_type_str<const char*>(){
+    return "C string";
+}
+template<>
+inline const char* r_type_str<std::string>(){
+    return "C++ string";
 }
 
 namespace internal {
@@ -339,7 +355,6 @@ inline void check_valid_construction(SEXP x){
       abort("Bad construction from R type %s to C++ type %s", r_type_to_str(CPP20_TYPEOF(x)), r_type_str<T>());
     }
   }
-
 }
 
 }

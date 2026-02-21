@@ -8,7 +8,18 @@ using namespace cpp20;
 template <typename T>
 [[cpp20::register]]
 r_vec<r_str> test_deduced_type(T x){
-  Rprintf("deduced type: %s", r_type_str<decltype(x)>());
+  return r_vec<r_str>(1, r_str(r_type_str<decltype(x)>()));
+}
+
+template <RVector T>
+[[cpp20::register]]
+r_vec<r_str> test_deduced_vec_type(T x){
+  return r_vec<r_str>(1, r_str(r_type_str<decltype(x)>()));
+}
+
+template <RScalar T>
+[[cpp20::register]]
+r_vec<r_str> test_deduced_scalar_type(T x){
   return r_vec<r_str>(1, r_str(r_type_str<decltype(x)>()));
 }
 

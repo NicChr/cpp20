@@ -51,9 +51,20 @@ using r_types = std::tuple<
 
 // Helper to get the runtime R type ID for a C++ type
 
-template<typename T> inline constexpr uint16_t r_cpp_boundary_map_v = r_typeof<T>;
-template<> inline constexpr uint16_t r_cpp_boundary_map_v<r_str> = STRSXP;
-template<> inline constexpr uint16_t r_cpp_boundary_map_v<r_str_view> = STRSXP;
+template<typename T> constexpr uint16_t r_cpp_boundary_map_v = std::tuple_size_v<r_types> - 1;
+template<> constexpr uint16_t r_cpp_boundary_map_v<r_vec<r_lgl>> =          LGLSXP;
+template<> constexpr uint16_t r_cpp_boundary_map_v<r_vec<r_int>> =          INTSXP;
+template<> constexpr uint16_t r_cpp_boundary_map_v<r_vec<r_int64>> =        CPP20_INT64SXP;
+template<> constexpr uint16_t r_cpp_boundary_map_v<r_vec<r_dbl>> =          REALSXP;
+// template<> constexpr uint16_t r_cpp_boundary_map_v<r_vec<r_str_view>> =     STRSXP;
+template<> constexpr uint16_t r_cpp_boundary_map_v<r_vec<r_str>> =          STRSXP;
+template<> constexpr uint16_t r_cpp_boundary_map_v<r_vec<r_cplx>> =         CPLXSXP;
+template<> constexpr uint16_t r_cpp_boundary_map_v<r_vec<r_raw>> =          RAWSXP;
+template<> constexpr uint16_t r_cpp_boundary_map_v<r_vec<r_sexp>> =         VECSXP;
+// template<> constexpr uint16_t r_cpp_boundary_map_v<r_vec<r_sym>> =          VECSXP;
+template<> constexpr uint16_t r_cpp_boundary_map_v<r_str> =                 STRSXP;
+template<> constexpr uint16_t r_cpp_boundary_map_v<r_str_view> =            STRSXP;
+template<> constexpr uint16_t r_cpp_boundary_map_v<r_sym> =                 SYMSXP;
 
 template<typename T>
 requires (RMathType<T> || RStringType<T> || RComplexType<T> || is<T, r_raw>)
@@ -66,8 +77,13 @@ inline constexpr uint16_t r_cpp_boundary_map_v<T> = r_cpp_boundary_map_v<as_r_va
 
 template <typename T>
 inline void check_r_cpp_mapping(SEXP x){
-    if (r_cpp_boundary_map_v<T> != CPP20_TYPEOF(x)){
-        abort("Bad construction from R type %s to C++ type %s", r_type_to_str(CPP20_TYPEOF(x)), r_type_str<T>());
+    using data_t = std::remove_cvref_t<T>;
+    // If input maps to catch-all, this is always fine (provided there wasn't a more precise mapping and that the constraints allow this)
+    if constexpr (is_sexp<data_t>){
+        return;
+    }
+    if (r_cpp_boundary_map_v<data_t> != CPP20_TYPEOF(x)){
+        abort("Expected input type: %s", r_type_str<data_t>());
     }
 }
 

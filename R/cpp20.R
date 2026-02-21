@@ -88,6 +88,14 @@ test_deduced_type <- function(x) {
   .Call(`_cpp20_test_deduced_type`, x)
 }
 
+test_deduced_vec_type <- function(x) {
+  .Call(`_cpp20_test_deduced_vec_type`, x)
+}
+
+test_deduced_scalar_type <- function(x) {
+  .Call(`_cpp20_test_deduced_scalar_type`, x)
+}
+
 test_identity <- function(x) {
   .Call(`_cpp20_test_identity`, x)
 }

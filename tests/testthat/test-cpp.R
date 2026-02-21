@@ -1,9 +1,10 @@
 test_that("Correct registration of cpp fns to R", {
-  cpp_set_threads(2)
+  cpp_set_threads(2L)
   expect_equal(cpp_get_threads(), 2)
-  cpp_set_threads(1)
+  cpp_set_threads(1L)
   expect_equal(cpp_get_threads(), 1)
 
+  # Deducing type when template has no constraints (defaults to vectors)
   expect_identical(test_deduced_type(1:3), "r_vec<r_int>")
   expect_identical(test_deduced_type(1L), "r_vec<r_int>")
   expect_identical(test_deduced_type(0), "r_vec<r_dbl>")
@@ -12,6 +13,25 @@ test_that("Correct registration of cpp fns to R", {
   expect_identical(test_deduced_type(as.symbol("a")), "r_sym")
   expect_identical(test_deduced_type(mean), "r_sexp")
 
+
+  # Deducing type when template constrains to vector (should always find vector)
+  expect_identical(test_deduced_vec_type(T), "r_vec<r_lgl>")
+  expect_identical(test_deduced_vec_type(1:3), "r_vec<r_int>")
+  expect_identical(test_deduced_vec_type(1L), "r_vec<r_int>")
+  expect_identical(test_deduced_vec_type(0), "r_vec<r_dbl>")
+  expect_identical(test_deduced_vec_type(letters), "r_vec<r_str>")
+  expect_identical(test_deduced_vec_type(list(1)), "r_vec<r_sexp>")
+  expect_error(test_deduced_vec_type(as.symbol("a"))) # Not a vector
+  expect_error(test_deduced_vec_type(mean)) # Also not a vector
+
+  # Deducing type when template constrains to scalar
+  expect_identical(test_deduced_scalar_type(T), "r_lgl")
+  expect_identical(test_deduced_scalar_type(1L), "r_int")
+  expect_identical(test_deduced_scalar_type(2), "r_dbl")
+  expect_identical(test_deduced_scalar_type("yes"), "r_str")
+  expect_error(test_deduced_scalar_type(list(1))) # Template is RScalar (doesn't include lists)
+  expect_identical(test_deduced_scalar_type(as.symbol("a")), "r_sym")
+  expect_error(test_deduced_scalar_type(mean)) # Not an RScalar
 
   expect_error(test_scalar(1, "2"))
   expect_error(test_scalar(1, 2))
@@ -81,8 +101,8 @@ test_that("Correct registration of cpp fns to R", {
 
   expect_identical(test_list_to_scalars(list(0)), list(FALSE, 0L, 0, "0", list(0), as.symbol("0")))
 
-  expect_identical(test_coerce1(1:3), 1:3)
-  expect_identical(test_coerce1(1:3), 1:3)
+  expect_identical(test_coerce1(as.list(1:3)), 1:3)
+  expect_identical(test_coerce1(list(1, 2, 3)), 1:3)
 
   expect_identical(test_coerce(1:10, integer()), 1:10)
   expect_identical(test_coerce(1:10, numeric()), as.double(1:10))
