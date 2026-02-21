@@ -86,6 +86,12 @@ concept AtLeastOneRMathType =
 (RMathType<T> || RMathType<U>) && (MathType<T> && MathType<U>);
 
 template <typename T>
+concept RSymbolType = is<T, r_sym>;
+
+template <typename T>
+concept RRawType = is<T, r_raw>;
+
+template <typename T>
 concept RScalar = RMathType<T> || any<T, r_cplx, r_str, r_str_view, r_raw, r_sym>;
 
 // RVal is anything that can be stored in `r_vec<>`
@@ -310,49 +316,57 @@ template<> constexpr uint16_t r_typeof<r_sym> =                 SYMSXP;
 
 
 template <typename T>
-inline const char* r_type_str() {
+inline const char* type_str() {
     return "Unknown";
 }
 
-template <> inline const char* r_type_str<r_lgl>(){return "r_lgl";}
-template <> inline const char* r_type_str<r_int>(){return "r_int";}
-template <> inline const char* r_type_str<r_int64>(){return "r_int64";}
-template <> inline const char* r_type_str<r_dbl>(){return "r_dbl";}
-template <> inline const char* r_type_str<r_str>(){return "r_str";}
-template <> inline const char* r_type_str<r_str_view>(){return "r_str_view";}
-template <> inline const char* r_type_str<r_cplx>(){return "r_cplx";}
-template <> inline const char* r_type_str<r_raw>(){return "r_raw";}
-template <> inline const char* r_type_str<r_sym>(){return "r_sym";}
-template <> inline const char* r_type_str<r_sexp>(){return "r_sexp";}
+template <> inline const char* type_str<r_lgl>(){return "r_lgl";}
+template <> inline const char* type_str<r_int>(){return "r_int";}
+template <> inline const char* type_str<r_int64>(){return "r_int64";}
+template <> inline const char* type_str<r_dbl>(){return "r_dbl";}
+template <> inline const char* type_str<r_str>(){return "r_str";}
+template <> inline const char* type_str<r_str_view>(){return "r_str_view";}
+template <> inline const char* type_str<r_cplx>(){return "r_cplx";}
+template <> inline const char* type_str<r_raw>(){return "r_raw";}
+template <> inline const char* type_str<r_sym>(){return "r_sym";}
+template <> inline const char* type_str<r_sexp>(){return "r_sexp";}
 template<RVector T> 
-inline const char* r_type_str(){
+inline const char* type_str(){
     using r_t = typename T::data_type;
-    static const std::string out = std::string("r_vec<") + r_type_str<r_t>() + ">";
+    static const std::string out = std::string("r_vec<") + type_str<r_t>() + ">";
     return out.c_str();
 }
 template<CppFloatType T> 
-inline const char* r_type_str(){
+inline const char* type_str(){
     return "float";
 }
-template<CppIntegerType> 
-inline const char* r_type_str(){
+template<CppIntegerType T> 
+requires (!is<T, Rbyte>)
+inline const char* type_str(){
     return "integer";
 }
 template<> 
-inline const char* r_type_str<const char*>(){
+inline const char* type_str<const char*>(){
     return "C string";
 }
 template<>
-inline const char* r_type_str<std::string>(){
+inline const char* type_str<std::string>(){
     return "C++ string";
 }
+template<CppComplexType T> 
+inline const char* type_str(){
+    return "complex";
+}
+template<> inline const char* type_str<Rboolean>(){return "Rboolean";}
+template<> inline const char* type_str<Rbyte>(){return "Rbyte";}
+template<> inline const char* type_str<Rcomplex>(){return "Rcomplex";}
 
 namespace internal {
 
 template <typename T>
 inline void check_valid_construction(SEXP x){
     if (r_typeof<T> != CPP20_TYPEOF(x)){
-      abort("Bad construction from R type %s to C++ type %s", r_type_to_str(CPP20_TYPEOF(x)), r_type_str<T>());
+      abort("Bad construction from R type %s to C++ type %s", r_type_to_str(CPP20_TYPEOF(x)), type_str<T>());
     }
   }
 }

@@ -11,7 +11,7 @@ template <typename T>
 [[cpp20::register]]
 r_sexp test_multiple_deduction(T x, T y){
   if (!is<decltype(x), decltype(y)>){
-    abort("deduced type of x: %s does not match deduced type of y %s", r_type_str<decltype(x)>(), r_type_str<decltype(y)>());
+    abort("deduced type of x: %s does not match deduced type of y %s", type_str<decltype(x)>(), type_str<decltype(y)>());
   }
   return r_null;
 }
@@ -20,19 +20,19 @@ r_sexp test_multiple_deduction(T x, T y){
 template <typename T>
 [[cpp20::register]]
 r_vec<r_str> test_deduced_type(T x){
-  return r_vec<r_str>(1, r_str(r_type_str<decltype(x)>()));
+  return r_vec<r_str>(1, r_str(type_str<decltype(x)>()));
 }
 
 template <RVector T>
 [[cpp20::register]]
 r_vec<r_str> test_deduced_vec_type(T x){
-  return r_vec<r_str>(1, r_str(r_type_str<decltype(x)>()));
+  return r_vec<r_str>(1, r_str(type_str<decltype(x)>()));
 }
 
 template <RScalar T>
 [[cpp20::register]]
 r_vec<r_str> test_deduced_scalar_type(T x){
-  return r_vec<r_str>(1, r_str(r_type_str<decltype(x)>()));
+  return r_vec<r_str>(1, r_str(type_str<decltype(x)>()));
 }
 
 // Super permissive identity fn
@@ -45,7 +45,7 @@ T test_identity(T x){
 template <typename T>
 [[cpp20::register]]
 r_sexp test_template_null(T x){
-  Rprintf("deduced_type: %s", r_type_str<decltype(x)>());
+  Rprintf("deduced_type: %s", type_str<decltype(x)>());
   return r_null;
 }
 

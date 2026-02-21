@@ -84,7 +84,7 @@ inline void check_r_cpp_mapping(SEXP x){
         return;
     }
     if (r_cpp_boundary_map_v<data_t> != CPP20_TYPEOF(x)){
-        abort("Expected input type: %s", r_type_str<data_t>());
+        abort("Expected input type: %s", type_str<data_t>());
     }
 }
 
