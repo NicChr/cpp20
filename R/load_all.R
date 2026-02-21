@@ -12,10 +12,7 @@ load_all <- function (path = ".", debug = FALSE, ...){
   if (rstudioapi::hasFun("documentSaveAll")) {
     rstudioapi::documentSaveAll()
   }
-  pkgload::load_all(path = path, debug = debug, compile = FALSE, ...)
-  r_path <- file.path(path, "R", "cpp20.R")
-  cpp_path <- file.path(path, "src", "cpp20.cpp")
-  unlink(c(r_path, cpp_path))
+  pkgload::load_all(path = path, debug = debug, compile = FALSE, quiet = TRUE, ...)
   cpp_register()
   pkgload::load_all(path = path, debug = debug, ...)
 }
