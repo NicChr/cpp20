@@ -296,25 +296,6 @@ requires AtLeastOneRMathType<T, U>
 using common_r_math_t = typename internal::common_r_math_impl<T, U>::type;
 
 
-// Mapping from C++ type to R TYPEOF
-
-// Helper to get the runtime R typeof for a C++ type
-template<typename T> constexpr uint16_t r_typeof = std::numeric_limits<uint16_t>::max();
-template<> constexpr uint16_t r_typeof<r_vec<r_lgl>> =          LGLSXP;
-template<> constexpr uint16_t r_typeof<r_vec<r_int>> =          INTSXP;
-template<> constexpr uint16_t r_typeof<r_vec<r_int64>> =        internal::CPP20_INT64SXP;
-template<> constexpr uint16_t r_typeof<r_vec<r_dbl>> =          REALSXP;
-template<> constexpr uint16_t r_typeof<r_vec<r_str_view>> =     STRSXP;
-template<> constexpr uint16_t r_typeof<r_vec<r_str>> =          STRSXP;
-template<> constexpr uint16_t r_typeof<r_vec<r_cplx>> =         CPLXSXP;
-template<> constexpr uint16_t r_typeof<r_vec<r_raw>> =          RAWSXP;
-template<> constexpr uint16_t r_typeof<r_vec<r_sexp>> =         VECSXP;
-
-template<> constexpr uint16_t r_typeof<r_str_view> =            CHARSXP;
-template<> constexpr uint16_t r_typeof<r_str> =                 CHARSXP;
-template<> constexpr uint16_t r_typeof<r_sym> =                 SYMSXP;
-
-
 template <typename T>
 inline const char* type_str() {
     return "Unknown";
@@ -362,6 +343,24 @@ template<> inline const char* type_str<Rbyte>(){return "Rbyte";}
 template<> inline const char* type_str<Rcomplex>(){return "Rcomplex";}
 
 namespace internal {
+
+// Mapping from C++ type to R TYPEOF
+
+// Helper to get the runtime R typeof for a C++ type
+template<typename T> constexpr uint16_t r_typeof = std::numeric_limits<uint16_t>::max();
+template<> constexpr uint16_t r_typeof<r_vec<r_lgl>> =          LGLSXP;
+template<> constexpr uint16_t r_typeof<r_vec<r_int>> =          INTSXP;
+template<> constexpr uint16_t r_typeof<r_vec<r_int64>> =        internal::CPP20_INT64SXP;
+template<> constexpr uint16_t r_typeof<r_vec<r_dbl>> =          REALSXP;
+template<> constexpr uint16_t r_typeof<r_vec<r_str_view>> =     STRSXP;
+template<> constexpr uint16_t r_typeof<r_vec<r_str>> =          STRSXP;
+template<> constexpr uint16_t r_typeof<r_vec<r_cplx>> =         CPLXSXP;
+template<> constexpr uint16_t r_typeof<r_vec<r_raw>> =          RAWSXP;
+template<> constexpr uint16_t r_typeof<r_vec<r_sexp>> =         VECSXP;
+
+template<> constexpr uint16_t r_typeof<r_str_view> =            CHARSXP;
+template<> constexpr uint16_t r_typeof<r_str> =                 CHARSXP;
+template<> constexpr uint16_t r_typeof<r_sym> =                 SYMSXP;
 
 template <typename T>
 inline void check_valid_construction(SEXP x){
