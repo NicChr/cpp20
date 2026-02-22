@@ -52,7 +52,7 @@ using r_types = std::tuple<
     r_int64,
     r_dbl,
     r_str,
-    r_str_view,
+    // r_str_view,
     r_cplx,
     r_raw,
     r_sym,
@@ -70,7 +70,6 @@ template<> constexpr uint16_t r_cpp_boundary_map_v<r_vec<r_str>> =          STRS
 template<> constexpr uint16_t r_cpp_boundary_map_v<r_vec<r_cplx>> =         CPLXSXP;
 template<> constexpr uint16_t r_cpp_boundary_map_v<r_vec<r_raw>> =          RAWSXP;
 template<> constexpr uint16_t r_cpp_boundary_map_v<r_vec<r_sexp>> =         VECSXP;
-// template<> constexpr uint16_t r_cpp_boundary_map_v<r_vec<r_sym>> =          VECSXP;
 template<> constexpr uint16_t r_cpp_boundary_map_v<r_sym> =                 SYMSXP;
 
 // Essentially make it so that scalars (that have natural vector extensions) can be mapped to from R
