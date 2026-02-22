@@ -52,7 +52,6 @@ using r_types = std::tuple<
     r_int64,
     r_dbl,
     r_str,
-    // r_str_view,
     r_cplx,
     r_raw,
     r_sym,
@@ -60,22 +59,11 @@ using r_types = std::tuple<
 >;
 
 // A map of C++ types that R types (via typeof) can map to (or be deduced to) via template types
-template<typename T> constexpr uint16_t r_cpp_boundary_map_v =              std::numeric_limits<uint16_t>::max();
-template<> constexpr uint16_t r_cpp_boundary_map_v<r_vec<r_lgl>> =          LGLSXP;
-template<> constexpr uint16_t r_cpp_boundary_map_v<r_vec<r_int>> =          INTSXP;
-template<> constexpr uint16_t r_cpp_boundary_map_v<r_vec<r_int64>> =        CPP20_INT64SXP;
-template<> constexpr uint16_t r_cpp_boundary_map_v<r_vec<r_dbl>> =          REALSXP;
-template<> constexpr uint16_t r_cpp_boundary_map_v<r_vec<r_str_view>> =     STRSXP;
-template<> constexpr uint16_t r_cpp_boundary_map_v<r_vec<r_str>> =          STRSXP;
-template<> constexpr uint16_t r_cpp_boundary_map_v<r_vec<r_cplx>> =         CPLXSXP;
-template<> constexpr uint16_t r_cpp_boundary_map_v<r_vec<r_raw>> =          RAWSXP;
-template<> constexpr uint16_t r_cpp_boundary_map_v<r_vec<r_sexp>> =         VECSXP;
-template<> constexpr uint16_t r_cpp_boundary_map_v<r_sym> =                 SYMSXP;
+template <typename T> constexpr uint16_t r_cpp_boundary_map_v = r_typeof<T>;
 
 // Essentially make it so that scalars (that have natural vector extensions) can be mapped to from R
 // r_sym for example doesn't have a natural vector extension, only a list (VECSXP) can hold it and VECSXP already maps to r_vec<r_sexp>
-template<typename T>
-requires (RMathType<T> || RStringType<T> || RComplexType<T> || is<T, r_raw>)
+template <RAtomicScalar T>
 inline constexpr uint16_t r_cpp_boundary_map_v<T> = r_cpp_boundary_map_v<r_vec<T>>;
 
 // Pure C/C++ types that are constructible to an RVal

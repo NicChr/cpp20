@@ -72,7 +72,7 @@ concept ComplexType = RComplexType<T> || CppComplexType<T>;
 template <typename T>
 concept RMathType = RIntegerType<T> || RFloatType<T>;
 
-template<typename T>
+template <typename T>
 concept CppMathType = std::is_arithmetic_v<std::remove_cvref_t<T>>;
 
 template <typename T>
@@ -92,7 +92,10 @@ template <typename T>
 concept RRawType = is<T, r_raw>;
 
 template <typename T>
-concept RScalar = RMathType<T> || any<T, r_cplx, r_str, r_str_view, r_raw, r_sym>;
+concept RAtomicScalar = RMathType<T> || any<T, r_cplx, r_str, r_str_view, r_raw>;
+
+template <typename T>
+concept RScalar = RAtomicScalar<T> || is<T, r_sym>;
 
 // RVal is anything that can be stored in `r_vec<>`
 template <typename T>
@@ -125,10 +128,22 @@ struct is_r_vector<r_vec<T>> : std::true_type {};
 template <typename T>
 inline constexpr bool is_r_vector_v = is_r_vector<std::remove_cvref_t<T>>::value;
 
+template <typename T>
+struct is_atomic_r_vector : std::false_type {};
+
+template <RAtomicScalar T>
+struct is_atomic_r_vector<r_vec<T>> : std::true_type {};
+
+template <typename T>
+inline constexpr bool is_atomic_r_vector_v = is_atomic_r_vector<std::remove_cvref_t<T>>::value;
+
 }
 
 template <typename T>
-concept RVector = internal::is_r_vector_v<T> || is<T, r_dates> || is<T, r_posixcts>;
+concept RAtomicVector = internal::is_atomic_r_vector_v<T>;
+
+template <typename T>
+concept RVector = internal::is_r_vector_v<T> || any<T, r_dates, r_posixcts, r_factors>;
 
 template <typename T>
 concept RFactor = is<T, r_factors>;
