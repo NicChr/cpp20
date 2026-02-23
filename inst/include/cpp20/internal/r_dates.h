@@ -7,7 +7,7 @@
 namespace cpp20 {
 
 // R Date vector
-struct r_dates : public r_vec<r_int> {
+struct r_dates : public r_vec<r_dbl> {
 
 private:
   void init_date_attrs() {
@@ -16,21 +16,21 @@ private:
 
 public: 
   // Constructors
-  r_dates() : r_vec<r_int>() {
+  r_dates() : r_vec<r_dbl>() {
     init_date_attrs();
   }
 
-  explicit r_dates(SEXP x) : r_vec<r_int>(x) {
+  explicit r_dates(SEXP x) : r_vec<r_dbl>(x) {
     if (!is_null() && !attr::inherits1(this->sexp, "Date")){
       abort("`SEXP` must be a Date");
     }
   }
 
-  explicit r_dates(r_size_t n) : r_vec<r_int>(n) { 
+  explicit r_dates(r_size_t n) : r_vec<r_dbl>(n) { 
     init_date_attrs();
   }
   template<typename U>
-  explicit r_dates(r_size_t n, U default_value) : r_vec<r_int>(n, default_value) { 
+  explicit r_dates(r_size_t n, U default_value) : r_vec<r_dbl>(n, default_value) { 
     init_date_attrs();
   }
 };
