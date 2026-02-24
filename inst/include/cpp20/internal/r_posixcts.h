@@ -28,10 +28,16 @@ struct r_posixcts : public r_vec<r_dbl> {
     }
 
     explicit r_posixcts(SEXP x) : r_vec<r_dbl>(x) {
-    if (!is_null() && !(attr::inherits1(this->sexp, "POSIXct") && attr::inherits1(this->sexp, "POSIXt"))){
-        abort("`SEXP` must be a POSIXct");
-      }
+        if (!is_null()){
+            internal::check_valid_construction<r_posixcts>(x);
+          }
     }
+
+    explicit r_posixcts(SEXP x, internal::view_tag) : r_vec<r_dbl>(x, internal::view_tag{}){
+        if (!is_null()){
+            internal::check_valid_construction<r_posixcts>(x);
+          }
+      }
 
     explicit r_posixcts(r_size_t n) : r_vec<r_dbl>(n) {
         init_posixct_attrs();

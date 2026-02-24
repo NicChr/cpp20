@@ -4,6 +4,7 @@
 #include <cpp20/internal/r_vec.h>
 #include <cpp20/internal/r_dates.h>
 #include <cpp20/internal/r_posixcts.h>
+#include <cpp20/internal/r_visit.h>
 #include <cpp20/internal/r_factor.h>
 
 namespace cpp20 {
@@ -27,9 +28,13 @@ inline T as(const U& x) {
   } else if constexpr (RVector<U> && is<T, r_sexp>){
     return x.sexp;
   } else if constexpr (RVector<T> && is_sexp<U>){
-    return internal::visit_vector(x, [&](auto xvec) -> T {
-      // This will trigger the branch that checks that both are RVector
-      return as<T>(xvec);
+    return visit_sexp(x, [&](auto xvec) -> T {
+      if (is<decltype(xvec), r_sexp>){
+        abort("`x` must be a vector");
+      } else {
+        // This will trigger the branch that checks that both are RVector
+        return as<T>(xvec);
+      }
     });
   } else if constexpr (is_sexp<T> && is_sexp<U>){
     if constexpr (is<T, r_sexp>){
@@ -51,9 +56,13 @@ inline T as(const U& x) {
       }
     }
     
-    return internal::visit_vector(x, [&](auto xvec) -> T {
-      // Use branch below current branch
-      return as<T>(xvec);
+    return visit_sexp(x, [&](auto xvec) -> T {
+      if (is<decltype(xvec), r_sexp>){
+        abort("`x` must be a vector");
+      } else {
+        // Use branch below current branch
+        return as<T>(xvec);
+      }
     });
   } else if constexpr (RVal<T> && RVector<U>){
     if (x.length() != 1){

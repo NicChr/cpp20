@@ -326,3 +326,22 @@ auto test_combine2(T x, T y){
     arg("second") = make_vec<T>(arg("x") = x, arg("y") = y)
   );
 }
+
+[[cpp20::register]]
+r_dates test_dates1(r_dates x){
+  return x;
+}
+
+template <RVector T>
+requires (is<T, r_dates>)
+[[cpp20::register]]
+T test_dates2(T x){
+  return x;
+}
+
+
+template <RClassedVector T>
+[[cpp20::register]]
+T test_classed_vec(T x){
+  return x;
+}

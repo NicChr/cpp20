@@ -1,0 +1,34 @@
+#ifndef CPP20_R_VISIT_H
+#define CPP20_R_VISIT_H
+
+#include <cpp20/internal/r_vec.h>
+#include <cpp20/internal/r_dates.h>
+#include <cpp20/internal/r_posixcts.h>
+
+namespace cpp20 {
+
+// A cleaner lambda-based alternative to
+// using the canonical switch(TYPEOF(x))
+
+template <class F>
+decltype(auto) visit_sexp(SEXP x, F&& f) {
+switch (internal::CPP20_TYPEOF(x)) {
+    case LGLSXP:                    return f(r_vec<r_lgl>(x));
+    case INTSXP:                    return f(r_vec<r_int>(x));
+    case internal::CPP20_INT64SXP:  return f(r_vec<r_int64>(x));
+    case REALSXP:                   return f(r_vec<r_dbl>(x));
+    case STRSXP:                    return f(r_vec<r_str>(x));
+    case VECSXP:                    return f(r_vec<r_sexp>(x));
+    case CPLXSXP:                   return f(r_vec<r_cplx>(x));
+    case RAWSXP:                    return f(r_vec<r_raw>(x));
+    case internal::CPP20_DATESXP:   return f(r_dates(x));
+    case internal::CPP20_PSXTSXP:   return f(r_posixcts(x));
+    // case CPP20_FCTSXP:           return f(r_factors(x));
+    // case CPP20_DFSXP:            return f(r_df(x));
+    default:                        return f(r_sexp(x));
+}
+}
+
+}
+
+#endif

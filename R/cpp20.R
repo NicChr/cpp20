@@ -179,3 +179,15 @@ test_set_strs2 <- function(x) {
 test_combine2 <- function(x, y) {
   .Call(`_cpp20_test_combine2`, x, y)
 }
+
+test_dates1 <- function(x) {
+  .Call(`_cpp20_test_dates1`, x)
+}
+
+test_dates2 <- function(x) {
+  .Call(`_cpp20_test_dates2`, x)
+}
+
+test_classed_vec <- function(x) {
+  .Call(`_cpp20_test_classed_vec`, x)
+}

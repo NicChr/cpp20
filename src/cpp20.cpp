@@ -455,6 +455,36 @@ extern "C" SEXP _cpp20_test_combine2(SEXP x, SEXP y) {
   );
   END_CPP20
 }
+// test.h
+r_dates test_dates1(r_dates x);
+extern "C" SEXP _cpp20_test_dates1(SEXP x) {
+  BEGIN_CPP20
+  cpp20::internal::check_r_cpp_mapping<r_dates>(x);
+  return cpp20::internal::cpp_to_sexp(test_dates1(cpp20::as<std::remove_cvref_t<r_dates>>(x)));
+  END_CPP20
+}
+// test.h
+extern "C" SEXP _cpp20_test_dates2(SEXP x) {
+  BEGIN_CPP20
+  return cpp20::internal::dispatch_template_impl<1, 1, std::array<int, 1>{0}>(
+    []<typename T>(SEXP x_internal) -> decltype(cpp20::internal::cpp_to_sexp(test_dates2(cpp20::as<std::remove_cvref_t<T>>(x_internal)))) {
+        return cpp20::internal::cpp_to_sexp(test_dates2(cpp20::as<std::remove_cvref_t<T>>(x_internal)));
+    },
+    x
+  );
+  END_CPP20
+}
+// test.h
+extern "C" SEXP _cpp20_test_classed_vec(SEXP x) {
+  BEGIN_CPP20
+  return cpp20::internal::dispatch_template_impl<1, 1, std::array<int, 1>{0}>(
+    []<typename T>(SEXP x_internal) -> decltype(cpp20::internal::cpp_to_sexp(test_classed_vec(cpp20::as<std::remove_cvref_t<T>>(x_internal)))) {
+        return cpp20::internal::cpp_to_sexp(test_classed_vec(cpp20::as<std::remove_cvref_t<T>>(x_internal)));
+    },
+    x
+  );
+  END_CPP20
+}
 
 extern "C" {
 static const R_CallMethodDef CallEntries[] = {
@@ -468,6 +498,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"_cpp20_scalar_vec2",              (DL_FUNC) &_cpp20_scalar_vec2,              2},
     {"_cpp20_scalar_vec3",              (DL_FUNC) &_cpp20_scalar_vec3,              4},
     {"_cpp20_test_as_sym",              (DL_FUNC) &_cpp20_test_as_sym,              1},
+    {"_cpp20_test_classed_vec",         (DL_FUNC) &_cpp20_test_classed_vec,         1},
     {"_cpp20_test_coerce",              (DL_FUNC) &_cpp20_test_coerce,              2},
     {"_cpp20_test_coerce1",             (DL_FUNC) &_cpp20_test_coerce1,             1},
     {"_cpp20_test_combine2",            (DL_FUNC) &_cpp20_test_combine2,            2},
@@ -475,6 +506,8 @@ static const R_CallMethodDef CallEntries[] = {
     {"_cpp20_test_constructions2",      (DL_FUNC) &_cpp20_test_constructions2,      1},
     {"_cpp20_test_constructions3",      (DL_FUNC) &_cpp20_test_constructions3,      1},
     {"_cpp20_test_constructions4",      (DL_FUNC) &_cpp20_test_constructions4,      1},
+    {"_cpp20_test_dates1",              (DL_FUNC) &_cpp20_test_dates1,              1},
+    {"_cpp20_test_dates2",              (DL_FUNC) &_cpp20_test_dates2,              1},
     {"_cpp20_test_deduced_scalar_type", (DL_FUNC) &_cpp20_test_deduced_scalar_type, 1},
     {"_cpp20_test_deduced_type",        (DL_FUNC) &_cpp20_test_deduced_type,        1},
     {"_cpp20_test_deduced_vec_type",    (DL_FUNC) &_cpp20_test_deduced_vec_type,    1},

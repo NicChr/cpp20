@@ -368,32 +368,71 @@ namespace internal {
 
 // Mapping from C++ type to R TYPEOF
 
-// Helper to get the runtime R typeof for a C++ type
-template<typename T> constexpr uint16_t r_typeof =              std::numeric_limits<uint16_t>::max();
-template<> constexpr uint16_t r_typeof<r_vec<r_lgl>> =          LGLSXP;
-template<> constexpr uint16_t r_typeof<r_vec<r_int>> =          INTSXP;
-template<> constexpr uint16_t r_typeof<r_vec<r_int64>> =        CPP20_INT64SXP;
-template<> constexpr uint16_t r_typeof<r_vec<r_dbl>> =          REALSXP;
-template<> constexpr uint16_t r_typeof<r_vec<r_str_view>> =     STRSXP;
-template<> constexpr uint16_t r_typeof<r_vec<r_str>> =          STRSXP;
-template<> constexpr uint16_t r_typeof<r_vec<r_cplx>> =         CPLXSXP;
-template<> constexpr uint16_t r_typeof<r_vec<r_raw>> =          RAWSXP;
-template<> constexpr uint16_t r_typeof<r_vec<r_sexp>> =         VECSXP;
+// // Helper to get the runtime R typeof for a C++ type
+// template<typename T> constexpr uint16_t r_typeof =              std::numeric_limits<uint16_t>::max();
+// template<> constexpr uint16_t r_typeof<r_vec<r_lgl>> =          LGLSXP;
+// template<> constexpr uint16_t r_typeof<r_vec<r_int>> =          INTSXP;
+// template<> constexpr uint16_t r_typeof<r_vec<r_int64>> =        CPP20_INT64SXP;
+// template<> constexpr uint16_t r_typeof<r_vec<r_dbl>> =          REALSXP;
+// template<> constexpr uint16_t r_typeof<r_vec<r_str_view>> =     STRSXP;
+// template<> constexpr uint16_t r_typeof<r_vec<r_str>> =          STRSXP;
+// template<> constexpr uint16_t r_typeof<r_vec<r_cplx>> =         CPLXSXP;
+// template<> constexpr uint16_t r_typeof<r_vec<r_raw>> =          RAWSXP;
+// template<> constexpr uint16_t r_typeof<r_vec<r_sexp>> =         VECSXP;
 
-template<> constexpr uint16_t r_typeof<r_str_view> =            CHARSXP;
-template<> constexpr uint16_t r_typeof<r_str> =                 CHARSXP;
-template<> constexpr uint16_t r_typeof<r_sym> =                 SYMSXP;
+// template<> constexpr uint16_t r_typeof<r_str_view> =            CHARSXP;
+// template<> constexpr uint16_t r_typeof<r_str> =                 CHARSXP;
+// template<> constexpr uint16_t r_typeof<r_sym> =                 SYMSXP;
+
+// template<> constexpr uint16_t r_typeof<r_dates> =               CPP20_DATESXP;
+// template<> constexpr uint16_t r_typeof<r_posixcts> =            CPP20_PSXTSXP;
+// template<> constexpr uint16_t r_typeof<r_factors> =             CPP20_FCTSXP;
 
 // template<RClassedVector T> // dates, date-times, etc
 // constexpr uint16_t r_typeof<T> = r_typeof<r_vec<typename T::data_type>>;
 
+// Helper to get the runtime R typeof for a C++ type
+// r_typeof_impl matches R's TYPEOF (for the specialised types)
+
+// I tried to have only one r_type_of but because r_dates first builds an r_vec<r_dbl> (and inherits from it)
+// It passes that date SEXP to the r_vec<r_dbl> constructor which checks that it's a REALSXP
+// CPP20_TYPEOF identifies it's a CPP20_DATESXP and throws an error..
+template<typename T> constexpr uint16_t r_typeof_impl =              std::numeric_limits<uint16_t>::max();
+template<> constexpr uint16_t r_typeof_impl<r_vec<r_lgl>> =          LGLSXP;
+template<> constexpr uint16_t r_typeof_impl<r_vec<r_int>> =          INTSXP;
+template<> constexpr uint16_t r_typeof_impl<r_vec<r_int64>> =        REALSXP;
+template<> constexpr uint16_t r_typeof_impl<r_vec<r_dbl>> =          REALSXP;
+template<> constexpr uint16_t r_typeof_impl<r_vec<r_str_view>> =     STRSXP;
+template<> constexpr uint16_t r_typeof_impl<r_vec<r_str>> =          STRSXP;
+template<> constexpr uint16_t r_typeof_impl<r_vec<r_cplx>> =         CPLXSXP;
+template<> constexpr uint16_t r_typeof_impl<r_vec<r_raw>> =          RAWSXP;
+template<> constexpr uint16_t r_typeof_impl<r_vec<r_sexp>> =         VECSXP;
+
+template<> constexpr uint16_t r_typeof_impl<r_str_view> =            CHARSXP;
+template<> constexpr uint16_t r_typeof_impl<r_str> =                 CHARSXP;
+template<> constexpr uint16_t r_typeof_impl<r_sym> =                 SYMSXP;
+
+
+template<typename T> constexpr uint16_t r_typeof =                   r_typeof_impl<T>;
+template<> constexpr uint16_t r_typeof<r_vec<r_int64>> =             CPP20_INT64SXP;
+template<> constexpr uint16_t r_typeof<r_dates> =                    CPP20_DATESXP;
+template<> constexpr uint16_t r_typeof<r_posixcts> =                 CPP20_PSXTSXP;
+template<> constexpr uint16_t r_typeof<r_factors> =                  CPP20_FCTSXP;
 
 template <typename T>
 inline void check_valid_construction(SEXP x){
-    if (r_typeof<T> != CPP20_TYPEOF(x)){
-      abort("Bad construction from R type %s to C++ type %s", r_type_to_str(CPP20_TYPEOF(x)), type_str<T>());
+    if (r_typeof_impl<T> != TYPEOF(x)){
+        abort("Bad construction from R type %s to C++ type %s", Rf_type2char(TYPEOF(x)), type_str<T>());
     }
-  }
+}
+
+template <RClassedVector T>
+inline void check_valid_construction(SEXP x){
+    if (r_typeof<T> != CPP20_TYPEOF(x)){
+        abort("Bad construction from R type %s to C++ type %s", r_type_to_str(CPP20_TYPEOF(x)), type_str<T>());
+    }
+}
+
 }
 
 }

@@ -143,3 +143,15 @@ test_that("make_vec<>", {
     list(first = c("a", "b"), second = c(x = "a", y = "b"))
   )
 })
+
+
+test_that("classed vectors", {
+  curr_date <- Sys.Date()
+  curr_time <- Sys.time()
+
+  expect_equal(test_dates1(curr_date + 0:1), curr_date + 0:1)
+  expect_equal(test_dates2(curr_date + 0:1), curr_date + 0:1)
+
+  expect_equal(test_classed_vec(curr_date + 0:1), curr_date + 0:1)
+  expect_equal(test_classed_vec(curr_time + 0:1), curr_time + 0:1)
+})

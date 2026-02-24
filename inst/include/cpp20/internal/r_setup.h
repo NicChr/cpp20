@@ -58,8 +58,32 @@ using r_size_t = R_xlen_t;
 
 namespace internal {
 
+// using r_sexp_tag_t = uint16_t; // cpp20 version of SEXPTYPE
+
+// Currently unfinished
+// enum : r_sexp_tag_t {
+//     r_lgl_id = 1,
+//     r_int_id = 2,
+//     r_int64_id = 3,
+//     r_dbl_id = 4,
+//     r_cplx_id = 5,
+//     r_raw_id = 6,
+//     r_dates_id = 7,
+//     r_pxt_id = 8,
+//     r_chr = 9,
+//     r_fct = 10,
+//     r_list = 11,
+//     r_df = 12,
+//     r_unk = 13
+// };
+
+
 inline constexpr int64_t CPP20_OMP_THRESHOLD = 100000;
 inline constexpr SEXPTYPE CPP20_INT64SXP = 64;
+inline constexpr SEXPTYPE CPP20_FCTSXP = 200;
+inline constexpr SEXPTYPE CPP20_DATESXP = 201;
+inline constexpr SEXPTYPE CPP20_PSXTSXP = 202;
+inline constexpr SEXPTYPE CPP20_DFSXP = 203;
 inline int cpp20_n_threads = 1;
 
 [[noexcept]] inline SEXPTYPE CPP20_TYPEOF(SEXP x){
@@ -67,9 +91,21 @@ inline int cpp20_n_threads = 1;
   auto xtype = TYPEOF(x);
 
   switch (xtype){
-    case REALSXP: {
-      return Rf_inherits(x, "integer64") ? CPP20_INT64SXP : xtype;
+    case INTSXP: {
+      if (Rf_inherits(x, "Date")) return CPP20_DATESXP;
+      if (Rf_inherits(x, "factor")) return CPP20_FCTSXP;
+      return xtype;
     }
+    case REALSXP: {
+      if (Rf_inherits(x, "Date")) return CPP20_DATESXP;
+      if (Rf_inherits(x, "POSIXct")) return CPP20_PSXTSXP;
+      if (Rf_inherits(x, "integer64")) return CPP20_INT64SXP;
+      return xtype;
+    }
+    // case VECSXP: {
+    //   if (Rf_inherits(x, "data.frame")) return CPP20_DFSXP;
+    //   return xtype;
+    // }
     default: {
       return xtype;
     }
@@ -77,6 +113,19 @@ inline int cpp20_n_threads = 1;
 }
 
 inline const char* r_type_to_str(SEXPTYPE x){
+
+  switch (x){
+    case CPP20_INT64SXP: return "CPP20_INT64SXP";
+    case CPP20_DATESXP: return "CPP20_DATESXP";
+    case CPP20_PSXTSXP: return "CPP20_PSXTSXP";
+    case CPP20_FCTSXP: return "CPP20_FCTSXP";
+    // case VECSXP: {
+    //   if (Rf_inherits(x, "data.frame")) return CPP20_DFSXP;
+    //   return xtype;
+    // }
+    default: return Rf_type2char(x);
+  }
+
   switch (x){
     case CPP20_INT64SXP: {
       return "CPP20_INT64SXP";

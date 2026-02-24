@@ -21,8 +21,14 @@ public:
   }
 
   explicit r_dates(SEXP x) : r_vec<r_dbl>(x) {
-    if (!is_null() && !attr::inherits1(this->sexp, "Date")){
-      abort("`SEXP` must be a Date");
+    if (!is_null()){
+      internal::check_valid_construction<r_dates>(x);
+    }
+  }
+
+  explicit r_dates(SEXP x, internal::view_tag) : r_vec<r_dbl>(x, internal::view_tag{}){
+    if (!is_null()){
+      internal::check_valid_construction<r_dates>(x);
     }
   }
 

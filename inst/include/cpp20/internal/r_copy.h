@@ -2,6 +2,7 @@
 #define CPP20_R_COPY_H
 
 #include <cpp20/internal/r_vec.h>
+#include <cpp20/internal/r_visit.h>
 #include <cpp20/internal/r_attrs.h>
 
 namespace cpp20 {
@@ -38,8 +39,8 @@ inline r_vec<T> deep_copy(const r_vec<T>& x){
 }
 
 inline r_sexp deep_copy(const r_sexp& x){
-    return internal::visit_maybe_vector(x, [&](auto vec) -> r_sexp {
-        if constexpr (!std::is_null_pointer_v<decltype(vec)>){
+    return visit_sexp(x, [&](auto vec) -> r_sexp {
+        if constexpr (!is<decltype(vec), r_sexp>){
             return deep_copy(vec).sexp;
         } else {
             return r_sexp(Rf_duplicate(x));
