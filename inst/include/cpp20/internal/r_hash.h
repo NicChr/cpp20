@@ -48,8 +48,8 @@ struct r_hash_impl {
     }
 };
 
-template <>
-struct r_hash_impl<r_dbl> {
+template <IsRDouble T>
+struct r_hash_impl<T> {
     using is_avalanching = void;
 
     uint64_t operator()(double x) const noexcept {

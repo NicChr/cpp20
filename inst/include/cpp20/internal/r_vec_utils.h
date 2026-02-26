@@ -2,6 +2,7 @@
 #define CPP20_VECTOR_UTILS_H
 
 #include <cpp20/internal/r_types.h>
+#include <cpp20/internal/r_symbols.h>
 
 namespace cpp20 {
 
@@ -14,7 +15,7 @@ inline r_sexp new_vec(SEXPTYPE type, r_size_t n){
   return r_sexp(cpp11::safe[Rf_allocVector](type, n));
 }
 
-template<internal::RPtrWritableType T>
+template <RPtrWritableType T>
 inline vec_ptr_t<T> vector_ptr(SEXP x) {
   static_assert(
     always_false<T>,
@@ -48,6 +49,24 @@ inline double* vector_ptr<r_dbl>(SEXP x) {
 template<>
 inline const double* vector_ptr<const r_dbl>(SEXP x) {
   return REAL_RO(x);
+}
+
+template<>
+inline double* vector_ptr<r_date>(SEXP x) {
+  return vector_ptr<r_dbl>(x);
+}
+template<>
+inline const double* vector_ptr<const r_date>(SEXP x) {
+  return vector_ptr<const r_dbl>(x);
+}
+
+template<>
+inline double* vector_ptr<r_psxct>(SEXP x) {
+  return vector_ptr<r_dbl>(x);
+}
+template<>
+inline const double* vector_ptr<const r_psxct>(SEXP x) {
+  return vector_ptr<const r_dbl>(x);
 }
 
 template<>
@@ -99,10 +118,25 @@ inline r_sexp new_vec_impl<r_dbl>(r_size_t n){
   return internal::new_vec(REALSXP, n);
 }
 template <>
+inline r_sexp new_vec_impl<r_date>(r_size_t n){
+  r_sexp out = new_vec_impl<r_dbl>(n);
+  Rf_setAttrib(out, symbol::class_sym, Rf_ScalarString(r_str("Date")));
+  return out;
+}
+template <>
+inline r_sexp new_vec_impl<r_psxct>(r_size_t n){
+  r_sexp out = new_vec_impl<r_dbl>(n);
+  r_sexp cls = new_vec(STRSXP, 2);
+  SET_STRING_ELT(cls, 0, Rf_mkCharCE("POSIXct", CE_UTF8));
+  SET_STRING_ELT(cls, 1, Rf_mkCharCE("POSIXt", CE_UTF8));
+  Rf_setAttrib(out, symbol::class_sym, cls);
+  Rf_setAttrib(out, r_sym("tzone"), Rf_ScalarString(r_str("UTC")));
+  return out;
+}
+template <>
 inline r_sexp new_vec_impl<r_int64>(r_size_t n){
   r_sexp out = r_sexp(internal::new_vec(REALSXP, n));
-  r_sexp cls = r_sexp(Rf_ScalarString(Rf_mkCharCE("integer64", CE_UTF8)));
-  Rf_setAttrib(out, R_ClassSymbol, cls);
+  Rf_setAttrib(out, symbol::class_sym, Rf_ScalarString(r_str("integer64")));
   return out;
 }
 template <>
@@ -151,6 +185,22 @@ inline r_sexp new_scalar_vec<r_int>(r_int default_value){
 template <>
 inline r_sexp new_scalar_vec<r_dbl>(r_dbl default_value){
   return r_sexp(Rf_ScalarReal(unwrap(default_value)));
+}
+template <>
+inline r_sexp new_scalar_vec<r_date>(r_date default_value){
+  r_sexp out = new_scalar_vec<r_dbl>(default_value);
+  Rf_setAttrib(out, symbol::class_sym, Rf_ScalarString(r_str("Date")));
+  return out;
+}
+template <>
+inline r_sexp new_scalar_vec<r_psxct>(r_psxct default_value){
+  r_sexp out = new_scalar_vec<r_dbl>(default_value);
+  r_sexp cls = new_vec(STRSXP, 2);
+  SET_STRING_ELT(cls, 0, Rf_mkCharCE("POSIXct", CE_UTF8));
+  SET_STRING_ELT(cls, 1, Rf_mkCharCE("POSIXt", CE_UTF8));
+  Rf_setAttrib(out, symbol::class_sym, cls);
+  Rf_setAttrib(out, r_sym("tzone"), Rf_ScalarString(r_str("UTC")));
+  return out;
 }
 template <>
 inline r_sexp new_scalar_vec<r_int64>(r_int64 default_value){

@@ -64,8 +64,8 @@ struct r_vec {
 
   explicit r_vec(const r_sexp& s, internal::view_tag) : sexp(s.value, internal::view_tag{}){
     if (!is_null()){
-      initialise_ptr();
       internal::check_valid_construction<r_vec<T>>(sexp);
+      initialise_ptr();
     }
   }
 

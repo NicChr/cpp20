@@ -17,6 +17,7 @@
 #include <algorithm> // For sort + other utilities
 #include <bit> // For bit_cast
 #include <ska_sort/ska_sort.hpp> // For radix sorting via ska_sort
+#include <chrono> // For r_date/r_psxt
 
 #ifdef _MSC_VER
 #define RESTRICT __restrict
@@ -92,7 +93,7 @@ inline int cpp20_n_threads = 1;
 
   switch (xtype){
     case INTSXP: {
-      if (Rf_inherits(x, "Date")) return CPP20_DATESXP;
+      // if (Rf_inherits(x, "Date")) return CPP20_DATESXP;
       if (Rf_inherits(x, "factor")) return CPP20_FCTSXP;
       return xtype;
     }

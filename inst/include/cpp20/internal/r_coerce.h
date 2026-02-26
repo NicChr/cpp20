@@ -2,8 +2,6 @@
 #define CPP20_R_COERCE_H
 
 #include <cpp20/internal/r_vec.h>
-#include <cpp20/internal/r_dates.h>
-#include <cpp20/internal/r_posixcts.h>
 #include <cpp20/internal/r_visit.h>
 #include <cpp20/internal/r_factor.h>
 
@@ -12,7 +10,7 @@ namespace cpp20 {
 // Powerful and flexible coercion function that can handle many types and convert to R-specific C++ types and R vectors
 template <typename T, typename U>
 inline T as(const U& x) {
-  if constexpr (is<U, T>){
+  if constexpr (is<U, T> && is<unwrap_t<U>, unwrap_t<T>>){
     return x;
   } else if constexpr (is<T, SEXP>){
     // Special case for SEXP

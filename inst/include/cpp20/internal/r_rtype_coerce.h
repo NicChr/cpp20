@@ -174,6 +174,10 @@ inline r_str_view as_r_string(T const& x){
     }
     r_sexp str = r_sexp(cpp11::safe[Rf_coerceVector](x, STRSXP));
     return r_str_view(STRING_ELT(str, 0));
+  } else if constexpr (RDateType<T>){
+    return x.date_str();
+  } else if constexpr (RPsxctType<T>){
+    return x.datetime_str();
   } else {
     static_assert(always_false<T>, "Unsupported type for `as_r_string`");
   }
@@ -279,6 +283,20 @@ struct as_impl<r_dbl, U> {
 };
 
 template<typename U>
+struct as_impl<r_date, U> {
+  static constexpr r_date cast(U const& x) {
+    return r_date(unwrap(as_double(x)));
+  }
+};
+
+template<typename U>
+struct as_impl<r_psxct, U> {
+  static constexpr r_psxct cast(U const& x) {
+    return r_psxct(unwrap(as_double(x)));
+  }
+};
+
+template<typename U>
 struct as_impl<r_cplx, U> {
   static constexpr r_cplx cast(U const& x) {
     return as_complex(x);
@@ -323,7 +341,7 @@ struct as_impl<r_sexp, U> {
 
 template<RVal T, typename U>
 inline T as_r(U const& x) {
-  if constexpr (is<U, T>){ 
+  if constexpr (is<U, T> && is<unwrap_t<U>, unwrap_t<T>>){
     return x;
   } else {
     using r_t = std::remove_cvref_t<T>;

@@ -17,8 +17,6 @@
 #include <cpp20/internal/r_vec_utils.h>
 #include <cpp20/internal/r_rtype_coerce.h>
 #include <cpp20/internal/r_vec.h>
-#include <cpp20/internal/r_dates.h>
-#include <cpp20/internal/r_posixcts.h>
 #include <cpp20/internal/r_visit.h>
 #include <cpp20/internal/r_vec_math.h>
 #include <cpp20/internal/r_attrs.h>

@@ -2,8 +2,6 @@
 #define CPP20_R_VISIT_H
 
 #include <cpp20/internal/r_vec.h>
-#include <cpp20/internal/r_dates.h>
-#include <cpp20/internal/r_posixcts.h>
 
 namespace cpp20 {
 
@@ -21,8 +19,8 @@ switch (internal::CPP20_TYPEOF(x)) {
     case VECSXP:                    return f(r_vec<r_sexp>(x));
     case CPLXSXP:                   return f(r_vec<r_cplx>(x));
     case RAWSXP:                    return f(r_vec<r_raw>(x));
-    case internal::CPP20_DATESXP:   return f(r_dates(x));
-    case internal::CPP20_PSXTSXP:   return f(r_posixcts(x));
+    case internal::CPP20_DATESXP:   return f(r_vec<r_date>(x));
+    case internal::CPP20_PSXTSXP:   return f(r_vec<r_psxct>(x));
     // case CPP20_FCTSXP:           return f(r_factors(x));
     // case CPP20_DFSXP:            return f(r_df(x));
     default:                        return f(r_sexp(x));

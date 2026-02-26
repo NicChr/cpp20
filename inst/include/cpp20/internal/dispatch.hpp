@@ -55,6 +55,8 @@ using r_types = std::tuple<
     r_cplx,
     r_raw,
     r_sym,
+    r_date,
+    r_psxct,
     r_sexp // Catch-all type
 >;
 
@@ -68,13 +70,13 @@ struct to_r_vec_tuple_impl<std::tuple<Ts...>> {
 // Unclassed vectors: r_vec<T> for every T in r_types
 using r_unclassed_vector_types = typename to_r_vec_tuple_impl<r_types>::type;
 
-// Classed vectors
-using r_classed_vector_types = std::tuple<
-    r_dates,
-    r_posixcts
-    // r_factors,
-    // r_df
->;
+// // Classed vectors
+// using r_classed_vector_types = std::tuple<
+//     r_dates,
+//     r_posixcts
+//     // r_factors,
+//     // r_df
+// >;
 
 // A map of C++ types that R types (via typeof) can map to (or be deduced to) via template types
 template <typename T> constexpr uint16_t r_cpp_boundary_map_v = r_typeof<T>;
@@ -186,11 +188,11 @@ struct GroupedDispatcher<Remaining, NumArgs, ArgToTemplateMap, SelectedTypes...>
             );
         };
 
-        // Phase 1: classed vectors (r_dates, r_posixcts, ...)
-        [&]<size_t... Is>(std::index_sequence<Is...>) {
-            (try_candidate.template operator()<
-                std::tuple_element_t<Is, r_classed_vector_types>>(), ...);
-        }(std::make_index_sequence<std::tuple_size_v<r_classed_vector_types>>{});
+        // // Phase 1: classed vectors (r_dates, r_posixcts, ...)
+        // [&]<size_t... Is>(std::index_sequence<Is...>) {
+        //     (try_candidate.template operator()<
+        //         std::tuple_element_t<Is, r_classed_vector_types>>(), ...);
+        // }(std::make_index_sequence<std::tuple_size_v<r_classed_vector_types>>{});
 
         // Phase 2: unclassed vectors (r_vec<r_lgl>, r_vec<r_int>, ...)
         if (!result.has_value()) {

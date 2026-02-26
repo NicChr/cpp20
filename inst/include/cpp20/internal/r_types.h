@@ -249,6 +249,152 @@ inline r_str r_sexp::address() const {
   return r_str(buf);
 }
 
+
+namespace internal {
+  // Construct r_date from year/month/day
+  int64_t get_days_since_epoch(int32_t year, uint32_t month, uint32_t day) {
+      namespace chrono = std::chrono;
+      auto ymd = chrono::year{year} / chrono::month{month} / chrono::day{day};
+      if (!ymd.ok()) {
+          abort("Invalid date: %d-%u-%u", year, month, day);
+      }
+      return chrono::sys_days{ymd}.time_since_epoch().count();
+  }
+
+  int64_t get_seconds_since_epoch(int32_t year, uint32_t month, uint32_t day, uint64_t hour, uint64_t min, uint64_t sec) {
+    namespace chrono = std::chrono;
+    auto ymd = chrono::year{year} / chrono::month{month} / chrono::day{day};
+    if (!ymd.ok()) {
+        abort("Invalid date: %d-%u-%u", year, month, day);
+    }
+    auto tp = chrono::sys_days{ymd} + chrono::hours{hour} + chrono::minutes{min} + chrono::seconds{sec};
+    return tp.time_since_epoch().count();
+  }
+}
+// R date that captures the number of days since epoch (1st Jan 1970)
+// Should really be int32_t but R stores them as doubles and is difficult to implement harmoniously
+struct r_date : r_dbl {
+  
+  private: 
+
+  auto chrono_ymd() const {
+    return std::chrono::year_month_day{
+      std::chrono::sys_days{std::chrono::days{static_cast<int32_t>(value)}}
+    };
+  }
+
+  public: 
+
+  r_date() : r_dbl{0.0} {}
+  template <CppMathType T>
+  explicit constexpr r_date(T days_since_epoch) : r_dbl{days_since_epoch} {}
+
+  // Construct r_date year/month/day
+  explicit r_date(int32_t year, uint32_t month, uint32_t day) : r_dbl(internal::get_days_since_epoch(year, month, day)) {}
+
+  r_str date_str() const {
+    auto ymd = chrono_ymd();
+    char buf[16];
+    std::snprintf(buf, sizeof(buf), "%04d-%02u-%02u", static_cast<int32_t>(ymd.year()), static_cast<uint32_t>(ymd.month()), static_cast<uint32_t>(ymd.day()));
+    return r_str(static_cast<const char*>(buf));
+  }
+};
+
+// R date-time that captures the number of seconds since epoch (1st Jan 1970)
+// Should really be int64_t
+struct r_psxct : r_dbl {
+
+  private: 
+  
+  auto chrono_tp() const {
+    return std::chrono::time_point{
+      std::chrono::sys_seconds{std::chrono::seconds{static_cast<int64_t>(value)}}
+    };
+  }
+
+  public: 
+
+  r_psxct() : r_dbl{0.0} {}
+  template <CppMathType T>
+  explicit constexpr r_psxct(T seconds_since_epoch) : r_dbl{seconds_since_epoch} {}
+
+  // Construct r_date year/month/day
+  explicit r_psxct(
+    int32_t year, uint32_t month, uint32_t day, 
+    uint32_t hour, uint32_t minute, uint32_t second
+  ) : r_dbl(internal::get_seconds_since_epoch(year, month, day, hour, minute, second)) {}
+
+  // Decomposed date + time-of-day
+  auto chrono_ymd() const {
+    using namespace std::chrono;
+    auto tp = chrono_tp();
+    auto dp = floor<days>(tp);
+    return year_month_day{dp};
+  }
+
+  auto chrono_hms() const {
+    using namespace std::chrono;
+    auto tp = chrono_tp();
+    auto dp = floor<days>(tp);
+    return hh_mm_ss{tp - dp};
+  }
+
+  r_str datetime_str() const {
+    auto ymd = chrono_ymd();
+    auto hms = chrono_hms();
+    char buf[20];
+    std::snprintf(buf, sizeof(buf),
+      "%04d-%02u-%02u %02u:%02u:%02u",
+      static_cast<int32_t>(ymd.year()),
+      static_cast<uint32_t>(ymd.month()),
+      static_cast<uint32_t>(ymd.day()),
+      static_cast<uint32_t>(hms.hours().count()),
+      static_cast<uint32_t>(hms.minutes().count()),
+      static_cast<uint32_t>(hms.seconds().count())
+    );
+    return r_str(static_cast<const char*>(buf));
+  }
+};
+
+
+// struct r_date {
+//   r_dbl value;
+//   using value_type = r_dbl;
+//   r_date() : value{0.0} {}
+//   template <typename T>
+//   explicit constexpr r_date(T days_since_epoch) : value{days_since_epoch} {}
+//   constexpr operator r_dbl() const { return value; }
+
+//   // Construct r_date year/month/day
+//   explicit r_date(int32_t year, uint32_t month, uint32_t day) : value(internal::get_days_since_epoch(year, month, day)) {}
+
+//   r_str date_str() const {
+//     auto ymd = std::chrono::year_month_day{
+//         std::chrono::sys_days{std::chrono::days{static_cast<int>(value.value)}}
+//     };
+//     char buf[16];
+//     std::snprintf(buf, sizeof(buf), "%04d-%02u-%02u", static_cast<int32_t>(ymd.year()), static_cast<uint32_t>(ymd.month()), static_cast<uint32_t>(ymd.day()));
+//     return r_str(static_cast<const char*>(buf));
+//   }
+// };
+
+// // R date-time that captures the number of seconds since epoch (1st Jan 1970)
+// // Should really be int64_t
+// struct r_psxct {
+//   r_dbl value;
+//   using value_type = r_dbl;
+//   r_psxct() : value{0.0} {}
+//   template <typename T>
+//   explicit constexpr r_psxct(T seconds_since_epoch) : value{seconds_since_epoch} {}
+//   constexpr operator r_dbl() const { return value; }
+
+//   // Construct r_date year/month/day
+//   explicit r_psxct(
+//     int32_t year, uint32_t month, uint32_t day, 
+//     uint32_t hour, uint32_t minute, uint32_t second
+//   ) : value(internal::get_seconds_since_epoch(year, month, day, hour, minute, second)) {}
+// };
+
 namespace internal {
 
 template <typename T>

@@ -15,6 +15,8 @@ struct r_str_view;
 struct r_cplx;
 struct r_raw;
 struct r_sym;
+struct r_date;
+struct r_psxct;
 struct r_sexp; 
 
 template <class... T>
@@ -30,13 +32,19 @@ inline constexpr bool is = std::same_as<std::remove_cvref_t<T>, std::remove_cvre
 template <typename T, typename... Args>
 inline constexpr bool any = (is<T, Args> || ...);
 
+// Define R C API types to exclude from pure C/C++ types
+namespace internal {
+template <typename T>
+concept RCApiType = any<T, Rboolean, Rbyte, Rcomplex, SEXP, SEXPTYPE, SEXPREC, R_len_t, R_xlen_t>;
+}
+
 // Concepts to enable R type templates
 
 template <typename T>
 concept RIntegerType = any<T, r_lgl, r_int, r_int64>;
 
 template <typename T>
-concept CppIntegerType = std::is_integral_v<std::remove_cvref_t<T>> && !any<T, Rboolean, Rbyte>;
+concept CppIntegerType = std::is_integral_v<std::remove_cvref_t<T>>;
 
 template <typename T>
 concept IntegerType = RIntegerType<T> || CppIntegerType<T>;
@@ -92,28 +100,24 @@ template <typename T>
 concept RRawType = is<T, r_raw>;
 
 template <typename T>
-concept RAtomicScalar = RMathType<T> || any<T, r_cplx, r_str, r_str_view, r_raw>;
+concept RDateType = is<T, r_date>;
 
 template <typename T>
-concept RScalar = RAtomicScalar<T> || is<T, r_sym>;
+concept RPsxctType = is<T, r_psxct>;
+
+template <typename T>
+concept RAtomicScalar = RMathType<T> || RComplexType<T> || RStringType<T> || RRawType<T> || RDateType<T> || RPsxctType<T>;
+
+template <typename T>
+concept RScalar = RAtomicScalar<T> || RSymbolType<T>;
 
 // RVal is anything that can be stored in `r_vec<>`
 template <typename T>
 concept RVal = RScalar<T> || is<T, r_sexp>;
 
-
-namespace internal {
-// A `SEXP` which we can write data to directly via a pointer
-template <typename T>
-concept RPtrWritableType = RMathType<T> || RComplexType<T> || RRawType<T>;
-}
-
 // Forward declare structs to define concepts now
 template<RVal T>
 struct r_vec;
-
-struct r_dates; // Inherits from r_vec<r_dbl>
-struct r_posixcts; // Inherits from r_vec<r_dbl>
 struct r_factors;
 struct r_df;
 
@@ -140,10 +144,10 @@ inline constexpr bool is_atomic_r_vector_v = is_atomic_r_vector<std::remove_cvre
 }
 
 template <typename T>
-concept RAtomicVector = internal::is_atomic_r_vector_v<T> || any<T, r_dates, r_posixcts>;
+concept RAtomicVector = internal::is_atomic_r_vector_v<T> || any<T, r_vec<r_date>, r_vec<r_psxct>>;
 
 template <typename T>
-concept RClassedVector = any<T, r_dates, r_posixcts>;
+concept RClassedVector = any<T, r_vec<r_date>, r_vec<r_psxct>>;
 
 template <typename T>
 concept RUnclassedVector = internal::is_r_vector_v<T> && !RClassedVector<T>;
@@ -180,6 +184,16 @@ inline constexpr bool is_sexp = any<T, SEXP, r_sexp>;
 template <typename T>
 concept RSortable = RMathType<T> || RStringType<T>;
 
+// Internal helpers
+namespace internal {
+
+// A `SEXP` which we can write data to directly via a pointer
+template <typename T>
+concept RPtrWritableType = RVal<T> && !RObject<T>;
+
+template <typename T>
+concept IsRDouble = RVal<T> && (any<T, r_dbl, r_date, r_psxct>);
+
 
 // Wanted to use this as arg in templates but template type deduction then doesn't work (SAD)
 // template <typename T>
@@ -193,8 +207,6 @@ concept RSortable = RMathType<T> || RStringType<T>;
 // concept SmallType = CppScalar<std::decay_t<T>> || RMathType<std::decay_t<T>>;
 // template <typename T>
 // concept LargeType = !SmallType<std::decay_t<T>>;
-
-namespace internal {
 
 template<typename T>
 inline consteval bool can_definitely_be_int(){
@@ -296,7 +308,7 @@ consteval uint8_t r_math_rank() {
 }
 
 template <MathType T, MathType U>
-requires AtLeastOneRMathType<T, U>
+requires (RMathType<T> || RMathType<U>) // At least one RMathType
 struct common_r_math_impl {
     using lhs_math_t = as_r_val_t<T>;
     using rhs_math_t = as_r_val_t<U>;
@@ -310,7 +322,7 @@ struct common_r_math_impl {
 }
 
 template <MathType T, MathType U>
-requires AtLeastOneRMathType<T, U>
+requires (RMathType<T> || RMathType<U>) // At least one RMathType
 using common_r_math_t = typename internal::common_r_math_impl<T, U>::type;
 
 
@@ -329,11 +341,11 @@ template <> inline const char* type_str<r_cplx>(){return "r_cplx";}
 template <> inline const char* type_str<r_raw>(){return "r_raw";}
 template <> inline const char* type_str<r_sym>(){return "r_sym";}
 template <> inline const char* type_str<r_sexp>(){return "r_sexp";}
-template <> inline const char* type_str<r_dates>(){return "r_dates";}
-template <> inline const char* type_str<r_posixcts>(){return "r_posixcts";}
+template <> inline const char* type_str<r_date>(){return "r_date";}
+template <> inline const char* type_str<r_psxct>(){return "r_psxct";}
 template <> inline const char* type_str<r_factors>(){return "r_factors";}
 
-template<RUnclassedVector T> 
+template<RVector T> 
 inline const char* type_str(){
     using r_t = typename T::data_type;
     static const std::string out = std::string("r_vec<") + type_str<r_t>() + ">";
@@ -344,7 +356,8 @@ template<CppFloatType T>
 inline const char* type_str(){
     return "C++ float";
 }
-template<CppIntegerType T> 
+template<CppIntegerType T>
+requires (!internal::RCApiType<T>)
 inline const char* type_str(){
     return "C++ integer";
 }
@@ -397,41 +410,46 @@ namespace internal {
 // I tried to have only one r_type_of but because r_dates first builds an r_vec<r_dbl> (and inherits from it)
 // It passes that date SEXP to the r_vec<r_dbl> constructor which checks that it's a REALSXP
 // CPP20_TYPEOF identifies it's a CPP20_DATESXP and throws an error..
-template<typename T> constexpr uint16_t r_typeof_impl =              std::numeric_limits<uint16_t>::max();
-template<> constexpr uint16_t r_typeof_impl<r_vec<r_lgl>> =          LGLSXP;
-template<> constexpr uint16_t r_typeof_impl<r_vec<r_int>> =          INTSXP;
-template<> constexpr uint16_t r_typeof_impl<r_vec<r_int64>> =        REALSXP;
-template<> constexpr uint16_t r_typeof_impl<r_vec<r_dbl>> =          REALSXP;
-template<> constexpr uint16_t r_typeof_impl<r_vec<r_str_view>> =     STRSXP;
-template<> constexpr uint16_t r_typeof_impl<r_vec<r_str>> =          STRSXP;
-template<> constexpr uint16_t r_typeof_impl<r_vec<r_cplx>> =         CPLXSXP;
-template<> constexpr uint16_t r_typeof_impl<r_vec<r_raw>> =          RAWSXP;
-template<> constexpr uint16_t r_typeof_impl<r_vec<r_sexp>> =         VECSXP;
+template<typename T> constexpr uint16_t r_typeof =              std::numeric_limits<uint16_t>::max();
+template<> constexpr uint16_t r_typeof<r_vec<r_lgl>> =          LGLSXP;
+template<> constexpr uint16_t r_typeof<r_vec<r_int>> =          INTSXP;
+template<> constexpr uint16_t r_typeof<r_vec<r_int64>> =        CPP20_INT64SXP;
+template<> constexpr uint16_t r_typeof<r_vec<r_dbl>> =          REALSXP;
+template<> constexpr uint16_t r_typeof<r_vec<r_str_view>> =     STRSXP;
+template<> constexpr uint16_t r_typeof<r_vec<r_str>> =          STRSXP;
+template<> constexpr uint16_t r_typeof<r_vec<r_cplx>> =         CPLXSXP;
+template<> constexpr uint16_t r_typeof<r_vec<r_raw>> =          RAWSXP;
+template<> constexpr uint16_t r_typeof<r_vec<r_sexp>> =         VECSXP;
 
-template<> constexpr uint16_t r_typeof_impl<r_str_view> =            CHARSXP;
-template<> constexpr uint16_t r_typeof_impl<r_str> =                 CHARSXP;
-template<> constexpr uint16_t r_typeof_impl<r_sym> =                 SYMSXP;
+template<> constexpr uint16_t r_typeof<r_vec<r_date>> =         CPP20_DATESXP;
+template<> constexpr uint16_t r_typeof<r_vec<r_psxct>> =        CPP20_PSXTSXP;
 
+template<> constexpr uint16_t r_typeof<r_str_view> =            CHARSXP;
+template<> constexpr uint16_t r_typeof<r_str> =                 CHARSXP;
+template<> constexpr uint16_t r_typeof<r_sym> =                 SYMSXP;
 
-template<typename T> constexpr uint16_t r_typeof =                   r_typeof_impl<T>;
-template<> constexpr uint16_t r_typeof<r_vec<r_int64>> =             CPP20_INT64SXP;
-template<> constexpr uint16_t r_typeof<r_dates> =                    CPP20_DATESXP;
-template<> constexpr uint16_t r_typeof<r_posixcts> =                 CPP20_PSXTSXP;
-template<> constexpr uint16_t r_typeof<r_factors> =                  CPP20_FCTSXP;
+template<> constexpr uint16_t r_typeof<r_factors> =             CPP20_FCTSXP;
 
 template <typename T>
-inline void check_valid_construction(SEXP x){
-    if (r_typeof_impl<T> != TYPEOF(x)){
-        abort("Bad construction from R type %s to C++ type %s", Rf_type2char(TYPEOF(x)), type_str<T>());
-    }
-}
-
-template <RClassedVector T>
 inline void check_valid_construction(SEXP x){
     if (r_typeof<T> != CPP20_TYPEOF(x)){
         abort("Bad construction from R type %s to C++ type %s", r_type_to_str(CPP20_TYPEOF(x)), type_str<T>());
     }
 }
+
+// template <typename T>
+// inline void check_valid_construction(SEXP x){
+//     if (r_typeof_impl<T> != TYPEOF(x)){
+//         abort("Bad construction from R type %s to C++ type %s", Rf_type2char(TYPEOF(x)), type_str<T>());
+//     }
+// }
+
+// template <RClassedVector T>
+// inline void check_valid_construction(SEXP x){
+//     if (r_typeof<T> != CPP20_TYPEOF(x)){
+//         abort("Bad construction from R type %s to C++ type %s", r_type_to_str(CPP20_TYPEOF(x)), type_str<T>());
+//     }
+// }
 
 }
 

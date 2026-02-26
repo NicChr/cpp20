@@ -3,6 +3,7 @@
 
 #include <cpp20/internal/r_setup.h>
 #include <cpp20/internal/r_types.h>
+#include <cpp20/internal/r_symbols.h>
 #include <bit>
 
 namespace cpp20 {
@@ -61,6 +62,16 @@ inline constexpr r_dbl na_value_impl<r_dbl>(){
 }
 
 template<>
+inline constexpr r_date na_value_impl<r_date>(){
+  return r_date(make_na_real());
+}
+
+template<>
+inline constexpr r_psxct na_value_impl<r_psxct>(){
+  return r_psxct(make_na_real());
+}
+
+template<>
 inline constexpr r_int64 na_value_impl<r_int64>(){
   return r_int64(std::numeric_limits<int64_t>::min());
 }
@@ -88,6 +99,11 @@ inline r_str na_value_impl<r_str>(){
 template<>
 inline r_sexp na_value_impl<r_sexp>(){
   return r_null;
+}
+
+template<>
+inline r_sym na_value_impl<r_sym>(){
+  return symbol::missing_arg;
 }
 
 }
@@ -120,8 +136,8 @@ inline bool is_na_impl(r_str const& x) {
   return unwrap(x) == unwrap(na_str);
 }
 
-template<>
-inline constexpr bool is_na_impl<r_dbl>(r_dbl const& x){
+template<IsRDouble T>
+inline constexpr bool is_na_impl(T const& x){
   return x.value != x.value;
 }
 
