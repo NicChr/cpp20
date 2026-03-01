@@ -209,6 +209,16 @@ auto test_coerce(r_vec<T> x, r_vec<U> ptype) {
 } 
 
 [[cpp20::register]]
+r_vec<r_date> test_as_date(SEXP x){
+  return as<r_vec<r_date>>(x);
+} 
+
+[[cpp20::register]]
+r_vec<r_date> test_as_date2(r_vec<r_date> x){
+  return as<r_vec<r_date>>(x);
+} 
+
+[[cpp20::register]]
 void cpp_set_threads(int n){
   set_threads(n);
 }
@@ -328,12 +338,12 @@ auto test_combine2(T x, T y){
 }
 
 [[cpp20::register]]
-r_dates test_dates1(r_dates x){
+r_vec<r_date> test_dates1(r_vec<r_date> x){
   return x;
 }
 
 template <RVector T>
-requires (is<T, r_dates>)
+requires (is<T, r_vec<r_date>>)
 [[cpp20::register]]
 T test_dates2(T x){
   return x;
@@ -344,4 +354,10 @@ template <RClassedVector T>
 [[cpp20::register]]
 T test_classed_vec(T x){
   return x;
+}
+
+template <RVector T>
+[[cpp20::register]]
+T test_unique(T x){
+  return unique(x);
 }

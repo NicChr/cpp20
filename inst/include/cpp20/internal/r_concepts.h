@@ -5,20 +5,6 @@
 
 namespace cpp20 {
 
-// Forward declare structs to enable defining concepts now
-struct r_lgl;
-struct r_int;
-struct r_int64;
-struct r_dbl;
-struct r_str;
-struct r_str_view;
-struct r_cplx;
-struct r_raw;
-struct r_sym;
-struct r_date;
-struct r_psxct;
-struct r_sexp; 
-
 template <class... T>
 inline constexpr bool always_false = false;
 
@@ -31,6 +17,31 @@ inline constexpr bool is = std::same_as<std::remove_cvref_t<T>, std::remove_cvre
 
 template <typename T, typename... Args>
 inline constexpr bool any = (is<T, Args> || ...);
+
+// Forward declare structs to enable defining concepts now
+struct r_lgl;
+struct r_int;
+struct r_int64;
+struct r_dbl;
+struct r_str;
+struct r_str_view;
+struct r_cplx;
+struct r_raw;
+struct r_sym;
+struct r_sexp; 
+
+template <typename T>
+requires (any<T, r_int, r_dbl>)
+struct r_date_t;
+
+template <typename T>
+requires (any<T, r_int64, r_dbl>)
+struct r_psxct_t;
+
+// By default, r_date uses doubles to match R conventions
+using r_date = r_date_t<r_dbl>;
+// By default, r_psxct uses doubles to match R conventions
+using r_psxct = r_psxct_t<r_dbl>;
 
 // Define R C API types to exclude from pure C/C++ types
 namespace internal {
@@ -69,6 +80,12 @@ struct is_cpp_complex<std::complex<U>> : std::true_type {};
 }
 
 template <typename T>
+concept RDateType = any<T, r_date_t<r_int>, r_date_t<r_dbl>>;
+
+template <typename T>
+concept RPsxctType = any<T, r_psxct_t<r_int64>, r_psxct_t<r_dbl>>;
+
+template <typename T>
 concept RComplexType = is<T, r_cplx>;
 
 template <typename T>
@@ -78,7 +95,7 @@ template <typename T>
 concept ComplexType = RComplexType<T> || CppComplexType<T>;
 
 template <typename T>
-concept RMathType = RIntegerType<T> || RFloatType<T>;
+concept RMathType = RIntegerType<T> || RFloatType<T> || RDateType<T> || RPsxctType<T>;
 
 template <typename T>
 concept CppMathType = std::is_arithmetic_v<std::remove_cvref_t<T>>;
@@ -98,12 +115,6 @@ concept RSymbolType = is<T, r_sym>;
 
 template <typename T>
 concept RRawType = is<T, r_raw>;
-
-template <typename T>
-concept RDateType = is<T, r_date>;
-
-template <typename T>
-concept RPsxctType = is<T, r_psxct>;
 
 template <typename T>
 concept RAtomicScalar = RMathType<T> || RComplexType<T> || RStringType<T> || RRawType<T> || RDateType<T> || RPsxctType<T>;
@@ -190,10 +201,6 @@ namespace internal {
 // A `SEXP` which we can write data to directly via a pointer
 template <typename T>
 concept RPtrWritableType = RVal<T> && !RObject<T>;
-
-template <typename T>
-concept IsRDouble = RVal<T> && (any<T, r_dbl, r_date, r_psxct>);
-
 
 // Wanted to use this as arg in templates but template type deduction then doesn't work (SAD)
 // template <typename T>
@@ -294,16 +301,59 @@ concept CastableToRVal = requires {
     typename as_r_val_t<T>;
 };
 
+namespace internal {
+
+template <typename T>
+struct unwrapped_type {
+    using type = T;
+};
+
+template <RVal T>
+struct unwrapped_type<T> {
+    // Recursively call unwrapped_type on the inner type
+    using type = typename unwrapped_type<typename T::value_type>::type;
+};
+template <typename T>
+struct inherited_type_impl { 
+    using type = T; 
+};
+template <typename T>
+requires requires { typename T::inherited_type; }
+struct inherited_type_impl<T> { 
+    using type = typename T::inherited_type; 
+};
+
+template <RVal T>
+using inherited_type_t = typename internal::inherited_type_impl<std::remove_cvref_t<T>>::type;
+
+}
+
+template <typename T>
+using unwrap_t = typename internal::unwrapped_type<T>::type;
+
+// template <typename T>
+// concept NumericType = MathType<unwrap_t<T>>;
+
+// template <typename T>
+// concept RNumericType = RScalar<T> && NumericType<T>;
+
+template <typename T>
+concept RTimeType = RMathType<T> && (RDateType<T> || RPsxctType<T>);
+
 // Rules for determining math type promotion in binary operators
 
 namespace internal {
 
 template <RMathType T>
 consteval uint8_t r_math_rank() {
-    if constexpr (is<T, r_lgl>)   return 0;
-    if constexpr (is<T, r_int>)   return 1;
-    if constexpr (is<T, r_int64>) return 2;
-    if constexpr (is<T, r_dbl>)   return 3;
+    if constexpr (is<T, r_lgl>)                 return 0;
+    if constexpr (is<T, r_int>)                 return 1;
+    if constexpr (is<T, r_int64>)               return 2;
+    if constexpr (is<T, r_dbl>)                 return 3;
+    if constexpr (is<T, r_date_t<r_int>>)       return 4;
+    if constexpr (is<T, r_date_t<r_dbl>>)       return 5;
+    if constexpr (is<T, r_psxct_t<r_int64>>)    return 6;
+    if constexpr (is<T, r_psxct_t<r_dbl>>)      return 7;
     return std::numeric_limits<uint8_t>::max();
 }
 
@@ -323,7 +373,7 @@ struct common_r_math_impl {
 
 template <MathType T, MathType U>
 requires (RMathType<T> || RMathType<U>) // At least one RMathType
-using common_r_math_t = typename internal::common_r_math_impl<T, U>::type;
+using common_math_t = typename internal::common_r_math_impl<T, U>::type;
 
 
 template <typename T>
@@ -341,8 +391,10 @@ template <> inline const char* type_str<r_cplx>(){return "r_cplx";}
 template <> inline const char* type_str<r_raw>(){return "r_raw";}
 template <> inline const char* type_str<r_sym>(){return "r_sym";}
 template <> inline const char* type_str<r_sexp>(){return "r_sexp";}
-template <> inline const char* type_str<r_date>(){return "r_date";}
-template <> inline const char* type_str<r_psxct>(){return "r_psxct";}
+template <> inline const char* type_str<r_date_t<r_int>>(){return "r_date_t<r_int>";}
+template <> inline const char* type_str<r_date_t<r_dbl>>(){return "r_date_t<r_dbl>";}
+template <> inline const char* type_str<r_psxct_t<r_int64>>(){return "r_psxct_t<r_int64>";}
+template <> inline const char* type_str<r_psxct_t<r_dbl>>(){return "r_psxct_t<r_dbl>";}
 template <> inline const char* type_str<r_factors>(){return "r_factors";}
 
 template<RVector T> 
@@ -381,32 +433,6 @@ namespace internal {
 
 // Mapping from C++ type to R TYPEOF
 
-// // Helper to get the runtime R typeof for a C++ type
-// template<typename T> constexpr uint16_t r_typeof =              std::numeric_limits<uint16_t>::max();
-// template<> constexpr uint16_t r_typeof<r_vec<r_lgl>> =          LGLSXP;
-// template<> constexpr uint16_t r_typeof<r_vec<r_int>> =          INTSXP;
-// template<> constexpr uint16_t r_typeof<r_vec<r_int64>> =        CPP20_INT64SXP;
-// template<> constexpr uint16_t r_typeof<r_vec<r_dbl>> =          REALSXP;
-// template<> constexpr uint16_t r_typeof<r_vec<r_str_view>> =     STRSXP;
-// template<> constexpr uint16_t r_typeof<r_vec<r_str>> =          STRSXP;
-// template<> constexpr uint16_t r_typeof<r_vec<r_cplx>> =         CPLXSXP;
-// template<> constexpr uint16_t r_typeof<r_vec<r_raw>> =          RAWSXP;
-// template<> constexpr uint16_t r_typeof<r_vec<r_sexp>> =         VECSXP;
-
-// template<> constexpr uint16_t r_typeof<r_str_view> =            CHARSXP;
-// template<> constexpr uint16_t r_typeof<r_str> =                 CHARSXP;
-// template<> constexpr uint16_t r_typeof<r_sym> =                 SYMSXP;
-
-// template<> constexpr uint16_t r_typeof<r_dates> =               CPP20_DATESXP;
-// template<> constexpr uint16_t r_typeof<r_posixcts> =            CPP20_PSXTSXP;
-// template<> constexpr uint16_t r_typeof<r_factors> =             CPP20_FCTSXP;
-
-// template<RClassedVector T> // dates, date-times, etc
-// constexpr uint16_t r_typeof<T> = r_typeof<r_vec<typename T::data_type>>;
-
-// Helper to get the runtime R typeof for a C++ type
-// r_typeof_impl matches R's TYPEOF (for the specialised types)
-
 // I tried to have only one r_type_of but because r_dates first builds an r_vec<r_dbl> (and inherits from it)
 // It passes that date SEXP to the r_vec<r_dbl> constructor which checks that it's a REALSXP
 // CPP20_TYPEOF identifies it's a CPP20_DATESXP and throws an error..
@@ -421,8 +447,10 @@ template<> constexpr uint16_t r_typeof<r_vec<r_cplx>> =         CPLXSXP;
 template<> constexpr uint16_t r_typeof<r_vec<r_raw>> =          RAWSXP;
 template<> constexpr uint16_t r_typeof<r_vec<r_sexp>> =         VECSXP;
 
-template<> constexpr uint16_t r_typeof<r_vec<r_date>> =         CPP20_DATESXP;
-template<> constexpr uint16_t r_typeof<r_vec<r_psxct>> =        CPP20_PSXTSXP;
+template<> constexpr uint16_t r_typeof<r_vec<r_date_t<r_int>>> =            CPP20_INTDATESXP;
+template<> constexpr uint16_t r_typeof<r_vec<r_date_t<r_dbl>>> =            CPP20_REALDATESXP;
+template<> constexpr uint16_t r_typeof<r_vec<r_psxct_t<r_int64>>> =         CPP20_INT64PSXTSXP;
+template<> constexpr uint16_t r_typeof<r_vec<r_psxct_t<r_dbl>>> =           CPP20_REALPSXTSXP;
 
 template<> constexpr uint16_t r_typeof<r_str_view> =            CHARSXP;
 template<> constexpr uint16_t r_typeof<r_str> =                 CHARSXP;
@@ -436,20 +464,6 @@ inline void check_valid_construction(SEXP x){
         abort("Bad construction from R type %s to C++ type %s", r_type_to_str(CPP20_TYPEOF(x)), type_str<T>());
     }
 }
-
-// template <typename T>
-// inline void check_valid_construction(SEXP x){
-//     if (r_typeof_impl<T> != TYPEOF(x)){
-//         abort("Bad construction from R type %s to C++ type %s", Rf_type2char(TYPEOF(x)), type_str<T>());
-//     }
-// }
-
-// template <RClassedVector T>
-// inline void check_valid_construction(SEXP x){
-//     if (r_typeof<T> != CPP20_TYPEOF(x)){
-//         abort("Bad construction from R type %s to C++ type %s", r_type_to_str(CPP20_TYPEOF(x)), type_str<T>());
-//     }
-// }
 
 }
 

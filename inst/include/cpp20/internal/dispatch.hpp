@@ -55,8 +55,10 @@ using r_types = std::tuple<
     r_cplx,
     r_raw,
     r_sym,
-    r_date,
-    r_psxct,
+    r_date_t<r_int>,
+    r_date_t<r_dbl>,
+    r_psxct_t<r_int64>,
+    r_psxct_t<r_dbl>,
     r_sexp // Catch-all type
 >;
 
@@ -67,16 +69,8 @@ struct to_r_vec_tuple_impl<std::tuple<Ts...>> {
     using type = std::tuple<r_vec<Ts>...>;
 };
 
-// Unclassed vectors: r_vec<T> for every T in r_types
-using r_unclassed_vector_types = typename to_r_vec_tuple_impl<r_types>::type;
-
-// // Classed vectors
-// using r_classed_vector_types = std::tuple<
-//     r_dates,
-//     r_posixcts
-//     // r_factors,
-//     // r_df
-// >;
+// vectors: r_vec<T> for every T in r_types
+using r_vector_types = typename to_r_vec_tuple_impl<r_types>::type;
 
 // A map of C++ types that R types (via typeof) can map to (or be deduced to) via template types
 template <typename T> constexpr uint16_t r_cpp_boundary_map_v = r_typeof<T>;
@@ -188,21 +182,15 @@ struct GroupedDispatcher<Remaining, NumArgs, ArgToTemplateMap, SelectedTypes...>
             );
         };
 
-        // // Phase 1: classed vectors (r_dates, r_posixcts, ...)
-        // [&]<size_t... Is>(std::index_sequence<Is...>) {
-        //     (try_candidate.template operator()<
-        //         std::tuple_element_t<Is, r_classed_vector_types>>(), ...);
-        // }(std::make_index_sequence<std::tuple_size_v<r_classed_vector_types>>{});
-
-        // Phase 2: unclassed vectors (r_vec<r_lgl>, r_vec<r_int>, ...)
+        // vectors (r_vec<r_lgl>, r_vec<r_int>, ...)
         if (!result.has_value()) {
             [&]<size_t... Is>(std::index_sequence<Is...>) {
                 (try_candidate.template operator()<
-                    std::tuple_element_t<Is, r_unclassed_vector_types>>(), ...);
-            }(std::make_index_sequence<std::tuple_size_v<r_unclassed_vector_types>>{});
+                    std::tuple_element_t<Is, r_vector_types>>(), ...);
+            }(std::make_index_sequence<std::tuple_size_v<r_vector_types>>{});
         }
 
-        // Phase 3: scalars (r_lgl, r_int, r_dbl, ...)
+        // scalars (r_lgl, r_int, r_dbl, ...)
         if (!result.has_value()) {
             [&]<size_t... Is>(std::index_sequence<Is...>) {
                 (try_candidate.template operator()<

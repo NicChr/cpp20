@@ -120,6 +120,14 @@ test_coerce <- function(x, ptype) {
   .Call(`_cpp20_test_coerce`, x, ptype)
 }
 
+test_as_date <- function(x) {
+  .Call(`_cpp20_test_as_date`, x)
+}
+
+test_as_date2 <- function(x) {
+  .Call(`_cpp20_test_as_date2`, x)
+}
+
 cpp_set_threads <- function(n) {
   invisible(.Call(`_cpp20_cpp_set_threads`, n))
 }
@@ -190,4 +198,8 @@ test_dates2 <- function(x) {
 
 test_classed_vec <- function(x) {
   .Call(`_cpp20_test_classed_vec`, x)
+}
+
+test_unique <- function(x) {
+  .Call(`_cpp20_test_unique`, x)
 }

@@ -79,6 +79,24 @@ struct r_limits<r_dbl>{
     }
 };
 
+template <RTimeType T>
+struct r_limits<T> {
+    static constexpr T min() noexcept {
+        return T{r_limits<internal::inherited_type_t<T>>::min()};
+    }
+    static constexpr T max() noexcept {
+        return T{r_limits<internal::inherited_type_t<T>>::max()};
+    }
+
+    // Not logically useful but promotes template consistency
+    static constexpr T epsilon() noexcept {
+        return T{r_limits<internal::inherited_type_t<T>>::epsilon()};
+    }
+    static constexpr T tolerance() noexcept {
+        return T{r_limits<internal::inherited_type_t<T>>::tolerance()};
+    }
+};
+
 }
 
 #endif

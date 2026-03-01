@@ -61,14 +61,9 @@ inline constexpr r_dbl na_value_impl<r_dbl>(){
   return r_dbl(make_na_real());
 }
 
-template<>
-inline constexpr r_date na_value_impl<r_date>(){
-  return r_date(make_na_real());
-}
-
-template<>
-inline constexpr r_psxct na_value_impl<r_psxct>(){
-  return r_psxct(make_na_real());
+template <RTimeType T>
+inline constexpr T na_value_impl(){
+  return T(na_value_impl<inherited_type_t<T>>());
 }
 
 template<>
@@ -136,9 +131,9 @@ inline bool is_na_impl(r_str const& x) {
   return unwrap(x) == unwrap(na_str);
 }
 
-template<IsRDouble T>
+template <RTimeType T>
 inline constexpr bool is_na_impl(T const& x){
-  return x.value != x.value;
+  return is_na_impl<inherited_type_t<T>>(static_cast<inherited_type_t<T>>(x));
 }
 
 template<>

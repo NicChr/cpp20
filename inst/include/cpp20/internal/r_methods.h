@@ -203,14 +203,14 @@ template<MathType T, MathType U>
   requires (AtLeastOneRMathType<T, U>)
 inline constexpr auto operator+(T lhs, U rhs) {
 
-  using common_math_t = common_r_math_t<T, U>;
+  using common_t = common_math_t<T, U>;
 
-  if constexpr (is<common_math_t, r_dbl>){
+  if constexpr (is<common_t, r_dbl>){
     return r_dbl(static_cast<double>(unwrap(lhs)) + static_cast<double>(unwrap(rhs)));
   } else {
     return ( is_na(lhs) || is_na(rhs) ) ? 
-    na<common_math_t>() : 
-    common_math_t(static_cast<unwrap_t<common_math_t>>(unwrap(lhs)) + static_cast<unwrap_t<common_math_t>>(unwrap(rhs)));
+    na<common_t>() : 
+    common_t(static_cast<unwrap_t<common_t>>(unwrap(lhs)) + static_cast<unwrap_t<common_t>>(unwrap(rhs)));
   }
 }
 
@@ -218,14 +218,14 @@ template<MathType T, MathType U>
   requires (AtLeastOneRMathType<T, U>)
 inline constexpr auto operator-(T lhs, U rhs) {
 
-  using common_math_t = common_r_math_t<T, U>;
+  using common_t = common_math_t<T, U>;
 
-  if constexpr (is<common_math_t, r_dbl>){
+  if constexpr (is<common_t, r_dbl>){
     return r_dbl(static_cast<double>(unwrap(lhs)) - static_cast<double>(unwrap(rhs)));
   } else {
     return ( is_na(lhs) || is_na(rhs) ) ? 
-    na<common_math_t>() : 
-    common_math_t(static_cast<unwrap_t<common_math_t>>(unwrap(lhs)) - static_cast<unwrap_t<common_math_t>>(unwrap(rhs)));
+    na<common_t>() : 
+    common_t(static_cast<unwrap_t<common_t>>(unwrap(lhs)) - static_cast<unwrap_t<common_t>>(unwrap(rhs)));
   }
 }
 
@@ -233,14 +233,14 @@ template<MathType T, MathType U>
   requires (AtLeastOneRMathType<T, U>)
 inline constexpr auto operator*(T lhs, U rhs) {
 
-  using common_math_t = common_r_math_t<T, U>;
+  using common_t = common_math_t<T, U>;
 
-  if constexpr (is<common_math_t, r_dbl>){
+  if constexpr (is<common_t, r_dbl>){
     return r_dbl(static_cast<double>(unwrap(lhs)) * static_cast<double>(unwrap(rhs)));
   } else {
     return ( is_na(lhs) || is_na(rhs) ) ? 
-    na<common_math_t>() : 
-    common_math_t(static_cast<unwrap_t<common_math_t>>(unwrap(lhs)) * static_cast<unwrap_t<common_math_t>>(unwrap(rhs)));
+    na<common_t>() : 
+    common_t(static_cast<unwrap_t<common_t>>(unwrap(lhs)) * static_cast<unwrap_t<common_t>>(unwrap(rhs)));
   }
 }
 
@@ -269,7 +269,7 @@ inline constexpr r_dbl operator%(T lhs, U rhs) {
 template<IntegerType T, IntegerType U>
   requires (RIntegerType<T> || RIntegerType<U>)
 inline constexpr auto operator%(T lhs, U rhs) {
-  using out_t = common_r_math_t<T, U>;
+  using out_t = common_math_t<T, U>;
   using unwrapped_t = unwrap_t<out_t>;
 
   if ( unwrap(rhs) == 0 || is_na(lhs) || is_na(rhs) ){

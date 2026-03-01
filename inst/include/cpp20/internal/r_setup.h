@@ -79,12 +79,15 @@ namespace internal {
 // };
 
 
+// Custom SEXP tags, differentiating integer64, dates (int/double), date-times (int64/double) and factors
 inline constexpr int64_t CPP20_OMP_THRESHOLD = 100000;
 inline constexpr SEXPTYPE CPP20_INT64SXP = 64;
-inline constexpr SEXPTYPE CPP20_FCTSXP = 200;
-inline constexpr SEXPTYPE CPP20_DATESXP = 201;
-inline constexpr SEXPTYPE CPP20_PSXTSXP = 202;
-inline constexpr SEXPTYPE CPP20_DFSXP = 203;
+inline constexpr SEXPTYPE CPP20_INTDATESXP = 200;
+inline constexpr SEXPTYPE CPP20_REALDATESXP = 201;
+inline constexpr SEXPTYPE CPP20_INT64PSXTSXP = 202;
+inline constexpr SEXPTYPE CPP20_REALPSXTSXP = 203;
+inline constexpr SEXPTYPE CPP20_FCTSXP = 204;
+inline constexpr SEXPTYPE CPP20_DFSXP = 205;
 inline int cpp20_n_threads = 1;
 
 [[noexcept]] inline SEXPTYPE CPP20_TYPEOF(SEXP x){
@@ -93,14 +96,15 @@ inline int cpp20_n_threads = 1;
 
   switch (xtype){
     case INTSXP: {
-      // if (Rf_inherits(x, "Date")) return CPP20_DATESXP;
+      if (Rf_inherits(x, "Date")) return CPP20_INTDATESXP;
       if (Rf_inherits(x, "factor")) return CPP20_FCTSXP;
       return xtype;
     }
     case REALSXP: {
-      if (Rf_inherits(x, "Date")) return CPP20_DATESXP;
-      if (Rf_inherits(x, "POSIXct")) return CPP20_PSXTSXP;
-      if (Rf_inherits(x, "integer64")) return CPP20_INT64SXP;
+      if (Rf_inherits(x, "Date")) return CPP20_REALDATESXP;
+      if (Rf_inherits(x, "POSIXct") && Rf_inherits(x, "integer64")) return CPP20_INT64PSXTSXP;
+      if (Rf_inherits(x, "POSIXct")) return CPP20_REALPSXTSXP;
+      if (Rf_inherits(x, "integer64")) return CPP20_INT64SXP; 
       return xtype;
     }
     // case VECSXP: {
@@ -117,23 +121,13 @@ inline const char* r_type_to_str(SEXPTYPE x){
 
   switch (x){
     case CPP20_INT64SXP: return "CPP20_INT64SXP";
-    case CPP20_DATESXP: return "CPP20_DATESXP";
-    case CPP20_PSXTSXP: return "CPP20_PSXTSXP";
+    case CPP20_INTDATESXP: return "CPP20_INTDATESXP";
+    case CPP20_REALDATESXP: return "CPP20_REALDATESXP";
+    case CPP20_INT64PSXTSXP: return "CPP20_INT64PSXTSXP";
+    case CPP20_REALPSXTSXP: return "CPP20_REALPSXTSXP";
     case CPP20_FCTSXP: return "CPP20_FCTSXP";
-    // case VECSXP: {
-    //   if (Rf_inherits(x, "data.frame")) return CPP20_DFSXP;
-    //   return xtype;
-    // }
+    case CPP20_DFSXP: return "CPP20_DFSXP";
     default: return Rf_type2char(x);
-  }
-
-  switch (x){
-    case CPP20_INT64SXP: {
-      return "CPP20_INT64SXP";
-    }
-    default: {
-      return Rf_type2char(x);
-    }
   }
 }
 
@@ -209,6 +203,10 @@ inline void set_threads(int n){
 }
 
 
+// [[noexcept]] inline bool xor_(bool a, bool b){
+//   return (a + b) == 1;
+// }
+
 namespace internal {
 
 inline int calc_threads(r_size_t data_size){
@@ -220,7 +218,7 @@ inline int calc_threads(r_size_t data_size){
 // Recycle loop indices
 template<typename T>
 inline constexpr void recycle_index(T& v, const T size) {
-  v = (++v == size) ? static_cast<T>(0) : v;
+  v = (++v == size) ? T(0) : v;
 }
 
 template <typename... Args>

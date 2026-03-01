@@ -334,6 +334,22 @@ extern "C" SEXP _cpp20_test_coerce(SEXP x, SEXP ptype) {
   END_CPP20
 }
 // test.h
+r_vec<r_date> test_as_date(SEXP x);
+extern "C" SEXP _cpp20_test_as_date(SEXP x) {
+  BEGIN_CPP20
+  cpp20::internal::check_r_cpp_mapping<SEXP>(x);
+  return cpp20::internal::cpp_to_sexp(test_as_date(cpp20::as<std::remove_cvref_t<SEXP>>(x)));
+  END_CPP20
+}
+// test.h
+r_vec<r_date> test_as_date2(r_vec<r_date> x);
+extern "C" SEXP _cpp20_test_as_date2(SEXP x) {
+  BEGIN_CPP20
+  cpp20::internal::check_r_cpp_mapping<r_vec<r_date>>(x);
+  return cpp20::internal::cpp_to_sexp(test_as_date2(cpp20::as<std::remove_cvref_t<r_vec<r_date>>>(x)));
+  END_CPP20
+}
+// test.h
 void cpp_set_threads(int n);
 extern "C" SEXP _cpp20_cpp_set_threads(SEXP n) {
   BEGIN_CPP20
@@ -456,11 +472,11 @@ extern "C" SEXP _cpp20_test_combine2(SEXP x, SEXP y) {
   END_CPP20
 }
 // test.h
-r_dates test_dates1(r_dates x);
+r_vec<r_date> test_dates1(r_vec<r_date> x);
 extern "C" SEXP _cpp20_test_dates1(SEXP x) {
   BEGIN_CPP20
-  cpp20::internal::check_r_cpp_mapping<r_dates>(x);
-  return cpp20::internal::cpp_to_sexp(test_dates1(cpp20::as<std::remove_cvref_t<r_dates>>(x)));
+  cpp20::internal::check_r_cpp_mapping<r_vec<r_date>>(x);
+  return cpp20::internal::cpp_to_sexp(test_dates1(cpp20::as<std::remove_cvref_t<r_vec<r_date>>>(x)));
   END_CPP20
 }
 // test.h
@@ -485,6 +501,17 @@ extern "C" SEXP _cpp20_test_classed_vec(SEXP x) {
   );
   END_CPP20
 }
+// test.h
+extern "C" SEXP _cpp20_test_unique(SEXP x) {
+  BEGIN_CPP20
+  return cpp20::internal::dispatch_template_impl<1, 1, std::array<int, 1>{0}>(
+    []<typename T>(SEXP x_internal) -> decltype(cpp20::internal::cpp_to_sexp(test_unique(cpp20::as<std::remove_cvref_t<T>>(x_internal)))) {
+        return cpp20::internal::cpp_to_sexp(test_unique(cpp20::as<std::remove_cvref_t<T>>(x_internal)));
+    },
+    x
+  );
+  END_CPP20
+}
 
 extern "C" {
 static const R_CallMethodDef CallEntries[] = {
@@ -497,6 +524,8 @@ static const R_CallMethodDef CallEntries[] = {
     {"_cpp20_scalar_vec1",              (DL_FUNC) &_cpp20_scalar_vec1,              2},
     {"_cpp20_scalar_vec2",              (DL_FUNC) &_cpp20_scalar_vec2,              2},
     {"_cpp20_scalar_vec3",              (DL_FUNC) &_cpp20_scalar_vec3,              4},
+    {"_cpp20_test_as_date",             (DL_FUNC) &_cpp20_test_as_date,             1},
+    {"_cpp20_test_as_date2",            (DL_FUNC) &_cpp20_test_as_date2,            1},
     {"_cpp20_test_as_sym",              (DL_FUNC) &_cpp20_test_as_sym,              1},
     {"_cpp20_test_classed_vec",         (DL_FUNC) &_cpp20_test_classed_vec,         1},
     {"_cpp20_test_coerce",              (DL_FUNC) &_cpp20_test_coerce,              2},
@@ -534,6 +563,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"_cpp20_test_str4",                (DL_FUNC) &_cpp20_test_str4,                1},
     {"_cpp20_test_sym",                 (DL_FUNC) &_cpp20_test_sym,                 1},
     {"_cpp20_test_template_null",       (DL_FUNC) &_cpp20_test_template_null,       1},
+    {"_cpp20_test_unique",              (DL_FUNC) &_cpp20_test_unique,              1},
     {"_cpp20_vector1",                  (DL_FUNC) &_cpp20_vector1,                  1},
     {"_cpp20_vector2",                  (DL_FUNC) &_cpp20_vector2,                  1},
     {NULL, NULL, 0}

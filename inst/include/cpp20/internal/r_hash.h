@@ -39,27 +39,12 @@ struct r_hash_impl {
     using is_avalanching = void;
 
     uint64_t operator()(unwrap_t<T> x) const noexcept {
-
-        if constexpr (RIntegerType<T>){
+        if constexpr (RTimeType<T>){
+            return r_hash_impl<inherited_type_t<T>>{}(T(x));
+        } else if constexpr (RIntegerType<T>){
             return mix_u64(static_cast<uint64_t>(x));
         } else {
             return ankerl::unordered_dense::hash<unwrap_t<T>>{}(x);
-        }
-    }
-};
-
-template <IsRDouble T>
-struct r_hash_impl<T> {
-    using is_avalanching = void;
-
-    uint64_t operator()(double x) const noexcept {
-        if (x != x){
-            // Checks that x matches exactly to R's NA_REAL
-            return is_na_real(x) ? na_real_hash() : nan_hash();
-        } else {
-            // Hash normal double
-            // +0.0 to normalise -0.0 and 0.0 
-            return mix_u64(std::bit_cast<uint64_t>(x + 0.0));
         }
     }
 };

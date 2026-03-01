@@ -16,7 +16,7 @@ inline auto operator+(const T& lhs, const U& rhs) {
         } else if (rhs_size == 1){
             return lhs + rhs.get(0);
         } else if (lhs_size == rhs_size){
-            using common_t = common_r_math_t<typename T::data_type, typename U::data_type>;
+            using common_t = common_math_t<typename T::data_type, typename U::data_type>;
             r_vec<common_t> out(lhs_size);
             OMP_SIMD
             for (r_size_t i = 0; i < lhs_size; ++i){
@@ -29,7 +29,7 @@ inline auto operator+(const T& lhs, const U& rhs) {
             if (lhs_size == 0 || rhs_size == 0){
                 n = 0;
             }
-            using common_t = common_r_math_t<typename T::data_type, typename U::data_type>;
+            using common_t = common_math_t<typename T::data_type, typename U::data_type>;
             r_vec<common_t> out(n);
             for (r_size_t i = 0, lhsi = 0, rhsi = 0; i < n;
                 recycle_index(lhsi, lhs_size),
@@ -40,7 +40,7 @@ inline auto operator+(const T& lhs, const U& rhs) {
             return out;
         }
     } else if constexpr (RVector<T>){
-        using common_t = common_r_math_t<typename T::data_type, U>;
+        using common_t = common_math_t<typename T::data_type, U>;
         r_size_t n = lhs.length();
         r_vec<common_t> out(n);
         OMP_SIMD
@@ -49,7 +49,7 @@ inline auto operator+(const T& lhs, const U& rhs) {
         }
         return out;
     } else {
-        using common_t = common_r_math_t<T, typename U::data_type>;
+        using common_t = common_math_t<T, typename U::data_type>;
         r_size_t n = rhs.length();
         r_vec<common_t> out(n);
         OMP_SIMD
@@ -71,7 +71,7 @@ inline auto operator-(const T& lhs, const U& rhs) {
         } else if (rhs_size == 1){
             return lhs - rhs.get(0);
         } else if (lhs_size == rhs_size){
-            using common_t = common_r_math_t<typename T::data_type, typename U::data_type>;
+            using common_t = common_math_t<typename T::data_type, typename U::data_type>;
             r_vec<common_t> out(lhs_size);
             OMP_SIMD
             for (r_size_t i = 0; i < lhs_size; ++i){
@@ -84,7 +84,7 @@ inline auto operator-(const T& lhs, const U& rhs) {
             if (lhs_size == 0 || rhs_size == 0){
                 n = 0;
             }
-            using common_t = common_r_math_t<typename T::data_type, typename U::data_type>;
+            using common_t = common_math_t<typename T::data_type, typename U::data_type>;
             r_vec<common_t> out(n);
             for (r_size_t i = 0, lhsi = 0, rhsi = 0; i < n;
                 recycle_index(lhsi, lhs_size),
@@ -95,7 +95,7 @@ inline auto operator-(const T& lhs, const U& rhs) {
             return out;
         }
     } else if constexpr (RVector<T>){
-        using common_t = common_r_math_t<typename T::data_type, U>;
+        using common_t = common_math_t<typename T::data_type, U>;
         r_size_t n = lhs.length();
         r_vec<common_t> out(n);
         OMP_SIMD
@@ -104,7 +104,7 @@ inline auto operator-(const T& lhs, const U& rhs) {
         }
         return out;
     } else {
-        using common_t = common_r_math_t<T, typename U::data_type>;
+        using common_t = common_math_t<T, typename U::data_type>;
         r_size_t n = rhs.length();
         r_vec<common_t> out(n);
         OMP_SIMD
@@ -126,7 +126,7 @@ inline auto operator*(const T& lhs, const U& rhs) {
         } else if (rhs_size == 1){
             return lhs * rhs.get(0);
         } else if (lhs_size == rhs_size){
-            using common_t = common_r_math_t<typename T::data_type, typename U::data_type>;
+            using common_t = common_math_t<typename T::data_type, typename U::data_type>;
             r_vec<common_t> out(lhs_size);
             OMP_SIMD
             for (r_size_t i = 0; i < lhs_size; ++i){
@@ -139,7 +139,7 @@ inline auto operator*(const T& lhs, const U& rhs) {
             if (lhs_size == 0 || rhs_size == 0){
                 n = 0;
             }
-            using common_t = common_r_math_t<typename T::data_type, typename U::data_type>;
+            using common_t = common_math_t<typename T::data_type, typename U::data_type>;
             r_vec<common_t> out(n);
             for (r_size_t i = 0, lhsi = 0, rhsi = 0; i < n;
                 recycle_index(lhsi, lhs_size),
@@ -150,7 +150,7 @@ inline auto operator*(const T& lhs, const U& rhs) {
             return out;
         }
     } else if constexpr (RVector<T>){
-        using common_t = common_r_math_t<typename T::data_type, U>;
+        using common_t = common_math_t<typename T::data_type, U>;
         r_size_t n = lhs.length();
         r_vec<common_t> out(n);
         OMP_SIMD
@@ -159,7 +159,7 @@ inline auto operator*(const T& lhs, const U& rhs) {
         }
         return out;
     } else {
-        using common_t = common_r_math_t<T, typename U::data_type>;
+        using common_t = common_math_t<T, typename U::data_type>;
         r_size_t n = rhs.length();
         r_vec<common_t> out(n);
         OMP_SIMD
@@ -234,7 +234,7 @@ inline auto operator%(const T& lhs, const U& rhs) {
         } else if (rhs_size == 1){
             return lhs % rhs.get(0);
         } else if (lhs_size == rhs_size){
-            using common_t = common_r_math_t<typename T::data_type, typename U::data_type>;
+            using common_t = common_math_t<typename T::data_type, typename U::data_type>;
             r_vec<common_t> out(lhs_size);
             OMP_SIMD
             for (r_size_t i = 0; i < lhs_size; ++i){
@@ -247,7 +247,7 @@ inline auto operator%(const T& lhs, const U& rhs) {
             if (lhs_size == 0 || rhs_size == 0){
                 n = 0;
             }
-            using common_t = common_r_math_t<typename T::data_type, typename U::data_type>;
+            using common_t = common_math_t<typename T::data_type, typename U::data_type>;
             r_vec<common_t> out(n);
             for (r_size_t i = 0, lhsi = 0, rhsi = 0; i < n;
                 recycle_index(lhsi, lhs_size),
@@ -258,7 +258,7 @@ inline auto operator%(const T& lhs, const U& rhs) {
             return out;
         }
     } else if constexpr (RVector<T>){
-        using common_t = common_r_math_t<typename T::data_type, U>;
+        using common_t = common_math_t<typename T::data_type, U>;
         r_size_t n = lhs.length();
         r_vec<common_t> out(n);
         OMP_SIMD
@@ -267,7 +267,7 @@ inline auto operator%(const T& lhs, const U& rhs) {
         }
         return out;
     } else {
-        using common_t = common_r_math_t<T, typename U::data_type>;
+        using common_t = common_math_t<T, typename U::data_type>;
         r_size_t n = rhs.length();
         r_vec<common_t> out(n);
         OMP_SIMD

@@ -32,7 +32,7 @@ template<MathType T, MathType U>
 requires (AtLeastOneRMathType<T, U>)
 inline constexpr auto min(T x, U y){
   
-  using common_t = common_r_math_t<T, U>;
+  using common_t = common_math_t<T, U>;
 
   return ( is_na(x) || is_na(y) ) ? na<common_t>() : 
   common_t(std::min(
@@ -45,7 +45,7 @@ template<MathType T, MathType U>
 requires (AtLeastOneRMathType<T, U>)
 inline constexpr auto max(T x, U y){
   
-  using common_t = common_r_math_t<T, U>;
+  using common_t = common_math_t<T, U>;
 
   return ( is_na(x) || is_na(y) ) ? na<common_t>() : 
   common_t(std::max(

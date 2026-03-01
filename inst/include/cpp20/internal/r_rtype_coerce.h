@@ -282,17 +282,10 @@ struct as_impl<r_dbl, U> {
   }
 };
 
-template<typename U>
-struct as_impl<r_date, U> {
-  static constexpr r_date cast(U const& x) {
-    return r_date(unwrap(as_double(x)));
-  }
-};
-
-template<typename U>
-struct as_impl<r_psxct, U> {
-  static constexpr r_psxct cast(U const& x) {
-    return r_psxct(unwrap(as_double(x)));
+template<RTimeType T, typename U>
+struct as_impl<T, U> {
+  static constexpr T cast(U const& x) {
+    return T(as_impl<inherited_type_t<T>, U>::cast(x));
   }
 };
 
