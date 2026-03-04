@@ -217,7 +217,7 @@ inline int calc_threads(r_size_t data_size){
 
 // Recycle loop indices
 template<typename T>
-inline constexpr void recycle_index(T& v, const T size) {
+inline constexpr void recycle_index(T& v, T size) {
   v = (++v == size) ? T(0) : v;
 }
 

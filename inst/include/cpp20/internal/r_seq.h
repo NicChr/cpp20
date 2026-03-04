@@ -7,7 +7,7 @@
 
 namespace cpp20 {
 
-template <RMathType T, RMathType U>
+template <RNumericType T, RNumericType U>
 r_vec<r_sexp> sequences(r_vec<r_int> size, r_vec<T> from, r_vec<U> by){
 
     using common_t = common_math_t<T, U>;

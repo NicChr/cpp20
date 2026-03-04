@@ -361,3 +361,10 @@ template <RVector T>
 T test_unique(T x){
   return unique(x);
 }
+
+template <RMathType U, RMathType V>
+[[cpp20::register]]
+r_vec<r_sexp> test_seqs(r_vec<r_int> size, r_vec<U> from, r_vec<V> by){
+  return sequences(size, from, by);
+}
+

@@ -72,7 +72,7 @@ auto sum_int(const r_vec<T> &x, bool na_rm = false){
     return r_int64(out_);
 }
 
-template <RMathType T>
+template <RNumericType T>
 r_vec<T> range(const r_vec<T> &x, bool na_rm = false){
     
     r_size_t n = x.length();
@@ -157,11 +157,11 @@ r_vec<T> range(const r_vec<T> &x, bool na_rm = false){
     return make_vec<T>(lo, hi);
 }
 
-template <RMathType T>
+template <RNumericType T>
 T min(const r_vec<T> &x, bool na_rm = false){
     return range(x, na_rm).get(0);
 }
-template <RMathType T>
+template <RNumericType T>
 T max(const r_vec<T> &x, bool na_rm = false){
     return range(x, na_rm).get(1);
 }

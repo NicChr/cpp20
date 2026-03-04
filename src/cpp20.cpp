@@ -512,6 +512,18 @@ extern "C" SEXP _cpp20_test_unique(SEXP x) {
   );
   END_CPP20
 }
+// test.h
+extern "C" SEXP _cpp20_test_seqs(SEXP size, SEXP from, SEXP by) {
+  BEGIN_CPP20
+  cpp20::internal::check_r_cpp_mapping<r_vec<r_int>>(size);
+return cpp20::internal::dispatch_template_impl<2, 3, std::array<int, 3>{-1, 0, 1}>(
+    []<typename U, typename V>(SEXP size_internal, SEXP from_internal, SEXP by_internal) -> decltype(cpp20::internal::cpp_to_sexp(test_seqs(cpp20::as<std::remove_cvref_t<r_vec<r_int>>>(size_internal), cpp20::as<std::remove_cvref_t<r_vec<U>>>(from_internal), cpp20::as<std::remove_cvref_t<r_vec<V>>>(by_internal)))) {
+        return cpp20::internal::cpp_to_sexp(test_seqs(cpp20::as<std::remove_cvref_t<r_vec<r_int>>>(size_internal), cpp20::as<std::remove_cvref_t<r_vec<U>>>(from_internal), cpp20::as<std::remove_cvref_t<r_vec<V>>>(by_internal)));
+    },
+    size, from, by
+  );
+  END_CPP20
+}
 
 extern "C" {
 static const R_CallMethodDef CallEntries[] = {
@@ -550,6 +562,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"_cpp20_test_scalar",              (DL_FUNC) &_cpp20_test_scalar,              2},
     {"_cpp20_test_scalar2",             (DL_FUNC) &_cpp20_test_scalar2,             2},
     {"_cpp20_test_scalar3",             (DL_FUNC) &_cpp20_test_scalar3,             2},
+    {"_cpp20_test_seqs",                (DL_FUNC) &_cpp20_test_seqs,                3},
     {"_cpp20_test_set_strs",            (DL_FUNC) &_cpp20_test_set_strs,            1},
     {"_cpp20_test_set_strs2",           (DL_FUNC) &_cpp20_test_set_strs2,           1},
     {"_cpp20_test_sexp",                (DL_FUNC) &_cpp20_test_sexp,                1},

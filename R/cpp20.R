@@ -203,3 +203,7 @@ test_classed_vec <- function(x) {
 test_unique <- function(x) {
   .Call(`_cpp20_test_unique`, x)
 }
+
+test_seqs <- function(size, from, by) {
+  .Call(`_cpp20_test_seqs`, size, from, by)
+}

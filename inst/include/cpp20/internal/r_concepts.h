@@ -86,6 +86,9 @@ template <typename T>
 concept RPsxctType = any<T, r_psxct_t<r_int64>, r_psxct_t<r_dbl>>;
 
 template <typename T>
+concept RTimeType = RDateType<T> || RPsxctType<T>;
+
+template <typename T>
 concept RComplexType = is<T, r_cplx>;
 
 template <typename T>
@@ -95,7 +98,7 @@ template <typename T>
 concept ComplexType = RComplexType<T> || CppComplexType<T>;
 
 template <typename T>
-concept RMathType = RIntegerType<T> || RFloatType<T> || RDateType<T> || RPsxctType<T>;
+concept RMathType = RIntegerType<T> || RFloatType<T>;
 
 template <typename T>
 concept CppMathType = std::is_arithmetic_v<std::remove_cvref_t<T>>;
@@ -104,11 +107,22 @@ template <typename T>
 concept MathType = RMathType<T> || CppMathType<T>;
 
 template <typename T>
+concept RNumericType = RMathType<T> || RTimeType<T>;
+// This would be cleaner but template subsumption (and therefore partial specialisation) doesn't work
+// concept NumericType = MathType<unwrap_t<T>>;
+
+template <typename T>
+concept CppNumericType = CppMathType<T>;
+
+
+template <typename T>
+concept NumericType = RNumericType<T> || CppNumericType<T>;
+
+template <typename T>
 concept RStringType = any<T, r_str, r_str_view>;
 
-template <typename T, typename U>
-concept AtLeastOneRMathType =
-(RMathType<T> || RMathType<U>) && (MathType<T> && MathType<U>);
+template <typename T>
+concept RSortable = RNumericType<T> || RStringType<T>;
 
 template <typename T>
 concept RSymbolType = is<T, r_sym>;
@@ -117,7 +131,7 @@ template <typename T>
 concept RRawType = is<T, r_raw>;
 
 template <typename T>
-concept RAtomicScalar = RMathType<T> || RComplexType<T> || RStringType<T> || RRawType<T> || RDateType<T> || RPsxctType<T>;
+concept RAtomicScalar = RNumericType<T> || RComplexType<T> || RStringType<T> || RRawType<T>;
 
 template <typename T>
 concept RScalar = RAtomicScalar<T> || RSymbolType<T>;
@@ -125,6 +139,10 @@ concept RScalar = RAtomicScalar<T> || RSymbolType<T>;
 // RVal is anything that can be stored in `r_vec<>`
 template <typename T>
 concept RVal = RScalar<T> || is<T, r_sexp>;
+
+template <typename T, typename U>
+concept AtLeastOneRMathType =
+(RMathType<T> || RMathType<U>) && (MathType<T> && MathType<U>);
 
 // Forward declare structs to define concepts now
 template<RVal T>
@@ -191,9 +209,6 @@ concept Scalar = CppScalar<T> || RScalar<T>;
 
 template <typename T>
 inline constexpr bool is_sexp = any<T, SEXP, r_sexp>;
-
-template <typename T>
-concept RSortable = RMathType<T> || RStringType<T>;
 
 // Internal helpers
 namespace internal {
@@ -291,18 +306,6 @@ struct r_val_mapping_impl<T> {
 
 };
 
-}
-
-template <typename T>
-using as_r_val_t = typename internal::r_val_mapping_impl<std::remove_cvref_t<T>>::type;
-
-template <typename T>
-concept CastableToRVal = requires {
-    typename as_r_val_t<T>;
-};
-
-namespace internal {
-
 template <typename T>
 struct unwrapped_type {
     using type = T;
@@ -328,32 +331,39 @@ using inherited_type_t = typename internal::inherited_type_impl<std::remove_cvre
 
 }
 
+// Type -> RVal type
+template <typename T>
+using as_r_val_t = typename internal::r_val_mapping_impl<std::remove_cvref_t<T>>::type;
+
+// Can type be constructed/static_cast to RVal type?
+template <typename T>
+concept CastableToRVal = requires {
+    typename as_r_val_t<T>;
+};
+
+// Recursively unwrap to inner C/C++ type
 template <typename T>
 using unwrap_t = typename internal::unwrapped_type<T>::type;
-
-// template <typename T>
-// concept NumericType = MathType<unwrap_t<T>>;
-
-// template <typename T>
-// concept RNumericType = RScalar<T> && NumericType<T>;
-
-template <typename T>
-concept RTimeType = RMathType<T> && (RDateType<T> || RPsxctType<T>);
 
 // Rules for determining math type promotion in binary operators
 
 namespace internal {
 
-template <RMathType T>
-consteval uint8_t r_math_rank() {
-    if constexpr (is<T, r_lgl>)                 return 0;
-    if constexpr (is<T, r_int>)                 return 1;
-    if constexpr (is<T, r_int64>)               return 2;
-    if constexpr (is<T, r_dbl>)                 return 3;
-    if constexpr (is<T, r_date_t<r_int>>)       return 4;
-    if constexpr (is<T, r_date_t<r_dbl>>)       return 5;
-    if constexpr (is<T, r_psxct_t<r_int64>>)    return 6;
-    if constexpr (is<T, r_psxct_t<r_dbl>>)      return 7;
+template <RVal T>
+consteval uint8_t r_type_rank() {
+    if constexpr (is<T, r_lgl>)                     return 0;
+    if constexpr (is<T, r_int>)                     return 1;
+    if constexpr (is<T, r_int64>)                   return 2;
+    if constexpr (is<T, r_dbl>)                     return 3;
+    if constexpr (is<T, r_cplx>)                    return 4;
+    if constexpr (is<T, r_raw>)                     return 5;
+    if constexpr (is<T, r_date_t<r_int>>)           return 6;
+    if constexpr (is<T, r_date_t<r_dbl>>)           return 7;
+    if constexpr (is<T, r_psxct_t<r_int64>>)        return 8;
+    if constexpr (is<T, r_psxct_t<r_dbl>>)          return 9;
+    if constexpr (is<T, r_str>)                     return 10;
+    if constexpr (is<T, r_str_view>)                return 11;
+    if constexpr (is<T, r_sexp>)                    return 12;
     return std::numeric_limits<uint8_t>::max();
 }
 
@@ -363,10 +373,18 @@ struct common_r_math_impl {
     using lhs_math_t = as_r_val_t<T>;
     using rhs_math_t = as_r_val_t<U>;
 
-    static constexpr uint8_t rank_t = r_math_rank<lhs_math_t>();
-    static constexpr uint8_t rank_u = r_math_rank<rhs_math_t>();
+    static constexpr uint8_t rank_t = r_type_rank<lhs_math_t>();
+    static constexpr uint8_t rank_u = r_type_rank<rhs_math_t>();
     
     using type = std::conditional_t<(rank_t >= rank_u), lhs_math_t, rhs_math_t>;
+};
+
+
+template <RVal T, RVal U>
+struct common_r_type_impl {
+    static constexpr uint8_t rank_t = r_type_rank<T>();
+    static constexpr uint8_t rank_u = r_type_rank<U>();
+    using type = std::conditional_t<(rank_t >= rank_u), T, U>;
 };
 
 }
@@ -374,6 +392,9 @@ struct common_r_math_impl {
 template <MathType T, MathType U>
 requires (RMathType<T> || RMathType<U>) // At least one RMathType
 using common_math_t = typename internal::common_r_math_impl<T, U>::type;
+
+template <RVal T, RVal U>
+using common_r_t = typename internal::common_r_type_impl<T, U>::type;
 
 
 template <typename T>

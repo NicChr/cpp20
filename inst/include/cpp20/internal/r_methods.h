@@ -112,54 +112,54 @@ inline constexpr r_lgl operator!=(const T &lhs, const U &rhs) {
   return eq.is_na() ? r_na : r_lgl(eq.is_false());
 }
 
-template<RMathType T, RMathType U>
+template<RNumericType T, RNumericType U>
 inline constexpr r_lgl operator<(T lhs, U rhs) {
   return (is_na(lhs) || is_na(rhs)) ? r_na : r_lgl{lhs.value < unwrap(rhs)};
 }
-template<RMathType T, CppMathType U>
+template<RNumericType T, CppNumericType U>
 inline constexpr r_lgl operator<(T lhs, U rhs) {
   return is_na(lhs) ? r_na : r_lgl{lhs.value < rhs};
 }
-template<CppMathType T, RMathType U>
+template<CppNumericType T, RNumericType U>
 inline constexpr r_lgl operator<(T lhs, U rhs) {
   return is_na(rhs) ? r_na : r_lgl{lhs < unwrap(rhs)};
 }
 
-template<RMathType T, RMathType U>
+template<RNumericType T, RNumericType U>
 inline constexpr r_lgl operator<=(T lhs, U rhs) {
   return (is_na(lhs) || is_na(rhs)) ? r_na : r_lgl{lhs.value <= unwrap(rhs)};
 }
-template<RMathType T, CppMathType U>
+template<RNumericType T, CppNumericType U>
 inline constexpr r_lgl operator<=(T lhs, U rhs) {
   return is_na(lhs) ? r_na : r_lgl{lhs.value <= rhs};
 }
-template<CppMathType T, RMathType U>
+template<CppNumericType T, RNumericType U>
 inline constexpr r_lgl operator<=(T lhs, U rhs) {
   return is_na(rhs) ? r_na : r_lgl{lhs <= unwrap(rhs)};
 }
 
-template<RMathType T, RMathType U>
+template<RNumericType T, RNumericType U>
 inline constexpr r_lgl operator>(T lhs, U rhs) {
   return (is_na(lhs) || is_na(rhs)) ? r_na : r_lgl{lhs.value > unwrap(rhs)};
 }
-template<RMathType T, CppMathType U>
+template<RNumericType T, CppNumericType U>
 inline constexpr r_lgl operator>(T lhs, U rhs) {
   return is_na(lhs) ? r_na : r_lgl{lhs.value > rhs};
 }
-template<CppMathType T, RMathType U>
+template<CppNumericType T, RNumericType U>
 inline constexpr r_lgl operator>(T lhs, U rhs) {
   return is_na(rhs) ? r_na : r_lgl{lhs > unwrap(rhs)};
 }
 
-template<RMathType T, RMathType U>
+template<RNumericType T, RNumericType U>
 inline constexpr r_lgl operator>=(T lhs, U rhs) {
   return (is_na(lhs) || is_na(rhs)) ? r_na : r_lgl{lhs.value >= unwrap(rhs)};
 }
-template<RMathType T, CppMathType U>
+template<RNumericType T, CppNumericType U>
 inline constexpr r_lgl operator>=(T lhs, U rhs) {
   return is_na(lhs) ? r_na : r_lgl{lhs.value >= rhs};
 }
-template<CppMathType T, RMathType U>
+template<CppNumericType T, RNumericType U>
 inline constexpr r_lgl operator>=(T lhs, U rhs) {
   return is_na(rhs) ? r_na : r_lgl{lhs >= unwrap(rhs)};
 }
