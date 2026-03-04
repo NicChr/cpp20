@@ -43,12 +43,6 @@ using r_date = r_date_t<r_dbl>;
 // By default, r_psxct uses doubles to match R conventions
 using r_psxct = r_psxct_t<r_dbl>;
 
-// Define R C API types to exclude from pure C/C++ types
-namespace internal {
-template <typename T>
-concept RCApiType = any<T, Rboolean, Rbyte, Rcomplex, SEXP, SEXPTYPE, SEXPREC, R_len_t, R_xlen_t>;
-}
-
 // Concepts to enable R type templates
 
 template <typename T>
@@ -430,9 +424,8 @@ inline const char* type_str(){
     return "C++ float";
 }
 template<CppIntegerType T>
-requires (!internal::RCApiType<T>)
 inline const char* type_str(){
-    return "C++ integer";
+    return "C/C++ integer";
 }
 template<> 
 inline const char* type_str<const char*>(){
@@ -447,7 +440,7 @@ inline const char* type_str(){
     return "C++ complex";
 }
 template<> inline const char* type_str<Rboolean>(){return "Rboolean";}
-template<> inline const char* type_str<Rbyte>(){return "Rbyte";}
+// template<> inline const char* type_str<Rbyte>(){return "Rbyte";}
 template<> inline const char* type_str<Rcomplex>(){return "Rcomplex";}
 
 namespace internal {

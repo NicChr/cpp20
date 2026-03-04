@@ -4,6 +4,8 @@ test_that("Correct registration of cpp fns to R", {
   cpp_set_threads(1L)
   expect_equal(cpp_get_threads(), 1)
 
+  expect_error(cpp_set_threads(1.5), regexp = "Expected input type: C\\/C\\+\\+ integer")
+
   expect_null(test_null())
 
 })
