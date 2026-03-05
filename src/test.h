@@ -1,7 +1,6 @@
 #pragma once
 
 #include <cpp20.hpp>
-
 using namespace cpp20;
 
 // What type is deduced by dispatch?
@@ -258,76 +257,6 @@ r_vec<r_int> test_coerce1(const r_vec<r_sexp>& x){
   return as<r_vec<r_int>>(x);
 }
 
-[[cpp20::register]]
-r_vec<r_sexp> test_constructions(SEXP x){
-  r_vec<r_sexp> out(100000);
-
-  for (int i = 0; i < 100000; ++i){
-    out.set(i, r_vec<r_int>(x));
-  }
-  return out;
-}
-
-[[cpp20::register]]
-r_vec<r_sexp> test_constructions2(r_vec<r_int> x){
-  r_vec<r_sexp> out(100000);
-
-  for (int i = 0; i < 100000; ++i){
-    out.set(i, x);
-  }
-  return out;
-}
-
-[[cpp20::register]]
-r_vec<r_sexp> test_constructions3(r_vec<r_int> x){
-  r_vec<r_sexp> out(100000);
-
-  auto val = as<r_sexp>(x);
-
-  for (int i = 0; i < 100000; ++i){
-    out.set(i, val);
-  }
-  return out;
-}
-
-[[cpp20::register]]
-r_vec<r_sexp> test_constructions4(r_vec<r_int> x){
-  r_vec<r_sexp> out(100000);
-
-  for (int i = 0; i < 100000; ++i){
-    SET_VECTOR_ELT(out, i, x);
-  }
-  return out;
-}
-
-[[cpp20::register]]
-r_vec<r_str_view> test_set_strs(r_vec<r_str_view> x){
-
-  r_str a = r_str(x.get(0).c_str());
-
-  r_size_t n = x.length();
-
-  for (r_size_t i = 0; i < n; ++i){
-    x.set(i, a);
-  }
-  return x;
-}
-
-[[cpp20::register]]
-r_vec<r_str_view> test_set_strs2(r_vec<r_str_view> x){
-
-  SEXP a = x.view(0);
-
-  r_size_t n = x.length();
-
-  for (r_size_t i = 0; i < n; ++i){
-    SET_STRING_ELT(x, i, a);
-  }
-  return x;
-}
-
-
-
 template <RVal T>
 [[cpp20::register]]
 auto test_combine2(T x, T y){
@@ -362,7 +291,7 @@ T test_unique(T x){
   return unique(x);
 }
 
-template <RMathType U, RMathType V>
+template <RNumericType U, RNumericType V>
 [[cpp20::register]]
 r_vec<r_sexp> test_seqs(r_vec<r_int> size, r_vec<U> from, r_vec<V> by){
   return sequences(size, from, by);
@@ -372,5 +301,27 @@ r_vec<r_sexp> test_seqs(r_vec<r_int> size, r_vec<U> from, r_vec<V> by){
 r_str test_tz(r_vec<r_psxct> x){
   x.set_tzone("America/New_York");
   return x.tzone();
-}
+} 
 
+[[cpp20::register]]
+r_vec<r_sexp> test_time_coerce(){
+  return make_vec<r_sexp>(
+    r_date(0),
+    r_psxct(0),
+
+    as<r_date_t<r_int>>(r_psxct_t<r_dbl>(0)),
+    as<r_date_t<r_int>>(r_psxct_t<r_int64>(0)),
+    as<r_date_t<r_int>>(r_dbl(0)),
+    as<r_date_t<r_dbl>>(r_psxct_t<r_dbl>(0)),
+    as<r_date_t<r_dbl>>(r_psxct_t<r_int64>(0)),
+    as<r_date_t<r_dbl>>(r_int(0)),
+
+    as<r_psxct_t<r_dbl>>(as<r_psxct_t<r_int64>>(r_date_t<r_dbl>(0))),
+    as<r_psxct_t<r_dbl>>(as<r_psxct_t<r_int64>>(r_date_t<r_int>(0))),
+    as<r_psxct_t<r_dbl>>(as<r_psxct_t<r_int64>>(r_dbl(0))),
+    as<r_psxct_t<r_dbl>>(r_date_t<r_dbl>(0)),
+    as<r_psxct_t<r_dbl>>(r_date_t<r_int>(0)),
+    as<r_psxct_t<r_dbl>>(r_int(0))
+  );
+
+}
