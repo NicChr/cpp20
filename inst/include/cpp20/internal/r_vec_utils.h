@@ -197,7 +197,7 @@ inline r_sexp new_scalar_vec<r_dbl>(r_dbl const& default_value){
 template <>
 inline r_sexp new_scalar_vec<r_int64>(r_int64 const& default_value){
   r_sexp out = new_vec_impl<r_int64>(1);
-  REAL(out.value)[0] = default_value;
+  vector_ptr<r_int64>(out)[0] = default_value;
   return out;
 }
 template <>
