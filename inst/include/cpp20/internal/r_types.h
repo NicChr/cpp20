@@ -39,11 +39,13 @@ inline constexpr SEXPTYPE CPP20_DFSXP = 205;
 
   switch (xtype){
     case INTSXP: {
+      if (!Rf_isObject(x)) return xtype;
       if (Rf_inherits(x, "Date")) return CPP20_INTDATESXP;
       if (Rf_inherits(x, "factor")) return CPP20_FCTSXP;
       return xtype;
     }
     case REALSXP: {
+      if (!Rf_isObject(x)) return xtype;
       if (Rf_inherits(x, "Date")) return CPP20_REALDATESXP;
       if (Rf_inherits(x, "POSIXct") && Rf_inherits(x, "integer64")) return CPP20_INT64PSXTSXP;
       if (Rf_inherits(x, "POSIXct")) return CPP20_REALPSXTSXP;
