@@ -160,6 +160,15 @@ struct r_vec {
   requires (any<U, r_lgl, r_int, r_int64, r_str_view, r_str>)
   r_vec<T> subset(const r_vec<U>& indices) const;
 
+  template <IntegerType U>
+  r_vec<T> subset(U index) const {
+    if constexpr (internal::can_definitely_be_int<unwrap_t<U>>()){
+      return subset(r_vec<r_int>(1, internal::as_r<r_int>(index)));
+    } else {
+      return subset(r_vec<r_int64>(1, internal::as_r<r_int64>(index)));
+    }
+  }
+
   r_vec<r_str_view> names() const {
     return r_vec<r_str_view>(Rf_getAttrib(sexp, symbol::names_sym));
   }
