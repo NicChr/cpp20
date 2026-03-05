@@ -45,7 +45,7 @@ inline constexpr bool can_be_int64(T const& x){
 // Coerce functions that account for NA
 template<typename T>
 inline r_lgl as_bool(T const& x){
-  if constexpr (is<T, int> || is<T, r_lgl>){
+  if constexpr (is<unwrap_t<T>, int>){
     return r_lgl(unwrap(x));
   } else if constexpr (MathType<T>){
     return is_na(x) ? na<r_lgl>() : r_lgl(static_cast<bool>(unwrap(x)));
@@ -55,7 +55,7 @@ inline r_lgl as_bool(T const& x){
 }
 template<typename T>
 inline r_int as_int(T const& x){
-  if constexpr (is<T, int> || is<T, r_int>){
+  if constexpr (is<unwrap_t<T>, int>){
     return r_int(unwrap(x));
   } else if constexpr (MathType<T>){
     return is_na(x) || !internal::can_be_int(x) ? na<r_int>() : r_int(static_cast<int>(unwrap(x)));
@@ -65,7 +65,7 @@ inline r_int as_int(T const& x){
 }
 template<typename T>
 inline r_int64 as_int64(T const& x){
-  if constexpr (is<T, int64_t> || is<T, r_int64>){
+  if constexpr (is<unwrap_t<T>, int64_t>){
     return r_int64(unwrap(x));
   } else if constexpr (MathType<T>){
     return is_na(x) || !internal::can_be_int64(x) ? na<r_int64>() : r_int64(static_cast<int64_t>(unwrap(x)));
@@ -75,7 +75,7 @@ inline r_int64 as_int64(T const& x){
 }
 template<typename T>
 inline r_dbl as_double(T const& x){
-  if constexpr (is<T, double> || is<T, r_dbl>){
+  if constexpr (is<unwrap_t<T>, double>){
     return r_dbl(unwrap(x));
   } else if constexpr (MathType<T>){
     return is_na(x) ? na<r_dbl>() : r_dbl(static_cast<double>(unwrap(x)));
@@ -85,7 +85,7 @@ inline r_dbl as_double(T const& x){
 }
 template<typename T>
 inline r_cplx as_complex(T const& x){
-  if constexpr (is<T, std::complex<double>> || is<T, r_cplx>){
+  if constexpr (is<unwrap_t<T>, std::complex<double>>){
     return r_cplx(unwrap(x));
   } else if constexpr (MathType<T>){
     return r_cplx{as_double(x), r_dbl(0.0)};
@@ -95,7 +95,7 @@ inline r_cplx as_complex(T const& x){
 }
 template<typename T>
 inline r_raw as_raw(T const& x){
-  if constexpr (is<T, Rbyte> || is<T, r_raw>){
+  if constexpr (is<unwrap_t<T>, Rbyte>){
     return r_raw(unwrap(x));
   } else if constexpr (IntegerType<T> && sizeof(T) <= sizeof(int8_t)){
     return is_na(x) || x < 0 ? na<r_raw>() : r_raw(static_cast<Rbyte>(unwrap(x)));
@@ -285,7 +285,19 @@ struct as_impl<r_dbl, U> {
 template<RTimeType T, typename U>
 struct as_impl<T, U> {
   static constexpr T cast(U const& x) {
-    return T(as_impl<inherited_type_t<T>, U>::cast(x));
+    using inherited_t = inherited_type_t<T>;
+
+    if constexpr (RDateType<T> && RPsxctType<U>){
+      double days = std::floor(static_cast<double>(unwrap(x)) / 86400.0);
+      return T(as_impl<inherited_t, double>::cast(days));
+    } else if constexpr (RPsxctType<T> && RDateType<U>){
+      auto seconds = unwrap(x) * 86400;
+      return T(as_impl<inherited_t, decltype(seconds)>::cast(seconds));
+    } else if constexpr (RTimeType<U>){
+      return T(as_impl<inherited_t, unwrap_t<U>>::cast(unwrap(x)));
+    } else {
+      return T(as_impl<inherited_t, U>::cast(x));
+    }
   }
 };
 
