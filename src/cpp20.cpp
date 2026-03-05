@@ -524,6 +524,14 @@ return cpp20::internal::dispatch_template_impl<2, 3, std::array<int, 3>{-1, 0, 1
   );
   END_CPP20
 }
+// test.h
+r_str test_tz(r_vec<r_psxct> x);
+extern "C" SEXP _cpp20_test_tz(SEXP x) {
+  BEGIN_CPP20
+  cpp20::internal::check_r_cpp_mapping<r_vec<r_psxct>>(x);
+  return cpp20::internal::cpp_to_sexp(test_tz(cpp20::as<std::remove_cvref_t<r_vec<r_psxct>>>(x)));
+  END_CPP20
+}
 
 extern "C" {
 static const R_CallMethodDef CallEntries[] = {
@@ -576,6 +584,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"_cpp20_test_str4",                (DL_FUNC) &_cpp20_test_str4,                1},
     {"_cpp20_test_sym",                 (DL_FUNC) &_cpp20_test_sym,                 1},
     {"_cpp20_test_template_null",       (DL_FUNC) &_cpp20_test_template_null,       1},
+    {"_cpp20_test_tz",                  (DL_FUNC) &_cpp20_test_tz,                  1},
     {"_cpp20_test_unique",              (DL_FUNC) &_cpp20_test_unique,              1},
     {"_cpp20_vector1",                  (DL_FUNC) &_cpp20_vector1,                  1},
     {"_cpp20_vector2",                  (DL_FUNC) &_cpp20_vector2,                  1},

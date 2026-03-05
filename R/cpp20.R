@@ -207,3 +207,7 @@ test_unique <- function(x) {
 test_seqs <- function(size, from, by) {
   .Call(`_cpp20_test_seqs`, size, from, by)
 }
+
+test_tz <- function(x) {
+  .Call(`_cpp20_test_tz`, x)
+}

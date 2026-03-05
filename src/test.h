@@ -8,7 +8,7 @@ using namespace cpp20;
 template <typename T>
 [[cpp20::register]]
 r_vec<r_str> test_deduced_type(T x){
-  return r_vec<r_str>(1, r_str(type_str<decltype(x)>()));
+  return r_vec<r_str>(1, r_str(internal::type_str<decltype(x)>()));
 }
 
 // Testing a few things here at once:
@@ -18,7 +18,7 @@ template <typename T>
 [[cpp20::register]]
 r_sexp test_multiple_deduction(T x, T y){
   if (!is<decltype(x), decltype(y)>){
-    abort("deduced type of x: %s does not match deduced type of y %s", type_str<decltype(x)>(), type_str<decltype(y)>());
+    abort("deduced type of x: %s does not match deduced type of y %s", internal::type_str<decltype(x)>(), internal::type_str<decltype(y)>());
   }
   return r_null;
 }
@@ -27,14 +27,14 @@ r_sexp test_multiple_deduction(T x, T y){
 template <RVector T>
 [[cpp20::register]]
 r_vec<r_str> test_deduced_vec_type(T x){
-  return r_vec<r_str>(1, r_str(type_str<decltype(x)>()));
+  return r_vec<r_str>(1, r_str(internal::type_str<decltype(x)>()));
 }
 
 // Deduced type when constraint is a scalar
 template <RScalar T>
 [[cpp20::register]]
 r_vec<r_str> test_deduced_scalar_type(T x){
-  return r_vec<r_str>(1, r_str(type_str<decltype(x)>()));
+  return r_vec<r_str>(1, r_str(internal::type_str<decltype(x)>()));
 }
 
 // Super permissive identity fn
@@ -366,5 +366,11 @@ template <RMathType U, RMathType V>
 [[cpp20::register]]
 r_vec<r_sexp> test_seqs(r_vec<r_int> size, r_vec<U> from, r_vec<V> by){
   return sequences(size, from, by);
+}
+
+[[cpp20::register]]
+r_str test_tz(r_vec<r_psxct> x){
+  x.set_tzone("America/New_York");
+  return x.tzone();
 }
 
