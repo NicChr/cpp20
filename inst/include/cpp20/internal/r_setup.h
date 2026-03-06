@@ -17,6 +17,7 @@
 #include <algorithm> // For sort + other utilities
 #include <bit> // For bit_cast
 #include <ska_sort/ska_sort.hpp> // For radix sorting via ska_sort
+#include <chrono> // For r_date/r_psxt
 
 #ifdef _MSC_VER
 #define RESTRICT __restrict
@@ -58,34 +59,25 @@ using r_size_t = R_xlen_t;
 
 namespace internal {
 
-inline constexpr int64_t CPP20_OMP_THRESHOLD = 100000;
-inline constexpr SEXPTYPE CPP20_INT64SXP = 64;
-inline int cpp20_n_threads = 1;
+// using r_sexp_tag_t = uint16_t; // cpp20 version of SEXPTYPE
 
-[[noexcept]] inline SEXPTYPE CPP20_TYPEOF(SEXP x){
+// Currently unfinished
+// enum : r_sexp_tag_t {
+//     r_lgl_id = 1,
+//     r_int_id = 2,
+//     r_int64_id = 3,
+//     r_dbl_id = 4,
+//     r_cplx_id = 5,
+//     r_raw_id = 6,
+//     r_dates_id = 7,
+//     r_pxt_id = 8,
+//     r_chr = 9,
+//     r_fct = 10,
+//     r_list = 11,
+//     r_df = 12,
+//     r_unk = 13
+// };
 
-  auto xtype = TYPEOF(x);
-
-  switch (xtype){
-    case REALSXP: {
-      return Rf_inherits(x, "integer64") ? CPP20_INT64SXP : xtype;
-    }
-    default: {
-      return xtype;
-    }
-  }
-}
-
-inline const char* r_type_to_str(SEXPTYPE x){
-  switch (x){
-    case CPP20_INT64SXP: {
-      return "CPP20_INT64SXP";
-    }
-    default: {
-      return Rf_type2char(x);
-    }
-  }
-}
 
 template<typename T, typename U>
 inline constexpr bool between_impl(const T x, const U lo, const U hi) {
@@ -146,6 +138,9 @@ internal::r_safe_impl(                                                          
 // inline constexpr lazy_r_constant<SEXP, &R_BlankString> blank_string_constant{};
 // inline constexpr lazy_r_constant<SEXP, &R_MissingArg> missing_arg_constant{};
 
+inline constexpr int64_t CPP20_OMP_THRESHOLD = 100000;
+inline int cpp20_n_threads = 1;
+
 }
 
 // Set & get the number of OMP threads
@@ -159,6 +154,10 @@ inline void set_threads(int n){
 }
 
 
+// [[noexcept]] inline bool xor_(bool a, bool b){
+//   return (a + b) == 1;
+// }
+
 namespace internal {
 
 inline int calc_threads(r_size_t data_size){
@@ -169,8 +168,8 @@ inline int calc_threads(r_size_t data_size){
 
 // Recycle loop indices
 template<typename T>
-inline constexpr void recycle_index(T& v, const T size) {
-  v = (++v == size) ? static_cast<T>(0) : v;
+inline constexpr void recycle_index(T& v, T size) {
+  v = (++v == size) ? T(0) : v;
 }
 
 template <typename... Args>

@@ -120,6 +120,18 @@ test_coerce <- function(x, ptype) {
   .Call(`_cpp20_test_coerce`, x, ptype)
 }
 
+test_as_date <- function(x) {
+  .Call(`_cpp20_test_as_date`, x)
+}
+
+test_construct_date <- function(x) {
+  .Call(`_cpp20_test_construct_date`, x)
+}
+
+test_as_date2 <- function(x) {
+  .Call(`_cpp20_test_as_date2`, x)
+}
+
 cpp_set_threads <- function(n) {
   invisible(.Call(`_cpp20_cpp_set_threads`, n))
 }
@@ -152,30 +164,42 @@ test_coerce1 <- function(x) {
   .Call(`_cpp20_test_coerce1`, x)
 }
 
-test_constructions <- function(x) {
-  .Call(`_cpp20_test_constructions`, x)
-}
-
-test_constructions2 <- function(x) {
-  .Call(`_cpp20_test_constructions2`, x)
-}
-
-test_constructions3 <- function(x) {
-  .Call(`_cpp20_test_constructions3`, x)
-}
-
-test_constructions4 <- function(x) {
-  .Call(`_cpp20_test_constructions4`, x)
-}
-
-test_set_strs <- function(x) {
-  .Call(`_cpp20_test_set_strs`, x)
-}
-
-test_set_strs2 <- function(x) {
-  .Call(`_cpp20_test_set_strs2`, x)
-}
-
 test_combine2 <- function(x, y) {
   .Call(`_cpp20_test_combine2`, x, y)
+}
+
+test_dates1 <- function(x) {
+  .Call(`_cpp20_test_dates1`, x)
+}
+
+test_dates2 <- function(x) {
+  .Call(`_cpp20_test_dates2`, x)
+}
+
+test_classed_vec <- function(x) {
+  .Call(`_cpp20_test_classed_vec`, x)
+}
+
+test_unique <- function(x) {
+  .Call(`_cpp20_test_unique`, x)
+}
+
+test_seqs <- function(size, from, by) {
+  .Call(`_cpp20_test_seqs`, size, from, by)
+}
+
+test_tz <- function(x) {
+  .Call(`_cpp20_test_tz`, x)
+}
+
+test_time_coerce <- function() {
+  .Call(`_cpp20_test_time_coerce`)
+}
+
+test_factor1 <- function(x) {
+  .Call(`_cpp20_test_factor1`, x)
+}
+
+test_factor2 <- function(x) {
+  .Call(`_cpp20_test_factor2`, x)
 }

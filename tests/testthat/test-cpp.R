@@ -4,6 +4,8 @@ test_that("Correct registration of cpp fns to R", {
   cpp_set_threads(1L)
   expect_equal(cpp_get_threads(), 1)
 
+  expect_error(cpp_set_threads(1.5), regexp = "Expected input type: C\\/C\\+\\+ integer")
+
   expect_null(test_null())
 
 })
@@ -142,4 +144,16 @@ test_that("make_vec<>", {
     test_combine2("a", "b"),
     list(first = c("a", "b"), second = c(x = "a", y = "b"))
   )
+})
+
+
+test_that("classed vectors", {
+  curr_date <- Sys.Date()
+  curr_time <- Sys.time()
+
+  expect_equal(test_dates1(curr_date + 0:1), curr_date + 0:1)
+  expect_equal(test_dates2(curr_date + 0:1), curr_date + 0:1)
+
+  expect_equal(test_classed_vec(curr_date + 0:1), curr_date + 0:1)
+  expect_equal(test_classed_vec(curr_time + 0:1), curr_time + 0:1)
 })

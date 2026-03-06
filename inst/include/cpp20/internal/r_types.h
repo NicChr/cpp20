@@ -14,9 +14,161 @@
 
 namespace cpp20 {
 
+
 namespace internal {
-  struct view_tag {};
+
+// Collection of run-time SEXP type helpers
+// This is necessary for registering C++ functions between the C++/R boundary
+// To do this we create a run-time type ID (using `TYPEPOF()`) and add 
+// custom values for objects we want to differentiate from their storage type
+// For example, dates are internally REALSXP but we need a unique ID for dates
+// Since dates can be either integer or numeric storage, we create 2 unique tags, INTDATESXP and REALDATESXP
+
+// Custom SEXP tags, differentiating integer64, dates (int/double), date-times (int64/double) and factors
+inline constexpr SEXPTYPE CPP20_INT64SXP = 64;
+inline constexpr SEXPTYPE CPP20_INTDATESXP = 200;
+inline constexpr SEXPTYPE CPP20_REALDATESXP = 201;
+inline constexpr SEXPTYPE CPP20_INT64PSXTSXP = 202;
+inline constexpr SEXPTYPE CPP20_REALPSXTSXP = 203;
+inline constexpr SEXPTYPE CPP20_FCTSXP = 204;
+inline constexpr SEXPTYPE CPP20_DFSXP = 205;
+
+[[noexcept]] inline SEXPTYPE CPP20_TYPEOF(SEXP x){
+
+  auto xtype = TYPEOF(x);
+
+  switch (xtype){
+    case INTSXP: {
+      if (!Rf_isObject(x)) return xtype;
+      if (Rf_inherits(x, "Date")) return CPP20_INTDATESXP;
+      if (Rf_inherits(x, "factor")) return CPP20_FCTSXP;
+      return xtype;
+    }
+    case REALSXP: {
+      if (!Rf_isObject(x)) return xtype;
+      if (Rf_inherits(x, "Date")) return CPP20_REALDATESXP;
+      if (Rf_inherits(x, "POSIXct") && Rf_inherits(x, "integer64")) return CPP20_INT64PSXTSXP;
+      if (Rf_inherits(x, "POSIXct")) return CPP20_REALPSXTSXP;
+      if (Rf_inherits(x, "integer64")) return CPP20_INT64SXP; 
+      return xtype;
+    }
+    // case VECSXP: {
+    //   if (Rf_inherits(x, "data.frame")) return CPP20_DFSXP;
+    //   return xtype;
+    // }
+    default: {
+      return xtype;
+    }
+  }
 }
+
+inline const char* r_type_to_str(SEXPTYPE x){
+
+  switch (x){
+    case CPP20_INT64SXP: return "CPP20_INT64SXP";
+    case CPP20_INTDATESXP: return "CPP20_INTDATESXP";
+    case CPP20_REALDATESXP: return "CPP20_REALDATESXP";
+    case CPP20_INT64PSXTSXP: return "CPP20_INT64PSXTSXP";
+    case CPP20_REALPSXTSXP: return "CPP20_REALPSXTSXP";
+    case CPP20_FCTSXP: return "CPP20_FCTSXP";
+    case CPP20_DFSXP: return "CPP20_DFSXP";
+    default: return Rf_type2char(x);
+  }
+}
+
+template <typename T>
+inline const char* type_str() {
+    return "Unknown";
+}
+
+template <> inline const char* type_str<r_lgl>(){return "r_lgl";}
+template <> inline const char* type_str<r_int>(){return "r_int";}
+template <> inline const char* type_str<r_int64>(){return "r_int64";}
+template <> inline const char* type_str<r_dbl>(){return "r_dbl";}
+template <> inline const char* type_str<r_str>(){return "r_str";}
+template <> inline const char* type_str<r_str_view>(){return "r_str_view";}
+template <> inline const char* type_str<r_cplx>(){return "r_cplx";}
+template <> inline const char* type_str<r_raw>(){return "r_raw";}
+template <> inline const char* type_str<r_sym>(){return "r_sym";}
+template <> inline const char* type_str<r_sexp>(){return "r_sexp";}
+template <> inline const char* type_str<r_date_t<r_int>>(){return "r_date_t<r_int>";}
+template <> inline const char* type_str<r_date_t<r_dbl>>(){return "r_date_t<r_dbl>";}
+template <> inline const char* type_str<r_psxct_t<r_int64>>(){return "r_psxct_t<r_int64>";}
+template <> inline const char* type_str<r_psxct_t<r_dbl>>(){return "r_psxct_t<r_dbl>";}
+template <> inline const char* type_str<r_factors>(){return "r_factors";}
+
+template<RPrimitiveVector T>
+inline const char* type_str(){
+    using r_t = typename T::data_type;
+    static const std::string out = std::string("r_vec<") + type_str<r_t>() + ">";
+    return out.c_str();
+}
+
+template<CppFloatType T> 
+inline const char* type_str(){
+    return "C++ float";
+}
+template<CppIntegerType T>
+inline const char* type_str(){
+    return "C/C++ integer";
+}
+template<> 
+inline const char* type_str<const char*>(){
+    return "C string";
+}
+template<>
+inline const char* type_str<std::string>(){
+    return "C++ string";
+}
+template<CppComplexType T> 
+inline const char* type_str(){
+    return "C++ complex";
+}
+template<> inline const char* type_str<Rboolean>(){return "Rboolean";}
+// template<> inline const char* type_str<Rbyte>(){return "Rbyte";}
+template<> inline const char* type_str<Rcomplex>(){return "Rcomplex";}
+
+// Mapping from C++ type to R TYPEOF
+
+template <typename T> constexpr uint16_t r_typeof_impl =              std::numeric_limits<uint16_t>::max();
+template<> constexpr uint16_t r_typeof_impl<r_vec<r_lgl>> =          LGLSXP;
+template<> constexpr uint16_t r_typeof_impl<r_vec<r_int>> =          INTSXP;
+template<> constexpr uint16_t r_typeof_impl<r_vec<r_dbl>> =          REALSXP;
+template<> constexpr uint16_t r_typeof_impl<r_vec<r_str_view>> =     STRSXP;
+template<> constexpr uint16_t r_typeof_impl<r_vec<r_str>> =          STRSXP;
+template<> constexpr uint16_t r_typeof_impl<r_vec<r_cplx>> =         CPLXSXP;
+template<> constexpr uint16_t r_typeof_impl<r_vec<r_raw>> =          RAWSXP;
+template<> constexpr uint16_t r_typeof_impl<r_vec<r_sexp>> =         VECSXP;
+template<> constexpr uint16_t r_typeof_impl<r_str_view> =            CHARSXP;
+template<> constexpr uint16_t r_typeof_impl<r_str> =                 CHARSXP;
+template<> constexpr uint16_t r_typeof_impl<r_sym> =                 SYMSXP;
+template<> constexpr uint16_t r_typeof_impl<r_vec<r_int64>> =             REALSXP;
+template<> constexpr uint16_t r_typeof_impl<r_vec<r_date_t<r_int>>> =            INTSXP;
+template<> constexpr uint16_t r_typeof_impl<r_vec<r_date_t<r_dbl>>> =            REALSXP;
+template<> constexpr uint16_t r_typeof_impl<r_vec<r_psxct_t<r_int64>>> =         REALSXP;
+template<> constexpr uint16_t r_typeof_impl<r_vec<r_psxct_t<r_dbl>>> =           REALSXP;
+
+template <typename T> constexpr uint16_t r_typeof =              r_typeof_impl<T>;
+template<> constexpr uint16_t r_typeof<r_vec<r_int64>> =        CPP20_INT64SXP;
+template<> constexpr uint16_t r_typeof<r_vec<r_date_t<r_int>>> =            CPP20_INTDATESXP;
+template<> constexpr uint16_t r_typeof<r_vec<r_date_t<r_dbl>>> =            CPP20_REALDATESXP;
+template<> constexpr uint16_t r_typeof<r_vec<r_psxct_t<r_int64>>> =         CPP20_INT64PSXTSXP;
+template<> constexpr uint16_t r_typeof<r_vec<r_psxct_t<r_dbl>>> =           CPP20_REALPSXTSXP;
+template<> constexpr uint16_t r_typeof<r_factors> =             CPP20_FCTSXP;
+
+template <typename T>
+inline void check_valid_construction(SEXP x){
+    if (r_typeof_impl<T> != TYPEOF(x)){
+        abort("Bad construction from R type %s to C++ type %s", Rf_type2char(TYPEOF(x)), type_str<T>());
+    }
+}
+
+// Helper struct to allow for overloading SEXP-based constructors without re-protecting them via cpp11::sexp
+struct view_tag {};
+
+}
+
+// ----- Start of C++ R types -----
 
 // General SEXP, reserved for everything except CHARSXP and SYMSXP
 // Wrapper around cpp11::sexp to benefit from automatic protection (cpp11-managed linked list)
@@ -131,7 +283,7 @@ struct r_int64 {
 };
 
 // Alias type for CHARSXP
-// r_str_view must never be converted to `SEXP`/`r_sexp`
+// r_str must never be converted to `SEXP`/`r_sexp`
 // all templates assume that `SEXP`/`r_sexp` is reserved for objects that can safely fit into an R list vector
 // Furthermore CHARSXP is a special case because it is essentially the only SEXP that already fits into a non-list vector: a character vector
 struct r_str {
@@ -212,7 +364,7 @@ struct r_sym {
 };
 
 
-// Uses std::complex<double> under the hood
+// Complex number - uses std::complex<double> under the hood
 struct r_cplx {
   std::complex<double> value;
   using value_type = std::complex<double>;
@@ -230,7 +382,7 @@ struct r_cplx {
   constexpr r_dbl im() const { return r_dbl{value.imag()}; }
 };
 
-// Alias type for r_raw
+// Alias type for Rbyte
 struct r_raw {
   Rbyte value;
   using value_type = Rbyte;
@@ -249,23 +401,120 @@ inline r_str r_sexp::address() const {
   return r_str(buf);
 }
 
+
 namespace internal {
+  // Construct r_date from year/month/day
+  inline int64_t get_days_since_epoch(int32_t year, uint32_t month, uint32_t day) {
+      namespace chrono = std::chrono;
+      auto ymd = chrono::year{year} / chrono::month{month} / chrono::day{day};
+      if (!ymd.ok()) {
+          abort("Invalid date: %d-%u-%u", year, month, day);
+      }
+      return chrono::sys_days{ymd}.time_since_epoch().count();
+  }
 
-template <typename T>
-struct unwrapped_type {
-    using type = T;
-};
-
-template <RVal T>
-struct unwrapped_type<T> {
-    // Recursively call unwrapped_type on the inner type
-    using type = typename unwrapped_type<typename T::value_type>::type;
-};
-
+  inline int64_t get_seconds_since_epoch(int32_t year, uint32_t month, uint32_t day, uint64_t hour, uint64_t min, uint64_t sec) {
+    namespace chrono = std::chrono;
+    auto ymd = chrono::year{year} / chrono::month{month} / chrono::day{day};
+    if (!ymd.ok()) {
+        abort("Invalid date: %d-%u-%u", year, month, day);
+    }
+    auto tp = chrono::sys_days{ymd} + chrono::hours{hour} + chrono::minutes{min} + chrono::seconds{sec};
+    return tp.time_since_epoch().count();
+  }
 }
-
+// R date that captures the number of days since epoch (1st Jan 1970)
 template <typename T>
-using unwrap_t = typename internal::unwrapped_type<T>::type;
+requires (any<T, r_int, r_dbl>)
+struct r_date_t : T {
+
+  using inherited_type = T;
+  
+  private: 
+
+  auto chrono_ymd() const {
+    return std::chrono::year_month_day{
+      std::chrono::sys_days{std::chrono::days{static_cast<int32_t>(T::value)}}
+    };
+  }
+
+  public: 
+
+  r_date_t() : T{0} {}
+  template <CppMathType U>
+  explicit constexpr r_date_t(U days_since_epoch) : T{days_since_epoch} {}
+  explicit constexpr r_date_t(T days_since_epoch) : T{days_since_epoch} {}
+
+  // Construct r_date year/month/day
+  explicit r_date_t(int32_t year, uint32_t month, uint32_t day) : T(internal::get_days_since_epoch(year, month, day)) {}
+
+  r_str date_str() const {
+    auto ymd = chrono_ymd();
+    char buf[16];
+    std::snprintf(buf, sizeof(buf), "%04d-%02u-%02u", static_cast<int32_t>(ymd.year()), static_cast<uint32_t>(ymd.month()), static_cast<uint32_t>(ymd.day()));
+    return r_str(static_cast<const char*>(buf));
+  }
+};
+
+// R date-time that captures the number of seconds since epoch (1st Jan 1970)
+template <typename T>
+requires (any<T, r_int64, r_dbl>)
+struct r_psxct_t : T {
+
+  using inherited_type = T;
+
+  private: 
+  
+  auto chrono_tp() const {
+    return std::chrono::time_point{
+      std::chrono::sys_seconds{std::chrono::seconds{static_cast<int64_t>(T::value)}}
+    };
+  }
+
+  public: 
+
+  r_psxct_t() : T{0} {}
+  template <CppMathType U>
+  explicit constexpr r_psxct_t(U seconds_since_epoch) : T{seconds_since_epoch} {}
+  explicit constexpr r_psxct_t(T seconds_since_epoch) : T{seconds_since_epoch} {}
+
+  // Construct r_date year/month/day
+  explicit r_psxct_t(
+    int32_t year, uint32_t month, uint32_t day, 
+    uint32_t hour, uint32_t minute, uint32_t second
+  ) : T(internal::get_seconds_since_epoch(year, month, day, hour, minute, second)) {}
+
+  // Decomposed date + time-of-day
+  auto chrono_ymd() const {
+    using namespace std::chrono;
+    auto tp = chrono_tp();
+    auto dp = floor<days>(tp);
+    return year_month_day{dp};
+  }
+
+  auto chrono_hms() const {
+    using namespace std::chrono;
+    auto tp = chrono_tp();
+    auto dp = floor<days>(tp);
+    return hh_mm_ss{tp - dp};
+  }
+
+  r_str datetime_str() const {
+    auto ymd = chrono_ymd();
+    auto hms = chrono_hms();
+    char buf[20];
+    std::snprintf(buf, sizeof(buf),
+      "%04d-%02u-%02u %02u:%02u:%02u",
+      static_cast<int32_t>(ymd.year()),
+      static_cast<uint32_t>(ymd.month()),
+      static_cast<uint32_t>(ymd.day()),
+      static_cast<uint32_t>(hms.hours().count()),
+      static_cast<uint32_t>(hms.minutes().count()),
+      static_cast<uint32_t>(hms.seconds().count())
+    );
+    return r_str(static_cast<const char*>(buf));
+  }
+};
 
 
 // Important (recursive) helper to extract the underlying NON-RVal value
@@ -274,6 +523,8 @@ template <typename T>
 inline constexpr auto unwrap(const T& x){
 if constexpr (RVal<T>){
     return unwrap(x.value);
+  } else if constexpr (RVector<T>){
+    return static_cast<SEXP>(x);
   } else {
     return x;
   }

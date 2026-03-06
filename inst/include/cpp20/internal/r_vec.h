@@ -21,8 +21,8 @@ struct r_vec {
   private:
 
   // Initialise read-only ptr to: 
-  // SEXP - If T is `r_sexp` or `r_str_view`
-  // T - Otherwise
+  // SEXP - If T is a type convertible to SEXP
+  // unwrap_t<T> - Otherwise
   using ptr_t = std::conditional_t<internal::RPtrWritableType<T>, unwrap_t<T>*, const SEXP*>;  
   ptr_t m_ptr = nullptr;
 
@@ -35,7 +35,27 @@ struct r_vec {
       m_ptr = (const SEXP*) STRING_PTR_RO(sexp);
     }
   }
-      
+
+  // By default do nothing (e.g. for vectors with no attrs)
+  template <typename U>
+  void validate_attrs(SEXP x){
+    return;
+  }
+
+  template <RDateType U>
+  void validate_attrs(SEXP x){
+    if (!Rf_inherits(x, "Date")){
+      abort("SEXP must be of class 'Date'");
+    }
+  }
+
+  template <RPsxctType U>
+  void validate_attrs(SEXP x){
+    if (!Rf_inherits(x, "POSIXct")){
+      abort("SEXP must inherit class 'POSIXct'");
+    }
+  }
+
   public:
 
   // Constructor that wraps new_vec_impl<T>
@@ -58,14 +78,16 @@ struct r_vec {
   explicit r_vec(r_sexp s) : sexp(std::move(s)) {
     if (!is_null()) {
       internal::check_valid_construction<r_vec<T>>(sexp);
+      validate_attrs<T>(s.value);
       initialise_ptr();
     }
   }
 
   explicit r_vec(const r_sexp& s, internal::view_tag) : sexp(s.value, internal::view_tag{}){
     if (!is_null()){
-      initialise_ptr();
       internal::check_valid_construction<r_vec<T>>(sexp);
+      validate_attrs<T>(s.value);
+      initialise_ptr();
     }
   }
 
@@ -133,7 +155,7 @@ struct r_vec {
 
   // Set element (no bounds-check) - We use flexible template to be able to coerce it to an RVal
   template <CppIntegerType U, typename V>
-  void set(U index, const V& val) const {
+  void set(U index, const V& val) {
     // Avoid copies and extra protections (especially of r_sexp/r_str)
     if constexpr (is<T, V>){
       if constexpr (any<T, r_sexp, r_sym>){
@@ -159,6 +181,15 @@ struct r_vec {
   template <typename U>
   requires (any<U, r_lgl, r_int, r_int64, r_str_view, r_str>)
   r_vec<T> subset(const r_vec<U>& indices) const;
+
+  template <IntegerType U>
+  r_vec<T> subset(U index) const {
+    if constexpr (internal::can_definitely_be_int<unwrap_t<U>>()){
+      return subset(r_vec<r_int>(1, internal::as_r<r_int>(index)));
+    } else {
+      return subset(r_vec<r_int64>(1, internal::as_r<r_int64>(index)));
+    }
+  }
 
   r_vec<r_str_view> names() const {
     return r_vec<r_str_view>(Rf_getAttrib(sexp, symbol::names_sym));
@@ -346,87 +377,32 @@ struct r_vec {
     return out;
   }
 
+
+  // Conditional member functions (only available for certain types)
+
+  // POSIXct-only members
+  r_str tzone() const requires RPsxctType<T> {
+    auto tz = r_vec<r_str_view>(Rf_getAttrib(sexp, r_sym("tzone")));
+    
+    if (tz.length() == 0){
+      abort("`r_vec<r_psxct_t>` vector must have a valid tzone attribute");
+    } else {
+      r_str_view tz_str = tz.view(0);
+      if (cpp20::is_na(tz_str)){
+        abort("tzone cannot be NA");
+      }
+      return r_str(tz_str);
+    }
+  }
+
+  void set_tzone(const char* tz) requires RPsxctType<T> {
+    Rf_setAttrib(sexp, r_sym("tzone"), Rf_ScalarString(Rf_mkCharCE(tz, CE_UTF8)));
+  }
+
 };
 
-namespace internal {
-
-// A cleaner lambda-based alternative to
-// using the canonical switch(TYPEOF(x))
-//
-// Pass both the SEXP and an auto variable inside a lambda
-// and visit_vector() will assign the auto variable to the correct vector
-// Then simply deduce its type (via decltype) for further manipulation
-// To be used in a lambda
-// E.g. visit_vector(x, [&](auto x_vec) {})
-
-// One must account for objects like `NULL` and non-vectors outwith this method
-
-template <class F>
-decltype(auto) visit_vector(SEXP x, F&& f) {
-  switch (CPP20_TYPEOF(x)) {
-  case LGLSXP:          return f(r_vec<r_lgl>(x));
-  case INTSXP:          return f(r_vec<r_int>(x));
-  case CPP20_INT64SXP: return f(r_vec<r_int64>(x));
-  case REALSXP:         return f(r_vec<r_dbl>(x));
-  case STRSXP:          return f(r_vec<r_str_view>(x));
-  case VECSXP:          return f(r_vec<r_sexp>(x));
-  case CPLXSXP:         return f(r_vec<r_cplx>(x));
-  case RAWSXP:          return f(r_vec<r_raw>(x));
-  default:              abort("`x` must be a vector");
-  }
-}
-
-// Same as above but no run-time error, user must deal with non-vector input
-template <class F>
-decltype(auto) visit_maybe_vector(SEXP x, F&& f) {
-  switch (CPP20_TYPEOF(x)) {
-  case LGLSXP:          return f(r_vec<r_lgl>(x));
-  case INTSXP:          return f(r_vec<r_int>(x));
-  case CPP20_INT64SXP: return f(r_vec<r_int64>(x));
-  case REALSXP:         return f(r_vec<r_dbl>(x));
-  case STRSXP:          return f(r_vec<r_str_view>(x));
-  case VECSXP:          return f(r_vec<r_sexp>(x));
-  case CPLXSXP:         return f(r_vec<r_cplx>(x));
-  case RAWSXP:          return f(r_vec<r_raw>(x));
-  default:              return f(nullptr);
-  }
-}
-
-// Overloads for r_sexp (avoid re-protecting)
-template <class F>
-decltype(auto) visit_vector(const r_sexp& x, F&& f) {
-  switch (CPP20_TYPEOF(x)) {
-  case LGLSXP:          return f(r_vec<r_lgl>(x, internal::view_tag{}));
-  case INTSXP:          return f(r_vec<r_int>(x, internal::view_tag{}));
-  case CPP20_INT64SXP: return f(r_vec<r_int64>(x, internal::view_tag{}));
-  case REALSXP:         return f(r_vec<r_dbl>(x, internal::view_tag{}));
-  case STRSXP:          return f(r_vec<r_str_view>(x, internal::view_tag{}));
-  case VECSXP:          return f(r_vec<r_sexp>(x, internal::view_tag{}));
-  case CPLXSXP:         return f(r_vec<r_cplx>(x, internal::view_tag{}));
-  case RAWSXP:          return f(r_vec<r_raw>(x, internal::view_tag{}));
-  default:              abort("`x` must be a vector");
-  }
-}
-template <class F>
-decltype(auto) visit_maybe_vector(const r_sexp& x, F&& f) {
-  switch (CPP20_TYPEOF(x)) {
-  case LGLSXP:          return f(r_vec<r_lgl>(x, internal::view_tag{}));
-  case INTSXP:          return f(r_vec<r_int>(x, internal::view_tag{}));
-  case CPP20_INT64SXP: return f(r_vec<r_int64>(x, internal::view_tag{}));
-  case REALSXP:         return f(r_vec<r_dbl>(x, internal::view_tag{}));
-  case STRSXP:          return f(r_vec<r_str_view>(x, internal::view_tag{}));
-  case VECSXP:          return f(r_vec<r_sexp>(x, internal::view_tag{}));
-  case CPLXSXP:         return f(r_vec<r_cplx>(x, internal::view_tag{}));
-  case RAWSXP:          return f(r_vec<r_raw>(x, internal::view_tag{}));
-  default:              return f(nullptr);
-  }
-}
-
-}
-
-
 template <RVal T>
-inline void r_copy_n(const r_vec<T>& target, const r_vec<T>& source, r_size_t target_offset, r_size_t n){
+inline void r_copy_n(r_vec<T>& target, const r_vec<T>& source, r_size_t target_offset, r_size_t n){
 
   if constexpr (internal::RPtrWritableType<T>){
     auto *p_source = source.data();
@@ -449,6 +425,7 @@ inline void r_copy_n(const r_vec<T>& target, const r_vec<T>& source, r_size_t ta
 }
 
 // Compact seq generator as ALTREP, same as `seq_len()`
+// ALTREP is currently unsupported due to the overhead in checking altrep
 // inline r_vec<r_int> compact_seq_len(r_size_t n){
 //   if (n < 0){
 //     abort("`n` must be >= 0");

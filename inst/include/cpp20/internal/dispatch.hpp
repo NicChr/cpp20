@@ -14,7 +14,6 @@
 #include <tuple>
 #include <utility>
 #include <array>
-#include <optional>
 
 namespace cpp20 {
 
@@ -55,8 +54,26 @@ using r_types = std::tuple<
     r_cplx,
     r_raw,
     r_sym,
+    r_date_t<r_int>,
+    r_date_t<r_dbl>,
+    r_psxct_t<r_int64>,
+    r_psxct_t<r_dbl>,
     r_sexp // Catch-all type
 >;
+
+using r_classed_vector_types = std::tuple<
+    r_factors
+>;
+
+// Helper: std::tuple<Ts...> → std::tuple<r_vec<Ts>...>
+template<typename Tuple> struct to_r_vec_tuple_impl;
+template<typename... Ts>
+struct to_r_vec_tuple_impl<std::tuple<Ts...>> {
+    using type = std::tuple<r_vec<Ts>...>;
+};
+
+// vectors: r_vec<T> for every T in r_types
+using r_vector_types = typename to_r_vec_tuple_impl<r_types>::type;
 
 // A map of C++ types that R types (via typeof) can map to (or be deduced to) via template types
 template <typename T> constexpr uint16_t r_cpp_boundary_map_v = r_typeof<T>;
@@ -128,12 +145,12 @@ void check_template_homogeneity(uint16_t expected_type, SexpArgs&&... sexp_args)
 template <size_t Remaining, size_t NumArgs, auto ArgToTemplateMap, typename... SelectedTypes>
 struct GroupedDispatcher {
     template <typename Functor, typename... SexpArgs>
-    static std::optional<SEXP> dispatch(Functor&& functor, SexpArgs&&... sexp_args) {
+    static SEXP dispatch(Functor&& functor, SexpArgs&&... sexp_args) {
         // Base case: All template params resolved
         if constexpr (requires { functor.template operator()<SelectedTypes...>(sexp_args...); }) {
             return functor.template operator()<SelectedTypes...>(sexp_args...);
         } else {
-            return std::nullopt;
+            return nullptr;
         }
     }
 };
@@ -143,58 +160,60 @@ template <size_t Remaining, size_t NumArgs, auto ArgToTemplateMap, typename... S
 requires (Remaining > 0)
 struct GroupedDispatcher<Remaining, NumArgs, ArgToTemplateMap, SelectedTypes...> {
     template <typename Functor, typename... SexpArgs>
-    static std::optional<SEXP> dispatch(Functor&& functor, SexpArgs&&... sexp_args) {
+    static SEXP dispatch(Functor&& functor, SexpArgs&&... sexp_args) {
         constexpr size_t CurrentTemplateIdx = sizeof...(SelectedTypes);
-        
-        // Find first argument using this template parameter
         constexpr size_t FirstArgIdx = first_arg_for_template<CurrentTemplateIdx, NumArgs, ArgToTemplateMap>();
         static_assert(FirstArgIdx < NumArgs, "Template parameter not used by any argument");
-        
+
         SEXP representative = get_nth<FirstArgIdx>(sexp_args...);
         uint16_t type = CPP20_TYPEOF(representative);
-        
-        std::optional<SEXP> result = std::nullopt;
 
-        // Checking that template args of the same type (e.g. T) actually get deduced to the same type
-        check_template_homogeneity<CurrentTemplateIdx, NumArgs, ArgToTemplateMap>(type, std::forward<SexpArgs>(sexp_args)...);
-        
-        // Try each type in r_types
+        SEXP result = nullptr;
+
+        check_template_homogeneity<CurrentTemplateIdx, NumArgs, ArgToTemplateMap>(
+            type, std::forward<SexpArgs>(sexp_args)...
+        );
+
         auto try_candidate = [&]<typename Cand>() {
-            if (result.has_value()) return;
-        
+            if (result) return;
             if constexpr (!is_sexp<Cand>) {
                 if (type != r_cpp_boundary_map_v<Cand>) return;
             }
-        
             result = GroupedDispatcher<Remaining - 1, NumArgs, ArgToTemplateMap, SelectedTypes..., Cand>::dispatch(
-                std::forward<Functor>(functor), 
+                std::forward<Functor>(functor),
                 std::forward<SexpArgs>(sexp_args)...
             );
         };
 
-        auto try_type = [&]<typename T>() {
         
-            // Only try to deduce (vec) type if there is an explicit mapping (not catch-all)
-            if constexpr (r_cpp_boundary_map_v<r_vec<T>> != std::numeric_limits<uint16_t>::max()) {
-                // Try vector first (it will be rejected early if type != VECSXP/STRSXP/etc)
-                try_candidate.template operator()<r_vec<T>>();
-            }
-            
-            // If vector form didn't work (or was rejected by type check), try scalar
-            if (!result.has_value()) {
-                try_candidate.template operator()<T>();
-            }
-        };
-        
-        // Iterate over all types
-        constexpr size_t N = std::tuple_size_v<r_types>;
-        [&]<size_t... Is>(std::index_sequence<Is...>) {
-            (try_type.template operator()<std::tuple_element_t<Is, r_types>>(), ...);
-        }(std::make_index_sequence<N>{});
-        
+        // Special classed vectors
+        if (!result) {
+            [&]<size_t... Is>(std::index_sequence<Is...>) {
+                (try_candidate.template operator()<
+                    std::tuple_element_t<Is, r_classed_vector_types>>(), ...);
+            }(std::make_index_sequence<std::tuple_size_v<r_classed_vector_types>>{});
+        }
+
+        // vectors (r_vec<r_lgl>, r_vec<r_int>, ...)
+        if (!result) {
+            [&]<size_t... Is>(std::index_sequence<Is...>) {
+                (try_candidate.template operator()<
+                    std::tuple_element_t<Is, r_vector_types>>(), ...);
+            }(std::make_index_sequence<std::tuple_size_v<r_vector_types>>{});
+        }
+
+        // scalars (r_lgl, r_int, r_dbl, ...)
+        if (!result) {
+            [&]<size_t... Is>(std::index_sequence<Is...>) {
+                (try_candidate.template operator()<
+                    std::tuple_element_t<Is, r_types>>(), ...);
+            }(std::make_index_sequence<std::tuple_size_v<r_types>>{});
+        }
+
         return result;
     }
 };
+
 
 // Entry point with grouping information
 // NumTemplateParams: Number of unique template parameters (e.g., 2 for T and U)
@@ -206,16 +225,16 @@ template <size_t NumTemplateParams, size_t NumArgs, std::array<int, NumArgs> Arg
 SEXP dispatch_template_impl(Functor&& functor, SexpArgs&&... sexp_args) {
     static_assert(sizeof...(SexpArgs) == NumArgs, "Argument count mismatch");
     
-    std::optional<SEXP> result = GroupedDispatcher<NumTemplateParams, NumArgs, ArgToTemplateMap>::dispatch(
+    SEXP result = GroupedDispatcher<NumTemplateParams, NumArgs, ArgToTemplateMap>::dispatch(
         std::forward<Functor>(functor), 
         std::forward<SexpArgs>(sexp_args)...
     );
     
-    if (!result.has_value()) {
+    if (!result) {
         abort("No matching template instantiation found for input types");
     }
     
-    return result.value();
+    return result;
 }
 
 // Invoke with index sequence

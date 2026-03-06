@@ -23,16 +23,16 @@ inline constexpr T cpp_abs(T v) {
 
 }
 
-template <MathType T, MathType U>
+template <NumericType T, NumericType U>
 inline constexpr r_lgl between(T x, U lo, U hi){
   return x >= lo && x <= hi;
 }
 
-template<MathType T, MathType U>
-requires (AtLeastOneRMathType<T, U>)
+template <NumericType T, NumericType U>
+requires (RNumericType<T> || RNumericType<U>)
 inline constexpr auto min(T x, U y){
   
-  using common_t = common_r_math_t<T, U>;
+  using common_t = common_r_t<T, U>;
 
   return ( is_na(x) || is_na(y) ) ? na<common_t>() : 
   common_t(std::min(
@@ -41,11 +41,11 @@ inline constexpr auto min(T x, U y){
   ));
 }
 
-template<MathType T, MathType U>
-requires (AtLeastOneRMathType<T, U>)
+template<NumericType T, NumericType U>
+requires (RNumericType<T> || RNumericType<U>)
 inline constexpr auto max(T x, U y){
   
-  using common_t = common_r_math_t<T, U>;
+  using common_t = common_r_t<T, U>;
 
   return ( is_na(x) || is_na(y) ) ? na<common_t>() : 
   common_t(std::max(
@@ -55,32 +55,32 @@ inline constexpr auto max(T x, U y){
 }
 
 template <typename T>
-inline constexpr bool is_inf(const T x){
+inline constexpr bool is_inf(T x){
   return false;
 }
 
 template <>
-inline constexpr bool is_inf<r_dbl>(const r_dbl x){
+inline constexpr bool is_inf<r_dbl>(r_dbl x){
   return unwrap(x) == r_limits<r_dbl>::max().value || unwrap(x) == r_limits<r_dbl>::min().value;
 }
 
 template <typename T>
-inline constexpr bool is_pos_inf(const T x){
+inline constexpr bool is_pos_inf(T x){
   return false;
 }
 
 template <>
-inline constexpr bool is_pos_inf<r_dbl>(const r_dbl x){
+inline constexpr bool is_pos_inf<r_dbl>(r_dbl x){
   return unwrap(x) == r_limits<r_dbl>::max().value;
 }
 
 template <typename T>
-inline constexpr bool is_neg_inf(const T x){
+inline constexpr bool is_neg_inf(T x){
   return false;
 }
 
 template <>
-inline constexpr bool is_neg_inf<r_dbl>(const r_dbl x){
+inline constexpr bool is_neg_inf<r_dbl>(r_dbl x){
   return unwrap(x) == r_limits<r_dbl>::min().value;
 }
 
@@ -187,7 +187,7 @@ inline r_cplx log(r_cplx x){
 
 template<MathType T, MathType U>
 requires (AtLeastOneRMathType<T, U>)
-inline r_dbl round(T x, const U digits){
+inline r_dbl round(T x, U digits){
   if (is_na(x)){
     return as<r_dbl>(x);
   } else if (is_na(digits)){
@@ -222,7 +222,7 @@ inline constexpr T round(T x){
 
 template<MathType T, MathType U>
 requires (AtLeastOneRMathType<T, U>)
-inline r_dbl signif(T x, const U digits){
+inline r_dbl signif(T x, U digits){
   auto new_digits = max(as_r_val(U(1)), as_r_val(digits));
   if (is_na(x)){
     return as<r_dbl>(x);
@@ -239,11 +239,11 @@ inline r_dbl signif(T x, const U digits){
 
 template<MathType T, MathType U>
 requires (AtLeastOneRMathType<T, U>)
-inline constexpr auto abs_diff(const T x, const U y){
+inline constexpr auto abs_diff(T x, U y){
   return abs(x - y);
 }
 
-inline r_lgl is_whole_number(const r_dbl x, const r_dbl tolerance){
+inline r_lgl is_whole_number(r_dbl x, r_dbl tolerance){
   return is_na(x) || is_na(tolerance) ? na<r_lgl>() : r_lgl(abs_diff(x, round(x)) <= tolerance);
 }
 

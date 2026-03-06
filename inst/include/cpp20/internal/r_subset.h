@@ -33,7 +33,7 @@ r_vec<U> exclude_locs(const r_vec<U>& exclude, unwrap_t<U> xn) {
     }
   }
   out_size = n - exclude_count;
-  auto out = r_vec<r_int>(out_size);
+  r_vec<U> out(out_size);
 
   while(k != out_size){
     if (keep[i++] == true){
@@ -128,7 +128,7 @@ inline r_vec<T> r_vec<T>::subset(const r_vec<U>& indices) const {
 
     for (unsigned_int_t i = 0; i < n; ++i){
       j = unwrap(indices.get(i));
-      if (internal::between_impl<unsigned_int_t>(j, 1U, xn)){
+      if (internal::between_impl<unsigned_int_t>(j, unsigned_int_t(1), xn)){
         out.set(k++, view(--j));
       } 
       // If j > n_val then it is a negative signed integer

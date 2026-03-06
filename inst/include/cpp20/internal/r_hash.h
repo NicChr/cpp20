@@ -2,6 +2,7 @@
 #define CPP20_R_HASH_H
 
 #include <cpp20/internal/r_vec.h>
+#include <cpp20/internal/r_visit.h>
 #include <cpp20/internal/r_attrs.h>
 
 // Hash functions + hash equality operators for RVal and RVector
@@ -38,27 +39,12 @@ struct r_hash_impl {
     using is_avalanching = void;
 
     uint64_t operator()(unwrap_t<T> x) const noexcept {
-
-        if constexpr (RIntegerType<T>){
+        if constexpr (RTimeType<T>){
+            return r_hash_impl<inherited_type_t<T>>{}(T(x));
+        } else if constexpr (RIntegerType<T>){
             return mix_u64(static_cast<uint64_t>(x));
         } else {
             return ankerl::unordered_dense::hash<unwrap_t<T>>{}(x);
-        }
-    }
-};
-
-template <>
-struct r_hash_impl<r_dbl> {
-    using is_avalanching = void;
-
-    uint64_t operator()(double x) const noexcept {
-        if (x != x){
-            // Checks that x matches exactly to R's NA_REAL
-            return is_na_real(x) ? na_real_hash() : nan_hash();
-        } else {
-            // Hash normal double
-            // +0.0 to normalise -0.0 and 0.0 
-            return mix_u64(std::bit_cast<uint64_t>(x + 0.0));
         }
     }
 };
@@ -139,13 +125,13 @@ struct r_hash_impl<r_sexp> {
         int type = TYPEOF(x);
         
         // Recursively hash the element
-        size_t h = internal::visit_maybe_vector(x_, [this, seed](const auto& vec) -> size_t {
+        size_t h = visit_sexp(x_, [this, seed](const auto& vec) -> size_t {
 
             size_t seed_ = seed;
 
             using vec_t = std::remove_cvref_t<decltype(vec)>;
             
-            if constexpr (is<vec_t, std::nullptr_t>){
+            if constexpr (is<vec_t, r_sexp>){
             abort("List contains non-vector element, current implementation can only hash vectors");
         } else {
             using data_t = typename vec_t::data_type;
@@ -215,10 +201,10 @@ struct r_hash_eq_impl<r_sexp> {
         }
     }
 
-    return internal::visit_maybe_vector(x, [y](auto vec1) -> bool {
+    return visit_sexp(x, [y](auto vec1) -> bool {
         using vec_t = decltype(vec1);
 
-        if constexpr (is<vec_t, std::nullptr_t>){
+        if constexpr (is<vec_t, r_sexp>){
             abort("List contains non-vector element, current implementation can only hash vectors");
         } else {
             

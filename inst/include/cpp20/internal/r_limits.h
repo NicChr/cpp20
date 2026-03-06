@@ -5,7 +5,7 @@
 #include <cpp20/internal/r_types.h>
 
 // R-specific numerical limits
-// Currently include the following members
+// Currently includes the following members
 // min
 // max
 // epsilon
@@ -14,7 +14,7 @@
 namespace cpp20 {
     
 
-template <RMathType T>
+template <RNumericType T>
 struct r_limits;
 
 template <>
@@ -76,6 +76,16 @@ struct r_limits<r_dbl>{
     }
     static constexpr r_dbl tolerance() noexcept {
         return r_dbl(std::sqrt(std::numeric_limits<double>::epsilon()));
+    }
+};
+
+template <RTimeType T>
+struct r_limits<T> {
+    static constexpr T min() noexcept {
+        return T{r_limits<internal::inherited_type_t<T>>::min()};
+    }
+    static constexpr T max() noexcept {
+        return T{r_limits<internal::inherited_type_t<T>>::max()};
     }
 };
 

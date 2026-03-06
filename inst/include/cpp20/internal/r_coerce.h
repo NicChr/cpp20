@@ -2,16 +2,37 @@
 #define CPP20_R_COERCE_H
 
 #include <cpp20/internal/r_vec.h>
-#include <cpp20/internal/r_dates.h>
-#include <cpp20/internal/r_posixcts.h>
 #include <cpp20/internal/r_factor.h>
+#include <cpp20/internal/r_visit.h>
+#include <cpp20/internal/r_match.h>
+#include <cpp20/internal/r_unique.h>
 
 namespace cpp20 {
+
+template <RVal T>
+r_factors::r_factors(const r_vec<T>& x, const r_vec<T>& levels) {
+  auto fct = match(x, levels);
+  r_vec<r_int>::operator=(std::move(fct));
+  r_vec<r_str_view> str_levels;
+  if constexpr (RStringType<T>) {
+      str_levels = r_vec<r_str_view>(levels);
+  } else {
+      r_size_t n = levels.length();
+      str_levels = r_vec<r_str_view>(n);
+      for (r_size_t i = 0; i < n; ++i) {
+          str_levels.set(i, internal::as_r<r_str_view>(levels.view(i)));
+      }
+  }
+  init_factor_attrs(str_levels);
+}
+
+template <RVal T>
+r_factors::r_factors(const r_vec<T>& x) : r_factors(x, unique(x)) {}
 
 // Powerful and flexible coercion function that can handle many types and convert to R-specific C++ types and R vectors
 template <typename T, typename U>
 inline T as(const U& x) {
-  if constexpr (is<U, T>){
+  if constexpr (is<U, T> && is<unwrap_t<U>, unwrap_t<T>>){
     return x;
   } else if constexpr (is<T, SEXP>){
     // Special case for SEXP
@@ -26,10 +47,16 @@ inline T as(const U& x) {
     }
   } else if constexpr (RVector<U> && is<T, r_sexp>){
     return x.sexp;
+  } else if constexpr (RFactor<T>){
+    return r_factors(x);
   } else if constexpr (RVector<T> && is_sexp<U>){
-    return internal::visit_vector(x, [&](auto xvec) -> T {
-      // This will trigger the branch that checks that both are RVector
-      return as<T>(xvec);
+    return visit_sexp(x, [&](auto xvec) -> T {
+      if (is<decltype(xvec), r_sexp>){
+        abort("`x` must be a vector");
+      } else {
+        // This will trigger the branch that checks that both are RVector
+        return as<T>(xvec);
+      }
     });
   } else if constexpr (is_sexp<T> && is_sexp<U>){
     if constexpr (is<T, r_sexp>){
@@ -51,9 +78,13 @@ inline T as(const U& x) {
       }
     }
     
-    return internal::visit_vector(x, [&](auto xvec) -> T {
-      // Use branch below current branch
-      return as<T>(xvec);
+    return visit_sexp(x, [&](auto xvec) -> T {
+      if (is<decltype(xvec), r_sexp>){
+        abort("`x` must be a vector");
+      } else {
+        // Use branch below current branch
+        return as<T>(xvec);
+      }
     });
   } else if constexpr (RVal<T> && RVector<U>){
     if (x.length() != 1){
@@ -87,10 +118,6 @@ inline T as(const U& x) {
       }
     }
     return out;
-  } else if constexpr (is<T, r_factors>){
-    auto str_vec = as<r_vec<r_str_view>>(x);
-    auto out = r_factors(str_vec);
-    return out; 
   } else if constexpr (RVal<T> && !RVector<U>) {
     return internal::as_r<T>(x);
     // If input is not an R type or an R vector type
@@ -103,7 +130,7 @@ inline T as(const U& x) {
   }
 }
 
-// Convert any C obj to an r_vec<>
+// Convert any obj to an r_vec<>
 template <typename T>
 inline auto as_vector(const T& x){
   if constexpr (RVector<T>){

@@ -1,14 +1,13 @@
 #pragma once
 
 #include <cpp20.hpp>
-
 using namespace cpp20;
 
 // What type is deduced by dispatch?
 template <typename T>
 [[cpp20::register]]
 r_vec<r_str> test_deduced_type(T x){
-  return r_vec<r_str>(1, r_str(type_str<decltype(x)>()));
+  return r_vec<r_str>(1, r_str(internal::type_str<decltype(x)>()));
 }
 
 // Testing a few things here at once:
@@ -18,7 +17,7 @@ template <typename T>
 [[cpp20::register]]
 r_sexp test_multiple_deduction(T x, T y){
   if (!is<decltype(x), decltype(y)>){
-    abort("deduced type of x: %s does not match deduced type of y %s", type_str<decltype(x)>(), type_str<decltype(y)>());
+    abort("deduced type of x: %s does not match deduced type of y %s", internal::type_str<decltype(x)>(), internal::type_str<decltype(y)>());
   }
   return r_null;
 }
@@ -27,14 +26,14 @@ r_sexp test_multiple_deduction(T x, T y){
 template <RVector T>
 [[cpp20::register]]
 r_vec<r_str> test_deduced_vec_type(T x){
-  return r_vec<r_str>(1, r_str(type_str<decltype(x)>()));
+  return r_vec<r_str>(1, r_str(internal::type_str<decltype(x)>()));
 }
 
 // Deduced type when constraint is a scalar
 template <RScalar T>
 [[cpp20::register]]
 r_vec<r_str> test_deduced_scalar_type(T x){
-  return r_vec<r_str>(1, r_str(type_str<decltype(x)>()));
+  return r_vec<r_str>(1, r_str(internal::type_str<decltype(x)>()));
 }
 
 // Super permissive identity fn
@@ -202,10 +201,25 @@ inline r_vec<r_int> test_specialisation<r_int>(r_vec<r_int> x) {
 }
 
 
-template <RVal T, RVal U>
+template <RVal T, RVector U>
 [[cpp20::register]]
-auto test_coerce(r_vec<T> x, r_vec<U> ptype) {
-  return as<r_vec<U>>(x);
+auto test_coerce(r_vec<T> x, U ptype) {
+  return as<U>(x);
+} 
+
+[[cpp20::register]]
+r_vec<r_date> test_as_date(SEXP x){
+  return as<r_vec<r_date>>(x);
+} 
+
+[[cpp20::register]]
+r_vec<r_date> test_construct_date(SEXP x){
+  return r_vec<r_date>(x);
+} 
+
+[[cpp20::register]]
+r_vec<r_date> test_as_date2(r_vec<r_date> x){
+  return as<r_vec<r_date>>(x);
 } 
 
 [[cpp20::register]]
@@ -248,76 +262,6 @@ r_vec<r_int> test_coerce1(const r_vec<r_sexp>& x){
   return as<r_vec<r_int>>(x);
 }
 
-[[cpp20::register]]
-r_vec<r_sexp> test_constructions(SEXP x){
-  r_vec<r_sexp> out(100000);
-
-  for (int i = 0; i < 100000; ++i){
-    out.set(i, r_vec<r_int>(x));
-  }
-  return out;
-}
-
-[[cpp20::register]]
-r_vec<r_sexp> test_constructions2(r_vec<r_int> x){
-  r_vec<r_sexp> out(100000);
-
-  for (int i = 0; i < 100000; ++i){
-    out.set(i, x);
-  }
-  return out;
-}
-
-[[cpp20::register]]
-r_vec<r_sexp> test_constructions3(r_vec<r_int> x){
-  r_vec<r_sexp> out(100000);
-
-  auto val = as<r_sexp>(x);
-
-  for (int i = 0; i < 100000; ++i){
-    out.set(i, val);
-  }
-  return out;
-}
-
-[[cpp20::register]]
-r_vec<r_sexp> test_constructions4(r_vec<r_int> x){
-  r_vec<r_sexp> out(100000);
-
-  for (int i = 0; i < 100000; ++i){
-    SET_VECTOR_ELT(out, i, x);
-  }
-  return out;
-}
-
-[[cpp20::register]]
-r_vec<r_str_view> test_set_strs(r_vec<r_str_view> x){
-
-  r_str a = r_str(x.get(0).c_str());
-
-  r_size_t n = x.length();
-
-  for (r_size_t i = 0; i < n; ++i){
-    x.set(i, a);
-  }
-  return x;
-}
-
-[[cpp20::register]]
-r_vec<r_str_view> test_set_strs2(r_vec<r_str_view> x){
-
-  SEXP a = x.view(0);
-
-  r_size_t n = x.length();
-
-  for (r_size_t i = 0; i < n; ++i){
-    SET_STRING_ELT(x, i, a);
-  }
-  return x;
-}
-
-
-
 template <RVal T>
 [[cpp20::register]]
 auto test_combine2(T x, T y){
@@ -325,4 +269,98 @@ auto test_combine2(T x, T y){
     arg("first") = make_vec<T>(x, y),
     arg("second") = make_vec<T>(arg("x") = x, arg("y") = y)
   );
+}
+
+[[cpp20::register]]
+r_vec<r_date> test_dates1(r_vec<r_date> x){
+  return x;
+}
+
+template <RVector T>
+requires (is<T, r_vec<r_date>>)
+[[cpp20::register]]
+T test_dates2(T x){
+  return x;
+}
+
+
+template <RVector T>
+[[cpp20::register]]
+T test_classed_vec(T x){
+  return x;
+}
+
+template <RVector T>
+[[cpp20::register]]
+T test_unique(T x){
+  return unique(x);
+}
+
+template <RNumericType U, RNumericType V>
+[[cpp20::register]]
+r_vec<r_sexp> test_seqs(r_vec<r_int> size, r_vec<U> from, r_vec<V> by){
+  return sequences(size, from, by);
+}
+
+[[cpp20::register]]
+r_str test_tz(r_vec<r_psxct> x){
+  x.set_tzone("America/New_York");
+  return x.tzone();
+} 
+
+[[cpp20::register]]
+r_vec<r_sexp> test_time_coerce(){
+  return make_vec<r_sexp>(
+    r_date(0),
+    r_psxct(0),
+
+    as<r_date_t<r_int>>(r_psxct_t<r_dbl>(0)),
+    as<r_date_t<r_int>>(r_psxct_t<r_int64>(0)),
+    as<r_date_t<r_int>>(r_dbl(0)),
+    as<r_date_t<r_dbl>>(r_psxct_t<r_dbl>(0)),
+    as<r_date_t<r_dbl>>(r_psxct_t<r_int64>(0)),
+    as<r_date_t<r_dbl>>(r_int(0)),
+
+    as<r_psxct_t<r_dbl>>(as<r_psxct_t<r_int64>>(r_date_t<r_dbl>(0))),
+    as<r_psxct_t<r_dbl>>(as<r_psxct_t<r_int64>>(r_date_t<r_int>(0))),
+    as<r_psxct_t<r_dbl>>(as<r_psxct_t<r_int64>>(r_dbl(0))),
+    as<r_psxct_t<r_dbl>>(r_date_t<r_dbl>(0)),
+    as<r_psxct_t<r_dbl>>(r_date_t<r_int>(0)),
+    as<r_psxct_t<r_dbl>>(r_int(0))
+  );
+
+}
+
+
+[[cpp20::register]]
+r_factors test_factor1(r_factors x){
+  return x;
+}
+
+template <RFactor T>
+[[cpp20::register]]
+T test_factor2(T x){
+  return x;
+}
+
+void static_tests(){
+  static_assert(is<unwrap_t<r_lgl>, int>);
+  static_assert(is<unwrap_t<r_dbl>, double>);
+  static_assert(is<unwrap_t<r_cplx>, std::complex<double>>);
+  static_assert(is<unwrap_t<r_raw>, Rbyte>);
+  static_assert(is<unwrap_t<r_sexp>, SEXP>);
+  static_assert(is<unwrap_t<r_date_t<r_int>>, int>);
+  static_assert(is<unwrap_t<r_date_t<r_dbl>>, double>);
+  static_assert(is<unwrap_t<r_vec<r_str>>, SEXP>);
+  static_assert(is<unwrap_t<r_factors>, SEXP>);
+
+  static_assert(is<decltype(unwrap(r_lgl())), int>);
+  static_assert(is<decltype(unwrap(r_dbl())), double>);
+  static_assert(is<decltype(unwrap(r_cplx())), std::complex<double>>);
+  static_assert(is<decltype(unwrap(r_raw())), Rbyte>);
+  static_assert(is<decltype(unwrap(r_sexp())), SEXP>);
+  static_assert(is<decltype(unwrap(r_date_t<r_int>())), int>);
+  static_assert(is<decltype(unwrap(r_date_t<r_dbl>())), double>);
+  static_assert(is<decltype(unwrap(r_vec<r_int>())), SEXP>);
+  static_assert(is<decltype(unwrap(r_factors())), SEXP>);
 }

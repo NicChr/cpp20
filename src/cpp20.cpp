@@ -326,11 +326,35 @@ extern "C" SEXP _cpp20_test_specialisation(SEXP x) {
 extern "C" SEXP _cpp20_test_coerce(SEXP x, SEXP ptype) {
   BEGIN_CPP20
   return cpp20::internal::dispatch_template_impl<2, 2, std::array<int, 2>{0, 1}>(
-    []<typename T, typename U>(SEXP x_internal, SEXP ptype_internal) -> decltype(cpp20::internal::cpp_to_sexp(test_coerce(cpp20::as<std::remove_cvref_t<r_vec<T>>>(x_internal), cpp20::as<std::remove_cvref_t<r_vec<U>>>(ptype_internal)))) {
-        return cpp20::internal::cpp_to_sexp(test_coerce(cpp20::as<std::remove_cvref_t<r_vec<T>>>(x_internal), cpp20::as<std::remove_cvref_t<r_vec<U>>>(ptype_internal)));
+    []<typename T, typename U>(SEXP x_internal, SEXP ptype_internal) -> decltype(cpp20::internal::cpp_to_sexp(test_coerce(cpp20::as<std::remove_cvref_t<r_vec<T>>>(x_internal), cpp20::as<std::remove_cvref_t<U>>(ptype_internal)))) {
+        return cpp20::internal::cpp_to_sexp(test_coerce(cpp20::as<std::remove_cvref_t<r_vec<T>>>(x_internal), cpp20::as<std::remove_cvref_t<U>>(ptype_internal)));
     },
     x, ptype
   );
+  END_CPP20
+}
+// test.h
+r_vec<r_date> test_as_date(SEXP x);
+extern "C" SEXP _cpp20_test_as_date(SEXP x) {
+  BEGIN_CPP20
+  cpp20::internal::check_r_cpp_mapping<SEXP>(x);
+  return cpp20::internal::cpp_to_sexp(test_as_date(cpp20::as<std::remove_cvref_t<SEXP>>(x)));
+  END_CPP20
+}
+// test.h
+r_vec<r_date> test_construct_date(SEXP x);
+extern "C" SEXP _cpp20_test_construct_date(SEXP x) {
+  BEGIN_CPP20
+  cpp20::internal::check_r_cpp_mapping<SEXP>(x);
+  return cpp20::internal::cpp_to_sexp(test_construct_date(cpp20::as<std::remove_cvref_t<SEXP>>(x)));
+  END_CPP20
+}
+// test.h
+r_vec<r_date> test_as_date2(r_vec<r_date> x);
+extern "C" SEXP _cpp20_test_as_date2(SEXP x) {
+  BEGIN_CPP20
+  cpp20::internal::check_r_cpp_mapping<r_vec<r_date>>(x);
+  return cpp20::internal::cpp_to_sexp(test_as_date2(cpp20::as<std::remove_cvref_t<r_vec<r_date>>>(x)));
   END_CPP20
 }
 // test.h
@@ -397,54 +421,6 @@ extern "C" SEXP _cpp20_test_coerce1(SEXP x) {
   END_CPP20
 }
 // test.h
-r_vec<r_sexp> test_constructions(SEXP x);
-extern "C" SEXP _cpp20_test_constructions(SEXP x) {
-  BEGIN_CPP20
-  cpp20::internal::check_r_cpp_mapping<SEXP>(x);
-  return cpp20::internal::cpp_to_sexp(test_constructions(cpp20::as<std::remove_cvref_t<SEXP>>(x)));
-  END_CPP20
-}
-// test.h
-r_vec<r_sexp> test_constructions2(r_vec<r_int> x);
-extern "C" SEXP _cpp20_test_constructions2(SEXP x) {
-  BEGIN_CPP20
-  cpp20::internal::check_r_cpp_mapping<r_vec<r_int>>(x);
-  return cpp20::internal::cpp_to_sexp(test_constructions2(cpp20::as<std::remove_cvref_t<r_vec<r_int>>>(x)));
-  END_CPP20
-}
-// test.h
-r_vec<r_sexp> test_constructions3(r_vec<r_int> x);
-extern "C" SEXP _cpp20_test_constructions3(SEXP x) {
-  BEGIN_CPP20
-  cpp20::internal::check_r_cpp_mapping<r_vec<r_int>>(x);
-  return cpp20::internal::cpp_to_sexp(test_constructions3(cpp20::as<std::remove_cvref_t<r_vec<r_int>>>(x)));
-  END_CPP20
-}
-// test.h
-r_vec<r_sexp> test_constructions4(r_vec<r_int> x);
-extern "C" SEXP _cpp20_test_constructions4(SEXP x) {
-  BEGIN_CPP20
-  cpp20::internal::check_r_cpp_mapping<r_vec<r_int>>(x);
-  return cpp20::internal::cpp_to_sexp(test_constructions4(cpp20::as<std::remove_cvref_t<r_vec<r_int>>>(x)));
-  END_CPP20
-}
-// test.h
-r_vec<r_str_view> test_set_strs(r_vec<r_str_view> x);
-extern "C" SEXP _cpp20_test_set_strs(SEXP x) {
-  BEGIN_CPP20
-  cpp20::internal::check_r_cpp_mapping<r_vec<r_str_view>>(x);
-  return cpp20::internal::cpp_to_sexp(test_set_strs(cpp20::as<std::remove_cvref_t<r_vec<r_str_view>>>(x)));
-  END_CPP20
-}
-// test.h
-r_vec<r_str_view> test_set_strs2(r_vec<r_str_view> x);
-extern "C" SEXP _cpp20_test_set_strs2(SEXP x) {
-  BEGIN_CPP20
-  cpp20::internal::check_r_cpp_mapping<r_vec<r_str_view>>(x);
-  return cpp20::internal::cpp_to_sexp(test_set_strs2(cpp20::as<std::remove_cvref_t<r_vec<r_str_view>>>(x)));
-  END_CPP20
-}
-// test.h
 extern "C" SEXP _cpp20_test_combine2(SEXP x, SEXP y) {
   BEGIN_CPP20
   return cpp20::internal::dispatch_template_impl<1, 2, std::array<int, 2>{0, 0}>(
@@ -452,6 +428,93 @@ extern "C" SEXP _cpp20_test_combine2(SEXP x, SEXP y) {
         return cpp20::internal::cpp_to_sexp(test_combine2(cpp20::as<std::remove_cvref_t<T>>(x_internal), cpp20::as<std::remove_cvref_t<T>>(y_internal)));
     },
     x, y
+  );
+  END_CPP20
+}
+// test.h
+r_vec<r_date> test_dates1(r_vec<r_date> x);
+extern "C" SEXP _cpp20_test_dates1(SEXP x) {
+  BEGIN_CPP20
+  cpp20::internal::check_r_cpp_mapping<r_vec<r_date>>(x);
+  return cpp20::internal::cpp_to_sexp(test_dates1(cpp20::as<std::remove_cvref_t<r_vec<r_date>>>(x)));
+  END_CPP20
+}
+// test.h
+extern "C" SEXP _cpp20_test_dates2(SEXP x) {
+  BEGIN_CPP20
+  return cpp20::internal::dispatch_template_impl<1, 1, std::array<int, 1>{0}>(
+    []<typename T>(SEXP x_internal) -> decltype(cpp20::internal::cpp_to_sexp(test_dates2(cpp20::as<std::remove_cvref_t<T>>(x_internal)))) {
+        return cpp20::internal::cpp_to_sexp(test_dates2(cpp20::as<std::remove_cvref_t<T>>(x_internal)));
+    },
+    x
+  );
+  END_CPP20
+}
+// test.h
+extern "C" SEXP _cpp20_test_classed_vec(SEXP x) {
+  BEGIN_CPP20
+  return cpp20::internal::dispatch_template_impl<1, 1, std::array<int, 1>{0}>(
+    []<typename T>(SEXP x_internal) -> decltype(cpp20::internal::cpp_to_sexp(test_classed_vec(cpp20::as<std::remove_cvref_t<T>>(x_internal)))) {
+        return cpp20::internal::cpp_to_sexp(test_classed_vec(cpp20::as<std::remove_cvref_t<T>>(x_internal)));
+    },
+    x
+  );
+  END_CPP20
+}
+// test.h
+extern "C" SEXP _cpp20_test_unique(SEXP x) {
+  BEGIN_CPP20
+  return cpp20::internal::dispatch_template_impl<1, 1, std::array<int, 1>{0}>(
+    []<typename T>(SEXP x_internal) -> decltype(cpp20::internal::cpp_to_sexp(test_unique(cpp20::as<std::remove_cvref_t<T>>(x_internal)))) {
+        return cpp20::internal::cpp_to_sexp(test_unique(cpp20::as<std::remove_cvref_t<T>>(x_internal)));
+    },
+    x
+  );
+  END_CPP20
+}
+// test.h
+extern "C" SEXP _cpp20_test_seqs(SEXP size, SEXP from, SEXP by) {
+  BEGIN_CPP20
+  cpp20::internal::check_r_cpp_mapping<r_vec<r_int>>(size);
+return cpp20::internal::dispatch_template_impl<2, 3, std::array<int, 3>{-1, 0, 1}>(
+    []<typename U, typename V>(SEXP size_internal, SEXP from_internal, SEXP by_internal) -> decltype(cpp20::internal::cpp_to_sexp(test_seqs(cpp20::as<std::remove_cvref_t<r_vec<r_int>>>(size_internal), cpp20::as<std::remove_cvref_t<r_vec<U>>>(from_internal), cpp20::as<std::remove_cvref_t<r_vec<V>>>(by_internal)))) {
+        return cpp20::internal::cpp_to_sexp(test_seqs(cpp20::as<std::remove_cvref_t<r_vec<r_int>>>(size_internal), cpp20::as<std::remove_cvref_t<r_vec<U>>>(from_internal), cpp20::as<std::remove_cvref_t<r_vec<V>>>(by_internal)));
+    },
+    size, from, by
+  );
+  END_CPP20
+}
+// test.h
+r_str test_tz(r_vec<r_psxct> x);
+extern "C" SEXP _cpp20_test_tz(SEXP x) {
+  BEGIN_CPP20
+  cpp20::internal::check_r_cpp_mapping<r_vec<r_psxct>>(x);
+  return cpp20::internal::cpp_to_sexp(test_tz(cpp20::as<std::remove_cvref_t<r_vec<r_psxct>>>(x)));
+  END_CPP20
+}
+// test.h
+r_vec<r_sexp> test_time_coerce();
+extern "C" SEXP _cpp20_test_time_coerce() {
+  BEGIN_CPP20
+    return cpp20::internal::cpp_to_sexp(test_time_coerce());
+  END_CPP20
+}
+// test.h
+r_factors test_factor1(r_factors x);
+extern "C" SEXP _cpp20_test_factor1(SEXP x) {
+  BEGIN_CPP20
+  cpp20::internal::check_r_cpp_mapping<r_factors>(x);
+  return cpp20::internal::cpp_to_sexp(test_factor1(cpp20::as<std::remove_cvref_t<r_factors>>(x)));
+  END_CPP20
+}
+// test.h
+extern "C" SEXP _cpp20_test_factor2(SEXP x) {
+  BEGIN_CPP20
+  return cpp20::internal::dispatch_template_impl<1, 1, std::array<int, 1>{0}>(
+    []<typename T>(SEXP x_internal) -> decltype(cpp20::internal::cpp_to_sexp(test_factor2(cpp20::as<std::remove_cvref_t<T>>(x_internal)))) {
+        return cpp20::internal::cpp_to_sexp(test_factor2(cpp20::as<std::remove_cvref_t<T>>(x_internal)));
+    },
+    x
   );
   END_CPP20
 }
@@ -467,17 +530,21 @@ static const R_CallMethodDef CallEntries[] = {
     {"_cpp20_scalar_vec1",              (DL_FUNC) &_cpp20_scalar_vec1,              2},
     {"_cpp20_scalar_vec2",              (DL_FUNC) &_cpp20_scalar_vec2,              2},
     {"_cpp20_scalar_vec3",              (DL_FUNC) &_cpp20_scalar_vec3,              4},
+    {"_cpp20_test_as_date",             (DL_FUNC) &_cpp20_test_as_date,             1},
+    {"_cpp20_test_as_date2",            (DL_FUNC) &_cpp20_test_as_date2,            1},
     {"_cpp20_test_as_sym",              (DL_FUNC) &_cpp20_test_as_sym,              1},
+    {"_cpp20_test_classed_vec",         (DL_FUNC) &_cpp20_test_classed_vec,         1},
     {"_cpp20_test_coerce",              (DL_FUNC) &_cpp20_test_coerce,              2},
     {"_cpp20_test_coerce1",             (DL_FUNC) &_cpp20_test_coerce1,             1},
     {"_cpp20_test_combine2",            (DL_FUNC) &_cpp20_test_combine2,            2},
-    {"_cpp20_test_constructions",       (DL_FUNC) &_cpp20_test_constructions,       1},
-    {"_cpp20_test_constructions2",      (DL_FUNC) &_cpp20_test_constructions2,      1},
-    {"_cpp20_test_constructions3",      (DL_FUNC) &_cpp20_test_constructions3,      1},
-    {"_cpp20_test_constructions4",      (DL_FUNC) &_cpp20_test_constructions4,      1},
+    {"_cpp20_test_construct_date",      (DL_FUNC) &_cpp20_test_construct_date,      1},
+    {"_cpp20_test_dates1",              (DL_FUNC) &_cpp20_test_dates1,              1},
+    {"_cpp20_test_dates2",              (DL_FUNC) &_cpp20_test_dates2,              1},
     {"_cpp20_test_deduced_scalar_type", (DL_FUNC) &_cpp20_test_deduced_scalar_type, 1},
     {"_cpp20_test_deduced_type",        (DL_FUNC) &_cpp20_test_deduced_type,        1},
     {"_cpp20_test_deduced_vec_type",    (DL_FUNC) &_cpp20_test_deduced_vec_type,    1},
+    {"_cpp20_test_factor1",             (DL_FUNC) &_cpp20_test_factor1,             1},
+    {"_cpp20_test_factor2",             (DL_FUNC) &_cpp20_test_factor2,             1},
     {"_cpp20_test_identity",            (DL_FUNC) &_cpp20_test_identity,            1},
     {"_cpp20_test_identity2",           (DL_FUNC) &_cpp20_test_identity2,           1},
     {"_cpp20_test_list_to_scalars",     (DL_FUNC) &_cpp20_test_list_to_scalars,     1},
@@ -488,8 +555,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"_cpp20_test_scalar",              (DL_FUNC) &_cpp20_test_scalar,              2},
     {"_cpp20_test_scalar2",             (DL_FUNC) &_cpp20_test_scalar2,             2},
     {"_cpp20_test_scalar3",             (DL_FUNC) &_cpp20_test_scalar3,             2},
-    {"_cpp20_test_set_strs",            (DL_FUNC) &_cpp20_test_set_strs,            1},
-    {"_cpp20_test_set_strs2",           (DL_FUNC) &_cpp20_test_set_strs2,           1},
+    {"_cpp20_test_seqs",                (DL_FUNC) &_cpp20_test_seqs,                3},
     {"_cpp20_test_sexp",                (DL_FUNC) &_cpp20_test_sexp,                1},
     {"_cpp20_test_sexp2",               (DL_FUNC) &_cpp20_test_sexp2,               1},
     {"_cpp20_test_sexp3",               (DL_FUNC) &_cpp20_test_sexp3,               1},
@@ -501,6 +567,9 @@ static const R_CallMethodDef CallEntries[] = {
     {"_cpp20_test_str4",                (DL_FUNC) &_cpp20_test_str4,                1},
     {"_cpp20_test_sym",                 (DL_FUNC) &_cpp20_test_sym,                 1},
     {"_cpp20_test_template_null",       (DL_FUNC) &_cpp20_test_template_null,       1},
+    {"_cpp20_test_time_coerce",         (DL_FUNC) &_cpp20_test_time_coerce,         0},
+    {"_cpp20_test_tz",                  (DL_FUNC) &_cpp20_test_tz,                  1},
+    {"_cpp20_test_unique",              (DL_FUNC) &_cpp20_test_unique,              1},
     {"_cpp20_vector1",                  (DL_FUNC) &_cpp20_vector1,                  1},
     {"_cpp20_vector2",                  (DL_FUNC) &_cpp20_vector2,                  1},
     {NULL, NULL, 0}
