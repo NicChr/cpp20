@@ -17,6 +17,79 @@ struct groups {
   groups() = default;
   // Manual constructor
   explicit groups(r_vec<r_int> x, int ngroups, bool groups_sorted) : ids(std::move(x)), n_groups(ngroups), sorted(groups_sorted) {}
+
+  // 0-indexed group start locations
+  r_vec<r_int> starts() const {
+
+    int n = ids.length();
+
+    r_vec<r_int> out(n_groups);
+
+    if (n_groups == 0){
+        return out;
+    }
+    
+    int curr_group;
+
+    if (sorted){
+        // Initialise just in-case there are groups with no group IDs (e.g. unused factor levels)
+        // out.fill(0, n_groups, 0);
+        const int* RESTRICT p_ids = ids.data();
+        int* RESTRICT p_out = out.data();
+
+        curr_group = 0;
+        p_out[0] = 0;
+        
+        for (int i = 1; i < n; ++i){
+            // New group
+            if (p_ids[i] == (curr_group + 1)){
+                p_out[++curr_group] = i;
+            }
+            //
+            // if (p_ids[i] > p_ids[i - 1]){
+            //     p_out[++curr_group] = i;
+            // }
+        }
+    } else {
+
+        // Initialise with largest int
+        // so that for each group we take the min(out[i], i)
+        // After passing through all data, this should reduce to the first location for each group
+        out.fill(0, n_groups, r_limits<r_int>::max());
+        
+        const int* RESTRICT p_ids = ids.data();
+        int* RESTRICT p_out = out.data();
+        int curr_group_start;
+        
+        for (int i = 0; i < n; ++i){
+            curr_group = p_ids[i];
+            curr_group_start = p_out[curr_group];
+            p_out[curr_group] = std::min(curr_group_start, i);
+          }
+    
+        // This will set groups with no start locations to 0
+        // (e.g. undropped factor levels)
+        // If uncommenting the below line, make sure to remove RESTRICT keyword from pointers above
+        // out.replace(0, n_groups, fill_value, 0);
+    }
+
+  return out;
+}
+
+r_vec<r_int> counts() const {
+
+    r_size_t n = ids.length();
+  
+    // Counts initialised to zero
+    r_vec<as_r_val_t<decltype(n_groups)>> out(n_groups, 0);
+    const int* RESTRICT p_group_id = ids.data();
+    int* RESTRICT p_out = out.data();
+  
+    // Count groups
+    for (r_size_t i = 0; i < n; ++i) p_out[p_group_id[i]]++;
+
+    return out;
+}
 };
 
 namespace internal {
@@ -207,67 +280,6 @@ inline groups make_groups(const r_vec<T>& x, bool ordered = false) {
     } else {
         return internal::make_unordered_groups(x);
     }
-}
-
-
-inline r_vec<r_int> group_starts(const groups& x){
-    
-    const r_vec<r_int>& group_ids = x.ids;
-
-    int n = group_ids.length();
-    int n_groups = x.n_groups;
-
-    r_vec<r_int> out(n_groups);
-
-    if (n_groups == 0){
-        return out;
-    }
-    
-    int curr_group;
-
-    if (x.sorted){
-        // Initialise just in-case there are groups with no group IDs (e.g. unused factor levels)
-        // out.fill(0, n_groups, 0);
-        const int* RESTRICT p_ids = group_ids.data();
-        int* RESTRICT p_out = out.data();
-
-        curr_group = 0;
-        p_out[0] = 0;
-        
-        for (int i = 1; i < n; ++i){
-            // New group
-            if (p_ids[i] == (curr_group + 1)){
-                p_out[++curr_group] = i;
-            }
-            //
-            // if (p_ids[i] > p_ids[i - 1]){
-            //     p_out[++curr_group] = i;
-            // }
-        }
-    } else {
-
-        // Initialise with largest int
-        // so that for each group we take the min(out[i], i)
-        // After passing through all data, this should reduce to the first location for each group
-        out.fill(0, n_groups, r_limits<r_int>::max());
-        
-        const int* RESTRICT p_ids = group_ids.data();
-        int* RESTRICT p_out = out.data();
-        int curr_group_start;
-        
-        for (int i = 0; i < n; ++i){
-            curr_group = p_ids[i];
-            curr_group_start = p_out[curr_group];
-            p_out[curr_group] = std::min(curr_group_start, i);
-          }
-    
-        // This will set groups with no start locations to 0
-        // (e.g. undropped factor levels)
-        // If uncommenting the below line, make sure to remove RESTRICT keyword from pointers above
-        // out.replace(0, n_groups, fill_value, 0);
-    }
-
-  return out;
 }
 
 
