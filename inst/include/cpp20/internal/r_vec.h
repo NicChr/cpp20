@@ -93,8 +93,8 @@ struct r_vec {
     }
   }
 
-  explicit r_vec(SEXP s) : r_vec(r_sexp(s)) {validate_attrs<T>(s);}
-  explicit r_vec(SEXP s, internal::view_tag) : r_vec(r_sexp(s, internal::view_tag{}), internal::view_tag{}) {validate_attrs<T>(s);}
+  explicit r_vec(SEXP s) : r_vec(r_sexp(s)) {}
+  explicit r_vec(SEXP s, internal::view_tag) : r_vec(r_sexp(s, internal::view_tag{}), internal::view_tag{}) {}
 
   // Implicit conversion to SEXP
   constexpr operator SEXP() const noexcept {
