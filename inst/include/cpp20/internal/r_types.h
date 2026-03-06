@@ -523,6 +523,8 @@ template <typename T>
 inline constexpr auto unwrap(const T& x){
 if constexpr (RVal<T>){
     return unwrap(x.value);
+  } else if constexpr (RVector<T>){
+    return static_cast<SEXP>(x);
   } else {
     return x;
   }

@@ -312,6 +312,12 @@ struct unwrapped_type<T> {
     // Recursively call unwrapped_type on the inner type
     using type = typename unwrapped_type<typename T::value_type>::type;
 };
+template <RVector T>
+struct unwrapped_type<T> {
+    // All R vectors contain SEXP
+    using type = SEXP;
+};
+
 template <typename T>
 struct inherited_type_impl { 
     using type = T; 
