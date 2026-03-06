@@ -2,8 +2,6 @@
 #define CPP20_R_FACTOR_H
 
 #include <cpp20/internal/r_vec.h>
-#include <cpp20/internal/r_match.h>
-#include <cpp20/internal/r_unique.h>
 #include <cpp20/internal/r_attrs.h>
 
 namespace cpp20 {
@@ -22,6 +20,19 @@ struct r_factors : public r_vec<r_int> {
   }
 
   private:
+
+
+  explicit r_factors(r_vec<r_int>&& x) : r_vec<r_int>(std::move(x)) {}
+
+  void validate_factor(SEXP x){
+    if (TYPEOF(x) != INTSXP){
+      abort("SEXP must have integer storage to be constructed as a factor");
+    }
+    if (!Rf_inherits(x, "factor")){
+      abort("SEXP must be of class 'factor' to be constructed as a factor");
+    }
+  }
+
   template <RStringType T>
   void init_factor_attrs(const r_vec<T>& levels) {
       // Set class
@@ -38,32 +49,121 @@ struct r_factors : public r_vec<r_int> {
   }
 
   explicit r_factors(SEXP x) : r_vec<r_int>(x) {
-    if (!is_null() && !attr::inherits1(*this, "factor")){
-      abort("`SEXP` must be a factor");
+    if (!is_null()){
+      validate_factor(x); 
     }
   }
 
-  template <RVal T>
-  explicit r_factors(const r_vec<T>& x, const r_vec<T>& levels){
-    auto fct = match(x, levels);
-    r_vec<r_int>::operator=(std::move(fct));
-    r_vec<r_str_view> str_levels;
-    if constexpr (RStringType<T>){
-      str_levels = r_vec<r_str_view>(unwrap(levels));
-    } else {
-      r_size_t n = levels.length();
-      str_levels = r_vec<r_str_view>(n);
-      for (r_size_t i = 0; i < n; ++i){
-        str_levels.set(i, internal::as_r<r_str_view>(levels.view(i)));
-      }
+  explicit r_factors(SEXP x, internal::view_tag) : r_vec<r_int>(x, internal::view_tag{}) {
+    if (!is_null()){
+      validate_factor(x); 
     }
-    init_factor_attrs(str_levels);
+  }
+
+  explicit r_factors(r_size_t n): r_vec<r_int>(n, na<r_int>()){
+    init_factor_attrs(r_vec<r_str_view>());
   }
 
   template <RVal T>
-  explicit r_factors(const r_vec<T>& x) : r_factors(x, unique(x)) {}
+  explicit r_factors(const r_vec<T>& x, const r_vec<T>& levels);
+  
+  template <RVal T>
+  explicit r_factors(const r_vec<T>& x);
+
+  template <typename U>
+  r_factors subset(const r_vec<U>& indices) const {
+    r_factors out(r_vec<r_int>::subset(indices)); 
+    out.init_factor_attrs(levels());
+    return out;
+}
+
+  template <typename U>
+  r_factors subset(U index) const {
+    r_factors out(r_vec<r_int>::subset(index)); 
+    out.init_factor_attrs(levels());
+    return out;
+  }
+
+  r_factors resize(r_size_t n) {
+    r_factors out(r_vec<r_int>::resize(n)); 
+    out.init_factor_attrs(levels());
+    return out;
+  }
+  r_factors rep_len(r_size_t n) {
+    r_factors out(r_vec<r_int>::rep_len(n)); 
+    out.init_factor_attrs(levels());
+    return out;
+  }
 
 };
+
+// struct r_factors {
+
+//   r_vec<r_int> codes;
+
+//   public: 
+
+//   r_vec<r_str_view> levels() const {
+//     return r_vec<r_str_view>(attr::get_attr(codes, r_sym("levels")));
+//   }
+
+//   template <RStringType T>
+//   void set_levels(const r_vec<T>& levels) {
+//     attr::set_attr(codes, r_sym("levels"), levels);
+//   }
+
+//   private:
+
+//   void validate_factor(SEXP x){
+//     if (TYPEOF(x) != INTSXP){
+//       abort("SEXP must have integer storage to be constructed as a factor");
+//     }
+//     if (!Rf_inherits(x, "factor")){
+//       abort("SEXP must be of class 'factor' to be constructed as a factor");
+//     }
+//   }
+
+//   template <RStringType T>
+//   void init_factor_attrs(const r_vec<T>& levels) {
+//       // Set class
+//       attr::set_attr(codes, r_sym("class"), r_vec<r_str_view>(1, "factor"));
+//       // Set levels
+//       set_levels(levels);
+//   }
+
+//   public: 
+
+//   constexpr operator SEXP() const { return static_cast<SEXP>(codes); }
+
+//   // Constructors
+//   r_factors() : codes() {
+//     init_factor_attrs(r_vec<r_str_view>());
+//   }
+
+//   explicit r_factors(SEXP x) : codes(x) {
+//     if (!codes.is_null()){
+//       validate_factor(x); 
+//     }
+//   }
+
+//   explicit r_factors(SEXP x, internal::view_tag) : codes(x, internal::view_tag{}) {
+//     if (!codes.is_null()){
+//       validate_factor(x); 
+//     }
+//   }
+
+//   explicit r_factors(r_size_t n): codes(n, /*default=*/ na<r_int>()){
+//     init_factor_attrs(r_vec<r_str_view>());
+//   }
+
+//   // Define these after match+unique headers
+//   template <RVal T>
+//   explicit r_factors(const r_vec<T>& x, const r_vec<T>& levels);
+  
+//   template <RVal T>
+//   explicit r_factors(const r_vec<T>& x);
+
+// };
 
 }
 

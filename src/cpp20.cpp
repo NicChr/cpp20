@@ -326,8 +326,8 @@ extern "C" SEXP _cpp20_test_specialisation(SEXP x) {
 extern "C" SEXP _cpp20_test_coerce(SEXP x, SEXP ptype) {
   BEGIN_CPP20
   return cpp20::internal::dispatch_template_impl<2, 2, std::array<int, 2>{0, 1}>(
-    []<typename T, typename U>(SEXP x_internal, SEXP ptype_internal) -> decltype(cpp20::internal::cpp_to_sexp(test_coerce(cpp20::as<std::remove_cvref_t<r_vec<T>>>(x_internal), cpp20::as<std::remove_cvref_t<r_vec<U>>>(ptype_internal)))) {
-        return cpp20::internal::cpp_to_sexp(test_coerce(cpp20::as<std::remove_cvref_t<r_vec<T>>>(x_internal), cpp20::as<std::remove_cvref_t<r_vec<U>>>(ptype_internal)));
+    []<typename T, typename U>(SEXP x_internal, SEXP ptype_internal) -> decltype(cpp20::internal::cpp_to_sexp(test_coerce(cpp20::as<std::remove_cvref_t<r_vec<T>>>(x_internal), cpp20::as<std::remove_cvref_t<U>>(ptype_internal)))) {
+        return cpp20::internal::cpp_to_sexp(test_coerce(cpp20::as<std::remove_cvref_t<r_vec<T>>>(x_internal), cpp20::as<std::remove_cvref_t<U>>(ptype_internal)));
     },
     x, ptype
   );
@@ -491,6 +491,25 @@ extern "C" SEXP _cpp20_test_time_coerce() {
     return cpp20::internal::cpp_to_sexp(test_time_coerce());
   END_CPP20
 }
+// test.h
+r_factors test_factor1(r_factors x);
+extern "C" SEXP _cpp20_test_factor1(SEXP x) {
+  BEGIN_CPP20
+  cpp20::internal::check_r_cpp_mapping<r_factors>(x);
+  return cpp20::internal::cpp_to_sexp(test_factor1(cpp20::as<std::remove_cvref_t<r_factors>>(x)));
+  END_CPP20
+}
+// test.h
+extern "C" SEXP _cpp20_test_factor2(SEXP x) {
+  BEGIN_CPP20
+  return cpp20::internal::dispatch_template_impl<1, 1, std::array<int, 1>{0}>(
+    []<typename T>(SEXP x_internal) -> decltype(cpp20::internal::cpp_to_sexp(test_factor2(cpp20::as<std::remove_cvref_t<T>>(x_internal)))) {
+        return cpp20::internal::cpp_to_sexp(test_factor2(cpp20::as<std::remove_cvref_t<T>>(x_internal)));
+    },
+    x
+  );
+  END_CPP20
+}
 
 extern "C" {
 static const R_CallMethodDef CallEntries[] = {
@@ -515,6 +534,8 @@ static const R_CallMethodDef CallEntries[] = {
     {"_cpp20_test_deduced_scalar_type", (DL_FUNC) &_cpp20_test_deduced_scalar_type, 1},
     {"_cpp20_test_deduced_type",        (DL_FUNC) &_cpp20_test_deduced_type,        1},
     {"_cpp20_test_deduced_vec_type",    (DL_FUNC) &_cpp20_test_deduced_vec_type,    1},
+    {"_cpp20_test_factor1",             (DL_FUNC) &_cpp20_test_factor1,             1},
+    {"_cpp20_test_factor2",             (DL_FUNC) &_cpp20_test_factor2,             1},
     {"_cpp20_test_identity",            (DL_FUNC) &_cpp20_test_identity,            1},
     {"_cpp20_test_identity2",           (DL_FUNC) &_cpp20_test_identity2,           1},
     {"_cpp20_test_list_to_scalars",     (DL_FUNC) &_cpp20_test_list_to_scalars,     1},

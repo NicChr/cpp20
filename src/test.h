@@ -201,10 +201,10 @@ inline r_vec<r_int> test_specialisation<r_int>(r_vec<r_int> x) {
 }
 
 
-template <RVal T, RVal U>
+template <RVal T, RVector U>
 [[cpp20::register]]
-auto test_coerce(r_vec<T> x, r_vec<U> ptype) {
-  return as<r_vec<U>>(x);
+auto test_coerce(r_vec<T> x, U ptype) {
+  return as<U>(x);
 } 
 
 [[cpp20::register]]
@@ -279,7 +279,7 @@ T test_dates2(T x){
 }
 
 
-template <RClassedVector T>
+template <RVector T>
 [[cpp20::register]]
 T test_classed_vec(T x){
   return x;
@@ -324,4 +324,16 @@ r_vec<r_sexp> test_time_coerce(){
     as<r_psxct_t<r_dbl>>(r_int(0))
   );
 
+}
+
+
+[[cpp20::register]]
+r_factors test_factor1(r_factors x){
+  return x;
+}
+
+template <RFactor T>
+[[cpp20::register]]
+T test_factor2(T x){
+  return x;
 }

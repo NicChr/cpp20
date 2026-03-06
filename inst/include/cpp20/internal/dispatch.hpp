@@ -61,6 +61,10 @@ using r_types = std::tuple<
     r_sexp // Catch-all type
 >;
 
+using r_classed_vector_types = std::tuple<
+    r_factors
+>;
+
 // Helper: std::tuple<Ts...> → std::tuple<r_vec<Ts>...>
 template<typename Tuple> struct to_r_vec_tuple_impl;
 template<typename... Ts>
@@ -180,6 +184,15 @@ struct GroupedDispatcher<Remaining, NumArgs, ArgToTemplateMap, SelectedTypes...>
                 std::forward<SexpArgs>(sexp_args)...
             );
         };
+
+        
+        // Special classed vectors
+        if (!result) {
+            [&]<size_t... Is>(std::index_sequence<Is...>) {
+                (try_candidate.template operator()<
+                    std::tuple_element_t<Is, r_classed_vector_types>>(), ...);
+            }(std::make_index_sequence<std::tuple_size_v<r_classed_vector_types>>{});
+        }
 
         // vectors (r_vec<r_lgl>, r_vec<r_int>, ...)
         if (!result) {

@@ -7,16 +7,16 @@
 
 namespace cpp20 {
 
-template <RVal T>
-r_vec<T> unsorted_unique(const r_vec<T>& x) {
+template <RVector T>
+T unsorted_unique(const T& x) {
     auto group_info = make_groups(x);
     auto starts = group_starts(group_info);
     starts += 1;
     return x.subset(starts);
 }
 
-template <RVal T>
-r_vec<T> sorted_unique(const r_vec<T>& x) {
+template <RVector T>
+T sorted_unique(const T& x) {
     if constexpr (RSortable<T>){
         groups group_info = make_groups(x, true);
         auto starts = group_starts(group_info);
@@ -27,8 +27,8 @@ r_vec<T> sorted_unique(const r_vec<T>& x) {
     }
 }
 
-template <RVal T>
-r_vec<T> unique(const r_vec<T>& x, bool sort = false) {
+template <RVector T>
+T unique(const T& x, bool sort = false) {
     if (sort){
         return sorted_unique(x);
     } else {

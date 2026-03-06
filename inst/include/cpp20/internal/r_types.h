@@ -97,7 +97,7 @@ template <> inline const char* type_str<r_psxct_t<r_int64>>(){return "r_psxct_t<
 template <> inline const char* type_str<r_psxct_t<r_dbl>>(){return "r_psxct_t<r_dbl>";}
 template <> inline const char* type_str<r_factors>(){return "r_factors";}
 
-template<RVector T> 
+template<RPrimitiveVector T>
 inline const char* type_str(){
     using r_t = typename T::data_type;
     static const std::string out = std::string("r_vec<") + type_str<r_t>() + ">";
@@ -130,35 +130,36 @@ template<> inline const char* type_str<Rcomplex>(){return "Rcomplex";}
 
 // Mapping from C++ type to R TYPEOF
 
-// I tried to have only one r_type_of but because r_dates first builds an r_vec<r_dbl> (and inherits from it)
-// It passes that date SEXP to the r_vec<r_dbl> constructor which checks that it's a REALSXP
-// CPP20_TYPEOF identifies it's a CPP20_DATESXP and throws an error..
-template<typename T> constexpr uint16_t r_typeof =              std::numeric_limits<uint16_t>::max();
-template<> constexpr uint16_t r_typeof<r_vec<r_lgl>> =          LGLSXP;
-template<> constexpr uint16_t r_typeof<r_vec<r_int>> =          INTSXP;
-template<> constexpr uint16_t r_typeof<r_vec<r_int64>> =        CPP20_INT64SXP;
-template<> constexpr uint16_t r_typeof<r_vec<r_dbl>> =          REALSXP;
-template<> constexpr uint16_t r_typeof<r_vec<r_str_view>> =     STRSXP;
-template<> constexpr uint16_t r_typeof<r_vec<r_str>> =          STRSXP;
-template<> constexpr uint16_t r_typeof<r_vec<r_cplx>> =         CPLXSXP;
-template<> constexpr uint16_t r_typeof<r_vec<r_raw>> =          RAWSXP;
-template<> constexpr uint16_t r_typeof<r_vec<r_sexp>> =         VECSXP;
+template <typename T> constexpr uint16_t r_typeof_impl =              std::numeric_limits<uint16_t>::max();
+template<> constexpr uint16_t r_typeof_impl<r_vec<r_lgl>> =          LGLSXP;
+template<> constexpr uint16_t r_typeof_impl<r_vec<r_int>> =          INTSXP;
+template<> constexpr uint16_t r_typeof_impl<r_vec<r_dbl>> =          REALSXP;
+template<> constexpr uint16_t r_typeof_impl<r_vec<r_str_view>> =     STRSXP;
+template<> constexpr uint16_t r_typeof_impl<r_vec<r_str>> =          STRSXP;
+template<> constexpr uint16_t r_typeof_impl<r_vec<r_cplx>> =         CPLXSXP;
+template<> constexpr uint16_t r_typeof_impl<r_vec<r_raw>> =          RAWSXP;
+template<> constexpr uint16_t r_typeof_impl<r_vec<r_sexp>> =         VECSXP;
+template<> constexpr uint16_t r_typeof_impl<r_str_view> =            CHARSXP;
+template<> constexpr uint16_t r_typeof_impl<r_str> =                 CHARSXP;
+template<> constexpr uint16_t r_typeof_impl<r_sym> =                 SYMSXP;
+template<> constexpr uint16_t r_typeof_impl<r_vec<r_int64>> =             REALSXP;
+template<> constexpr uint16_t r_typeof_impl<r_vec<r_date_t<r_int>>> =            INTSXP;
+template<> constexpr uint16_t r_typeof_impl<r_vec<r_date_t<r_dbl>>> =            REALSXP;
+template<> constexpr uint16_t r_typeof_impl<r_vec<r_psxct_t<r_int64>>> =         REALSXP;
+template<> constexpr uint16_t r_typeof_impl<r_vec<r_psxct_t<r_dbl>>> =           REALSXP;
 
+template <typename T> constexpr uint16_t r_typeof =              r_typeof_impl<T>;
+template<> constexpr uint16_t r_typeof<r_vec<r_int64>> =        CPP20_INT64SXP;
 template<> constexpr uint16_t r_typeof<r_vec<r_date_t<r_int>>> =            CPP20_INTDATESXP;
 template<> constexpr uint16_t r_typeof<r_vec<r_date_t<r_dbl>>> =            CPP20_REALDATESXP;
 template<> constexpr uint16_t r_typeof<r_vec<r_psxct_t<r_int64>>> =         CPP20_INT64PSXTSXP;
 template<> constexpr uint16_t r_typeof<r_vec<r_psxct_t<r_dbl>>> =           CPP20_REALPSXTSXP;
-
-template<> constexpr uint16_t r_typeof<r_str_view> =            CHARSXP;
-template<> constexpr uint16_t r_typeof<r_str> =                 CHARSXP;
-template<> constexpr uint16_t r_typeof<r_sym> =                 SYMSXP;
-
 template<> constexpr uint16_t r_typeof<r_factors> =             CPP20_FCTSXP;
 
 template <typename T>
 inline void check_valid_construction(SEXP x){
-    if (r_typeof<T> != CPP20_TYPEOF(x)){
-        abort("Bad construction from R type %s to C++ type %s", r_type_to_str(CPP20_TYPEOF(x)), type_str<T>());
+    if (r_typeof_impl<T> != TYPEOF(x)){
+        abort("Bad construction from R type %s to C++ type %s", Rf_type2char(TYPEOF(x)), type_str<T>());
     }
 }
 

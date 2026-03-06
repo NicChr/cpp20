@@ -163,20 +163,19 @@ struct is_atomic_r_vector<r_vec<T>> : std::true_type {};
 
 template <typename T>
 inline constexpr bool is_atomic_r_vector_v = is_atomic_r_vector<std::remove_cvref_t<T>>::value;
+template <typename T>
+struct is_time_vector_impl : std::false_type {};
+    
+template <RTimeType T>
+struct is_time_vector_impl<r_vec<T>> : std::true_type {};
+
+template <typename T>
+inline constexpr bool is_time_vector_v = is_time_vector_impl<std::remove_cvref_t<T>>::value;
 
 }
 
 template <typename T>
-concept RAtomicVector = internal::is_atomic_r_vector_v<T> || any<T, r_vec<r_date>, r_vec<r_psxct>>;
-
-template <typename T>
-concept RClassedVector = any<T, r_vec<r_date>, r_vec<r_psxct>>;
-
-template <typename T>
-concept RUnclassedVector = internal::is_r_vector_v<T> && !RClassedVector<T>;
-
-template <typename T>
-concept RVector = internal::is_r_vector_v<T> || RClassedVector<T>;
+concept RAtomicVector = internal::is_atomic_r_vector_v<T> || internal::is_time_vector_v<T>;
 
 template <typename T>
 concept RListVector = any<T, r_vec<r_sexp>, r_vec<r_sym>>;
@@ -184,16 +183,19 @@ concept RListVector = any<T, r_vec<r_sexp>, r_vec<r_sym>>;
 template <typename T>
 concept RFactor = is<T, r_factors>;
 
+template <typename T>
+concept RPrimitiveVector = internal::is_r_vector_v<T>;
+
+template <typename T>
+concept RVector = RPrimitiveVector<T> || RFactor<T>;
+
 // RObject is any object that can be represented in R - it excludes internal R types like CHARSXP
 // Also, these are all implicitly convertible to `SEXP`
 template <typename T> 
 concept RObject = std::is_convertible_v<T, SEXP>;
 
-template <typename T> 
-concept RType = RVal<T> || RObject<T>;
-
 template <typename T>
-concept CppType = !RType<T>;
+concept CppType = !(RVal<T> || RObject<T>);
 
 template <typename T>
 concept CppScalar = std::is_scalar_v<T>;

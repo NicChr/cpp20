@@ -191,3 +191,11 @@ test_tz <- function(x) {
 test_time_coerce <- function() {
   .Call(`_cpp20_test_time_coerce`)
 }
+
+test_factor1 <- function(x) {
+  .Call(`_cpp20_test_factor1`, x)
+}
+
+test_factor2 <- function(x) {
+  .Call(`_cpp20_test_factor2`, x)
+}
