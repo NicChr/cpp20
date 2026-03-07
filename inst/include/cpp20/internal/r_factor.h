@@ -11,12 +11,12 @@ struct r_factors : public r_vec<r_int> {
   public: 
 
   r_vec<r_str_view> levels() const {
-    return r_vec<r_str_view>(attr::get_attr(*this, r_sym("levels")));
+    return r_vec<r_str_view>(attr::get_attr(*this, symbol::levels_sym));
   }
 
   template <RStringType T>
   void set_levels(const r_vec<T>& levels) {
-    attr::set_attr(*this, r_sym("levels"), levels);
+    attr::set_attr(*this, symbol::levels_sym, levels);
   }
 
   private:
@@ -31,12 +31,16 @@ struct r_factors : public r_vec<r_int> {
     if (!Rf_inherits(x, "factor")){
       abort("SEXP must be of class 'factor' to be constructed as a factor");
     }
+    SEXP levels = Rf_getAttrib(x, symbol::levels_sym);
+    if (TYPEOF(levels) != STRSXP){
+      abort("SEXP must have valid levels attribute to be constructed as a factor");
+    }
   }
 
   template <RStringType T>
   void init_factor_attrs(const r_vec<T>& levels) {
       // Set class
-      attr::set_attr(*this, r_sym("class"), r_vec<r_str_view>(1, "factor"));
+      attr::set_attr(*this, symbol::class_sym, r_vec<r_str_view>(1, "factor"));
       // Set levels
       set_levels(levels);
   }
@@ -63,7 +67,7 @@ struct r_factors : public r_vec<r_int> {
   explicit r_factors(r_size_t n): r_vec<r_int>(n, na<r_int>()){
     init_factor_attrs(r_vec<r_str_view>());
   }
-
+  
   template <RVal T>
   explicit r_factors(const r_vec<T>& x, const r_vec<T>& levels);
   
