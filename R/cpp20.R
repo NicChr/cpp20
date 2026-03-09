@@ -211,3 +211,15 @@ test_group_id <- function(x, order) {
 test_group_counts <- function(x, order) {
   .Call(`_cpp20_test_group_counts`, x, order)
 }
+
+test_order <- function(x) {
+  .Call(`_cpp20_test_order`, x)
+}
+
+test_lengths <- function(x) {
+  .Call(`_cpp20_test_lengths`, x)
+}
+
+test_range <- function(x, na_rm) {
+  .Call(`_cpp20_test_range`, x, na_rm)
+}

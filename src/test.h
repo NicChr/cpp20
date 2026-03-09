@@ -357,6 +357,33 @@ r_vec<r_int> test_group_counts(T x, bool order){
   return make_groups(x, order).counts();
 }
 
+template <RVector T>
+requires (RSortableType<typename T::data_type>)
+[[cpp20::register]]
+r_vec<r_int> test_order(T x){
+  return order(x);
+}
+
+[[cpp20::register]]
+r_vec<r_int> test_lengths(r_vec<r_sexp> x){
+  r_vec<r_int> out(x.length());
+
+  auto* p_out = out.data();
+
+  visit_list_elements(x, [&]<RVector T>(r_size_t i, T elem) {
+    p_out[i] = elem.length();
+      // out.set(i, elem.length());
+  });
+
+  return out;
+}
+
+template <RSortableType T>
+[[cpp20::register]]
+r_vec<T> test_range(r_vec<T> x, bool na_rm){
+  return range(x, na_rm);
+}
+
 void static_tests(){
   static_assert(is<unwrap_t<r_lgl>, int>);
   static_assert(is<unwrap_t<r_dbl>, double>);
