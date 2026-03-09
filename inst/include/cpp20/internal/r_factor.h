@@ -94,7 +94,7 @@ struct r_factors {
   explicit r_factors(r_size_t n): value(n, na<r_int>()){
     init_factor(r_vec<r_str_view>(), false);
   }
-  
+
   template <RVal T>
   explicit r_factors(const r_vec<T>& x, const r_vec<T>& levels);
   
@@ -106,6 +106,10 @@ struct r_factors {
   constexpr operator const r_vec<r_int>&() const noexcept { return value; }
 
   constexpr operator SEXP() const noexcept { return static_cast<SEXP>(value); }
+
+  r_vec<r_str_view> strings() const {
+    return levels().subset(value);
+  }
 
 };
 
