@@ -16,8 +16,12 @@ r_vec<r_int> match(const r_vec<T>& needles, const r_vec<T>& haystack) {
     abort("Cannot match to a long vector, please use a short vector");
   }
 
+  auto* RESTRICT p_needles = needles.data();
+  auto* RESTRICT p_haystack = haystack.data();
+
   using key_t = unwrap_t<T>;
-  auto out = r_vec<r_int>(n_needles);
+  r_vec<r_int> out(n_needles);
+  auto* RESTRICT p_out = out.data();
 
   // Integer optimization: use table lookup for small integer ranges
   if constexpr (is<key_t, int>) {
@@ -34,12 +38,11 @@ r_vec<r_int> match(const r_vec<T>& needles, const r_vec<T>& haystack) {
       // Table maps (value - min_val) -> position, init with NA
       r_vec<r_int> table(range_span + 1, na<r_int>());
       
-      auto* RESTRICT p_hay = haystack.data();
       auto* RESTRICT p_table = table.data();
       
       // Build table: first occurrence wins
       for (r_size_t i = 0; i < n_haystack; ++i) {
-        int val = p_hay[i];
+        int val = p_haystack[i];
         if (!is_na(val)){
           size_t idx = static_cast<size_t>(static_cast<int64_t>(val) - min_val);
           if (is_na(p_table[idx])){
@@ -51,16 +54,13 @@ r_vec<r_int> match(const r_vec<T>& needles, const r_vec<T>& haystack) {
       // Find first NA position in haystack (if any)
       int na_pos = na<r_int>();
       for (r_size_t i = 0; i < n_haystack; ++i) {
-        if (is_na(p_hay[i])){
+        if (is_na(p_haystack[i])){
           na_pos = static_cast<int>(i) + 1;
           break;
         }
       }
       
       // Match needles
-      auto* RESTRICT p_needles = needles.data();
-      auto* RESTRICT p_out = out.data();
-      
       for (r_size_t i = 0; i < n_needles; ++i) {
         int val = p_needles[i];
         if (is_na(val)) {
@@ -69,7 +69,7 @@ r_vec<r_int> match(const r_vec<T>& needles, const r_vec<T>& haystack) {
           size_t idx = static_cast<size_t>(static_cast<int64_t>(val) - min_val);
           p_out[i] = p_table[idx];
         } else {
-          p_out[i] = na<r_int>();
+          p_out[i] = unwrap(na<r_int>());
         }
       }
       
@@ -82,13 +82,13 @@ r_vec<r_int> match(const r_vec<T>& needles, const r_vec<T>& haystack) {
   lookup.reserve(n_haystack);
 
   for (r_size_t i = 0; i < n_haystack; ++i) {
-    lookup.try_emplace(unwrap(haystack.view(i)), static_cast<int>(i) + 1);
+    lookup.try_emplace(p_haystack[i], static_cast<int>(i) + 1);
   }
 
   // Match needles
   for (r_size_t i = 0; i < n_needles; ++i) {
-    auto it = lookup.find(unwrap(needles.view(i)));
-    out.set(i, it != lookup.end() ? r_int(it->second) : na<r_int>());
+    auto it = lookup.find(p_needles[i]);
+    p_out[i] = (it != lookup.end() ? it->second : unwrap(na<r_int>()));
   }
 
   return out;
