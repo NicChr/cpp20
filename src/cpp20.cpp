@@ -535,11 +535,11 @@ extern "C" SEXP _cpp20_test_order(SEXP x) {
   END_CPP20
 }
 // test.h
-r_vec<r_int> test_lengths(r_vec<r_sexp> x);
+r_vec<r_int> test_lengths(const r_vec<r_sexp>& x);
 extern "C" SEXP _cpp20_test_lengths(SEXP x) {
   BEGIN_CPP20
-  cpp20::internal::check_r_cpp_mapping<r_vec<r_sexp>>(x);
-  return cpp20::internal::cpp_to_sexp(test_lengths(cpp20::as<std::remove_cvref_t<r_vec<r_sexp>>>(x)));
+  cpp20::internal::check_r_cpp_mapping<const r_vec<r_sexp>&>(x);
+  return cpp20::internal::cpp_to_sexp(test_lengths(cpp20::as<std::remove_cvref_t<const r_vec<r_sexp>&>>(x)));
   END_CPP20
 }
 // test.h
