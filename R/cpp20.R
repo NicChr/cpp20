@@ -196,14 +196,6 @@ test_time_coerce <- function() {
   .Call(`_cpp20_test_time_coerce`)
 }
 
-test_factor1 <- function(x) {
-  .Call(`_cpp20_test_factor1`, x)
-}
-
-test_factor2 <- function(x) {
-  .Call(`_cpp20_test_factor2`, x)
-}
-
 test_group_id <- function(x, order) {
   .Call(`_cpp20_test_group_id`, x, order)
 }
@@ -226,4 +218,12 @@ test_range <- function(x, na_rm) {
 
 test_match <- function(x, y) {
   .Call(`_cpp20_test_match`, x, y)
+}
+
+test_factor1 <- function(x) {
+  .Call(`_cpp20_test_factor1`, x)
+}
+
+test_factor2 <- function(x) {
+  .Call(`_cpp20_test_factor2`, x)
 }

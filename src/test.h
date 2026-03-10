@@ -332,17 +332,6 @@ r_vec<r_sexp> test_time_coerce(){
 }
 
 
-[[cpp20::register]]
-r_factors test_factor1(r_factors x){
-  return x;
-}
-
-template <RFactor T>
-[[cpp20::register]]
-T test_factor2(T x){
-  return x;
-}
-
 template <RVector T>
 [[cpp20::register]]
 r_vec<r_int> test_group_id(T x, bool order){
@@ -388,6 +377,17 @@ template <RVal T>
 [[cpp20::register]]
 auto test_match(r_vec<T> x, r_vec<T> y){
   return match(x, y);
+}
+
+[[cpp20::register]]
+r_vec<r_sexp> test_factor1(r_factors x){
+  return make_vec<r_sexp>(x, x.levels(), x.value, r_factors(), r_factors(3), x.as_character(), as<r_vec<r_str_view>>(x));
+}
+
+template <RFactor T>
+[[cpp20::register]]
+r_vec<r_sexp> test_factor2(T x){
+  return make_vec<r_sexp>(x, x.levels(), x.value, r_factors(), r_factors(3), x.as_character(), as<r_vec<r_str_view>>(x));
 }
 
 void static_tests(){

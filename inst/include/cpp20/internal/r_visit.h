@@ -24,6 +24,7 @@ switch (internal::CPP20_TYPEOF(x)) {
     case internal::CPP20_REALDATESXP:   return f(r_vec<r_date_t<r_dbl>>(x));
     case internal::CPP20_INT64PSXTSXP:  return f(r_vec<r_psxct_t<r_int64>>(x));
     case internal::CPP20_REALPSXTSXP:   return f(r_vec<r_psxct_t<r_dbl>>(x));
+    case internal::CPP20_FCTSXP:        return f(r_vec<r_int>(x));
     // case internal::CPP20_FCTSXP:        return f(r_factors(x));
     // case CPP20_DFSXP:                return f(r_df(x));
     default:                            return f(r_sexp(x));
@@ -45,9 +46,48 @@ switch (internal::CPP20_TYPEOF(x)) {
     case internal::CPP20_REALDATESXP:   return f(r_vec<r_date_t<r_dbl>>(x));
     case internal::CPP20_INT64PSXTSXP:  return f(r_vec<r_psxct_t<r_int64>>(x));
     case internal::CPP20_REALPSXTSXP:   return f(r_vec<r_psxct_t<r_dbl>>(x));
+    case internal::CPP20_FCTSXP:        return f(r_vec<r_int>(x));
     // case internal::CPP20_FCTSXP:        return f(r_factors(x));
     // case CPP20_DFSXP:                return f(r_df(x));
     default:                            return f(r_sexp(x));
+}
+}
+
+template <class F>
+decltype(auto) visit_vector(SEXP x, F&& f) {
+switch (internal::CPP20_TYPEOF(x)) {
+    case LGLSXP:                        return f(r_vec<r_lgl>(x));
+    case INTSXP:                        return f(r_vec<r_int>(x));
+    case internal::CPP20_INT64SXP:      return f(r_vec<r_int64>(x));
+    case REALSXP:                       return f(r_vec<r_dbl>(x));
+    case STRSXP:                        return f(r_vec<r_str>(x));
+    case VECSXP:                        return f(r_vec<r_sexp>(x));
+    case CPLXSXP:                       return f(r_vec<r_cplx>(x));
+    case RAWSXP:                        return f(r_vec<r_raw>(x));
+    case internal::CPP20_INTDATESXP:    return f(r_vec<r_date_t<r_int>>(x));
+    case internal::CPP20_REALDATESXP:   return f(r_vec<r_date_t<r_dbl>>(x));
+    case internal::CPP20_INT64PSXTSXP:  return f(r_vec<r_psxct_t<r_int64>>(x));
+    case internal::CPP20_REALPSXTSXP:   return f(r_vec<r_psxct_t<r_dbl>>(x));
+    default:                            abort("`x` must be a vector to be instantiated from an `r_sexp`");
+}
+}
+
+template <class F>
+decltype(auto) visit_vector(const r_sexp& x, F&& f) {
+switch (internal::CPP20_TYPEOF(x)) {
+    case LGLSXP:                        return f(r_vec<r_lgl>(x));
+    case INTSXP:                        return f(r_vec<r_int>(x));
+    case internal::CPP20_INT64SXP:      return f(r_vec<r_int64>(x));
+    case REALSXP:                       return f(r_vec<r_dbl>(x));
+    case STRSXP:                        return f(r_vec<r_str>(x));
+    case VECSXP:                        return f(r_vec<r_sexp>(x));
+    case CPLXSXP:                       return f(r_vec<r_cplx>(x));
+    case RAWSXP:                        return f(r_vec<r_raw>(x));
+    case internal::CPP20_INTDATESXP:    return f(r_vec<r_date_t<r_int>>(x));
+    case internal::CPP20_REALDATESXP:   return f(r_vec<r_date_t<r_dbl>>(x));
+    case internal::CPP20_INT64PSXTSXP:  return f(r_vec<r_psxct_t<r_int64>>(x));
+    case internal::CPP20_REALPSXTSXP:   return f(r_vec<r_psxct_t<r_dbl>>(x));
+    default:                            abort("`x` must be a vector to be instantiated from an `r_sexp`");
 }
 }
 

@@ -103,8 +103,11 @@ struct r_hash_impl<r_str> {
 
 // Vector hashing
 
-template<RVal T>
-struct r_vec_hash_impl {
+template <typename T>
+struct r_vec_hash_impl;
+
+template <RVal T>
+struct r_vec_hash_impl<r_vec<T>> {
     using is_avalanching = void;
 
     [[nodiscard]] size_t operator()(const r_vec<T>& x) const noexcept {
@@ -114,7 +117,7 @@ struct r_vec_hash_impl {
 
         r_size_t n = x.length();
 
-        if (n == 0) return r_hash_impl<r_int>{}(TYPEOF(x));
+        if (n == 0) return r_hash_impl<r_int>{}(r_typeof<r_vec<T>>);
 
         const auto* p_x = x.data();
 
@@ -122,6 +125,30 @@ struct r_vec_hash_impl {
             seed = hash_combine(seed, r_hash_impl<T>{}(p_x[i]));
         }
         return seed;
+    }
+};
+
+template<>
+struct r_vec_hash_impl<r_factors> {
+    using is_avalanching = void;
+
+    [[nodiscard]] size_t operator()(const r_factors& x) const noexcept {
+        uint64_t seed = 0;
+
+        r_vec<r_int> codes = x.value;
+
+        if (codes.is_null()) return seed;
+
+        r_size_t n = codes.length();
+
+        if (n == 0) return r_hash_impl<r_int>{}(r_typeof<r_factors>);
+
+        const int* p_x = codes.data();
+
+        for (r_size_t i = 0; i < n; ++i) {
+            seed = hash_combine(seed, r_hash_impl<r_int>{}(p_x[i]));
+        }
+        return hash_combine(seed, r_vec_hash_impl<r_vec<r_str_view>>{}(x.levels()));
     }
 };
 
@@ -160,7 +187,7 @@ struct r_hash_impl<r_sexp> {
                 }
                 return seed_;
             } else {
-                return r_vec_hash_impl<data_t>{}(vec);
+                return r_vec_hash_impl<vec_t>{}(vec);
             }
         }
         });

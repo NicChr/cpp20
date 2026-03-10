@@ -500,25 +500,6 @@ extern "C" SEXP _cpp20_test_time_coerce() {
   END_CPP20
 }
 // test.h
-r_factors test_factor1(r_factors x);
-extern "C" SEXP _cpp20_test_factor1(SEXP x) {
-  BEGIN_CPP20
-  cpp20::internal::check_r_cpp_mapping<r_factors>(x);
-  return cpp20::internal::cpp_to_sexp(test_factor1(cpp20::as<std::remove_cvref_t<r_factors>>(x)));
-  END_CPP20
-}
-// test.h
-extern "C" SEXP _cpp20_test_factor2(SEXP x) {
-  BEGIN_CPP20
-  return cpp20::internal::dispatch_template_impl<1, 1, std::array<int, 1>{0}>(
-    []<typename T>(SEXP x_internal) -> decltype(cpp20::internal::cpp_to_sexp(test_factor2(cpp20::as<std::remove_cvref_t<T>>(x_internal)))) {
-        return cpp20::internal::cpp_to_sexp(test_factor2(cpp20::as<std::remove_cvref_t<T>>(x_internal)));
-    },
-    x
-  );
-  END_CPP20
-}
-// test.h
 extern "C" SEXP _cpp20_test_group_id(SEXP x, SEXP order) {
   BEGIN_CPP20
   cpp20::internal::check_r_cpp_mapping<bool>(order);
@@ -581,6 +562,25 @@ extern "C" SEXP _cpp20_test_match(SEXP x, SEXP y) {
         return cpp20::internal::cpp_to_sexp(test_match(cpp20::as<std::remove_cvref_t<r_vec<T>>>(x_internal), cpp20::as<std::remove_cvref_t<r_vec<T>>>(y_internal)));
     },
     x, y
+  );
+  END_CPP20
+}
+// test.h
+r_vec<r_sexp> test_factor1(r_factors x);
+extern "C" SEXP _cpp20_test_factor1(SEXP x) {
+  BEGIN_CPP20
+  cpp20::internal::check_r_cpp_mapping<r_factors>(x);
+  return cpp20::internal::cpp_to_sexp(test_factor1(cpp20::as<std::remove_cvref_t<r_factors>>(x)));
+  END_CPP20
+}
+// test.h
+extern "C" SEXP _cpp20_test_factor2(SEXP x) {
+  BEGIN_CPP20
+  return cpp20::internal::dispatch_template_impl<1, 1, std::array<int, 1>{0}>(
+    []<typename T>(SEXP x_internal) -> decltype(cpp20::internal::cpp_to_sexp(test_factor2(cpp20::as<std::remove_cvref_t<T>>(x_internal)))) {
+        return cpp20::internal::cpp_to_sexp(test_factor2(cpp20::as<std::remove_cvref_t<T>>(x_internal)));
+    },
+    x
   );
   END_CPP20
 }

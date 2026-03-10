@@ -158,3 +158,15 @@ test_that("classed vectors", {
   expect_equal(test_classed_vec(curr_date + 0:1), curr_date + 0:1)
   expect_equal(test_classed_vec(curr_time + 0:1), curr_time + 0:1)
 })
+
+test_that("factors", {
+  x <- as.factor(letters)
+  expect_identical(
+    test_factor1(x),
+    list(x, letters, x, factor(), factor(rep(NA, 3)), letters, letters)
+    )
+  expect_identical(
+    test_factor2(x),
+    list(x, letters, x, factor(), factor(rep(NA, 3)), letters, letters)
+  )
+})

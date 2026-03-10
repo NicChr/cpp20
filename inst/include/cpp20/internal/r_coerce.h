@@ -28,82 +28,73 @@ template <RVal T>
 r_factors::r_factors(const r_vec<T>& x) : r_factors(x, unique(x)) {}
 
 // Powerful and flexible coercion function that can handle many types and convert to R-specific C++ types and R vectors
-template <typename T, typename U>
-inline T as(const U& x) {
-  if constexpr (is<U, T> && is<unwrap_t<U>, unwrap_t<T>>){
+template <typename to_t, typename from_t>
+inline to_t as(const from_t& x) {
+  if constexpr (is<from_t, to_t> && is<unwrap_t<from_t>, unwrap_t<to_t>>){
     return x;
-  } else if constexpr (is<T, SEXP>){
+  } else if constexpr (is<to_t, SEXP>){
     // Special case for SEXP
     // While it's not an RVal or a type that is generally explicitly supported in cpp20, it's needed for
     // registering C++ functions in R
     // So we want to avoid going through r_sexp and its protection management if we can
-    if constexpr (RObject<U>){ // Is implicitly convertible to SEXP
+    if constexpr (RObject<from_t>){ // Is implicitly convertible to SEXP
       return static_cast<SEXP>(x);
     } else {
       // If it isn't implicitly convertible to SEXP, then rely on as<r_sexp> conversion
       return static_cast<SEXP>(as<r_sexp>(x));
     }
-  } else if constexpr (RVector<U> && is<T, r_sexp>){
+  } else if constexpr (RVector<from_t> && is<to_t, r_sexp>){
     return x.sexp;
-  } else if constexpr (RFactor<T>){
+  } else if constexpr (RFactor<to_t>){
     return r_factors(x);
-  } else if constexpr (RVector<T> && is_sexp<U>){
-    return visit_sexp(x, [&](auto xvec) -> T {
-      if (is<decltype(xvec), r_sexp>){
-        abort("`x` must be a vector");
-      } else {
-        // This will trigger the branch that checks that both are RVector
-        return as<T>(xvec);
-      }
+  } else if constexpr (RVector<to_t> && is_sexp<from_t>){
+    return visit_vector(x, [&](auto xvec) -> to_t {
+      // This will trigger the branch that checks that both are RVector
+      return as<to_t>(xvec);
     });
-  } else if constexpr (is_sexp<T> && is_sexp<U>){
-    if constexpr (is<T, r_sexp>){
+  } else if constexpr (is_sexp<to_t> && is_sexp<from_t>){
+    if constexpr (is<to_t, r_sexp>){
       // SEXP -> r_sexp
       return r_sexp(x);
     } else {
       // r_sexp -> SEXP
       return static_cast<SEXP>(x);
     }
-  } else if constexpr (RVal<T> && is_sexp<U>){
+  } else if constexpr (RVal<to_t> && is_sexp<from_t>){
 
       // since r_sym is a special case in general (there is no vector of symbols except for a list)
       // We check the case that r_sym is being constructed from a valid SEXP (SYMSXP)
       // Will likely remove r_sym in the future and encourage usage of r_str/r_str_view
       
-      if constexpr (is<T, r_sym>){
+      if constexpr (is<to_t, r_sym>){
         if (TYPEOF(x) == SYMSXP){
         return r_sym(x);
       }
     }
     
-    return visit_sexp(x, [&](auto xvec) -> T {
-      if (is<decltype(xvec), r_sexp>){
-        abort("`x` must be a vector");
-      } else {
-        // Use branch below current branch
-        return as<T>(xvec);
-      }
+    return visit_vector(x, [&](auto xvec) -> to_t {
+      return as<to_t>(xvec);
     });
-  } else if constexpr (RVal<T> && RVector<U>){
+  } else if constexpr (RVal<to_t> && RVector<from_t>){
     if (x.length() != 1){
       abort("Vector must be length-1 to be coerced to requested scalar type");
     }
-    return as<T>(x.get(0));
-  } else if constexpr (RVector<T> && RVal<U>){
-    using data_t = typename T::data_type;
+    return as<to_t>(x.get(0));
+  } else if constexpr (RVector<to_t> && RVal<from_t>){
+    using data_t = typename to_t::data_type;
     return r_vec<data_t>(1, internal::as_r<data_t>(x));
-  } else if constexpr (RVector<T> && RVector<U>){
+  } else if constexpr (RVector<to_t> && RVector<from_t>){
 
-    using to_data_t = typename T::data_type;
-    using from_data_t = typename U::data_type;
+    using to_data_t = typename to_t::data_type;
+    using from_data_t = typename from_t::data_type;
 
     // Special case: If both are (r_str/r_view) no need to do element conversions
     if constexpr (RStringType<to_data_t> && RStringType<from_data_t>){
-      return T(unwrap(x));
+      return to_t(unwrap(x));
     } 
 
     r_size_t n = x.length();
-    auto out = T(n);
+    auto out = to_t(n);
     // Lists sometimes can't be converted to atomic vectors so we can't run the coercion under an SIMD clause
     if constexpr (internal::RPtrWritableType<to_data_t> && internal::RPtrWritableType<from_data_t>){
       OMP_SIMD
@@ -116,15 +107,23 @@ inline T as(const U& x) {
       }
     }
     return out;
-  } else if constexpr (RVal<T> && !RVector<U>) {
-    return internal::as_r<T>(x);
+  } else if constexpr (RVal<to_t> && !RVector<from_t>) {
+    return internal::as_r<to_t>(x);
     // If input is not an R type or an R vector type
-  } else if constexpr (!RVal<U> && !RVector<U>){
-    return as<T>(as_r_val(x));
-  } else if constexpr (CastableToRVal<T>){
-    return static_cast<T>(as<as_r_val_t<T>>(x));
+  } else if constexpr (!RVal<from_t> && !RVector<from_t>){
+    return as<to_t>(as_r_val(x));
+  } else if constexpr (CastableToRVal<to_t>){
+    return static_cast<to_t>(as<as_r_val_t<to_t>>(x));
   } else {
-    static_assert(always_false<T>, "Unsupported type for `as`");
+    static_assert(always_false<to_t>, "Unsupported type for `as`");
+  }
+}
+template <RVector T>
+inline T as(const r_factors& x) {
+  if constexpr (RStringType<typename T::data_type>){
+    return x.as_character();
+  } else {
+    return as<T>(x.value);
   }
 }
 
