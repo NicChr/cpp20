@@ -38,10 +38,15 @@ inline r_vec<T> deep_copy(const r_vec<T>& x){
     return out;
 }
 
+inline r_factors deep_copy(const r_factors& x){
+    r_vec<r_int> out = deep_copy(x.value);
+    return r_factors(unwrap(out), false);
+}
+
 inline r_sexp deep_copy(const r_sexp& x){
     return visit_sexp(x, [&](auto vec) -> r_sexp {
         if constexpr (!is<decltype(vec), r_sexp>){
-            return deep_copy(vec).sexp;
+            return r_sexp(static_cast<SEXP>(deep_copy(vec)));
         } else {
             return r_sexp(Rf_duplicate(x));
         }
