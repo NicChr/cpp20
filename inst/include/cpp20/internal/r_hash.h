@@ -173,13 +173,10 @@ struct r_hash_impl<r_sexp> {
             size_t seed_ = seed;
 
             using vec_t = std::remove_cvref_t<decltype(vec)>;
-            
-            if constexpr (!RVector<vec_t>){
-            abort("List contains non-vector element, current implementation can only hash vectors");
-        } else {
-            using data_t = typename vec_t::data_type;
 
-            if constexpr (is<data_t, r_sexp>){
+            if constexpr (is<vec_t, r_sexp>){
+                abort("List contains unsupported element type, current implementation can only hash vectors and factors");
+            } else if constexpr (is<vec_t, r_vec<r_sexp>>){
                 r_size_t n = vec.length();
                 for (r_size_t i = 0; i < n; ++i) {
                     size_t elem_hash = (*this)(vec.view(i));
@@ -189,7 +186,6 @@ struct r_hash_impl<r_sexp> {
             } else {
                 return r_vec_hash_impl<vec_t>{}(vec);
             }
-        }
         });
         return hash_combine(h, static_cast<size_t>(type));
     }
@@ -254,8 +250,9 @@ struct r_hash_eq_impl<r_sexp> {
             // View-only copy of y
             auto vec2 = vec_t(y, internal::view_tag{});
 
-            using data_t = typename vec_t::data_type;
-            if constexpr (is<data_t, r_sexp>) {
+            if constexpr (is<vec_t, r_sexp>){
+                abort("List contains unsupported element type, current implementation can only hash vectors and factors");
+            } else if constexpr (is<vec_t, r_vec<r_sexp>>) {
                 r_size_t n = vec1.length();
                 for (r_size_t i = 0; i < n; ++i){
                     if (!r_hash_eq_impl<r_sexp>{}(vec1.view(i), vec2.view(i))){
@@ -264,6 +261,7 @@ struct r_hash_eq_impl<r_sexp> {
                 }
                 return true;
             } else {
+                using data_t = typename vec_t::data_type;
                 return std::memcmp(vec1.data(), vec2.data(), vec1.size() * sizeof(unwrap_t<data_t>)) == 0; 
             }
         }
