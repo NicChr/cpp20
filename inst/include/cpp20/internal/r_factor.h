@@ -20,7 +20,7 @@ struct r_factors {
   private: 
   
   template <RStringType T>
-  void validate_factor(const r_vec<r_int>& codes, const r_vec<T>& levels){
+  void validate_levels(const r_vec<r_int>& codes, const r_vec<T>& levels){
     r_int max_code = max(codes, true);
 
     if ((levels.length() < max_code).is_true()){
@@ -28,7 +28,7 @@ struct r_factors {
     }
   }
 
-  void validate_factor(SEXP x){
+  void validate_factor(SEXP x, bool check_valid_levels = true){
     if (TYPEOF(x) != INTSXP){
       abort("SEXP must have integer storage to be constructed as a factor");
     }
@@ -41,23 +41,15 @@ struct r_factors {
     }
     r_vec<r_str_view> levels2 = r_vec<r_str_view>(levels, internal::view_tag{});
     r_vec<r_int> codes = r_vec<r_int>(x, internal::view_tag{});
-    validate_factor(codes, levels2);
+    if (check_valid_levels) validate_levels(codes, levels2);
   }
-
-  // Internal direct constructor
-  template <RStringType T>
-  explicit r_factors(r_vec<r_int>&& codes, const r_vec<T>& levels, 
-    bool check_valid_levels = true) : value(std::move(codes)){
-      validate_factor(value, levels);
-      init_factor(levels, false); 
-    }
 
   public: 
 
   template <RStringType T>
   void set_levels(const r_vec<T>& levels, bool check_valid_levels = true) {
     if (check_valid_levels){
-      validate_factor(value, levels);
+      validate_levels(value, levels);
     }
     attr::set_attr(value, symbol::levels_sym, levels);
   }
@@ -72,6 +64,13 @@ struct r_factors {
       set_levels(levels, check_valid_levels);
   }
 
+  // Internal direct constructor
+  template <RStringType T>
+  explicit r_factors(r_vec<r_int>&& codes, const r_vec<T>& levels, 
+    bool check_valid_levels = true) : value(std::move(codes)){
+      init_factor(levels, check_valid_levels); 
+    }
+
   public: 
 
   // Constructors
@@ -79,15 +78,15 @@ struct r_factors {
     init_factor(r_vec<r_str_view>(), false);
   }
 
-  explicit r_factors(SEXP x) : value(x) {
+  explicit r_factors(SEXP x, bool check_valid_levels = true) : value(x) {
     if (!value.is_null()){
-      validate_factor(value); 
+      validate_factor(value, check_valid_levels);
     }
   }
 
-  explicit r_factors(SEXP x, internal::view_tag) : value(x, internal::view_tag{}) {
+  explicit r_factors(SEXP x, internal::view_tag, bool check_valid_levels = true) : value(x, internal::view_tag{}) {
     if (!value.is_null()){
-      validate_factor(value); 
+      validate_factor(value, check_valid_levels);
     }
   }
 
