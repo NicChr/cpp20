@@ -463,16 +463,6 @@ struct r_psxct_t : T {
 
   using inherited_type = T;
 
-  private: 
-  
-  auto chrono_tp() const {
-    return std::chrono::time_point{
-      std::chrono::sys_seconds{std::chrono::seconds{static_cast<int64_t>(T::value)}}
-    };
-  }
-
-  public: 
-
   r_psxct_t() : T{0} {}
   template <CppMathType U>
   explicit constexpr r_psxct_t(U seconds_since_epoch) : T{seconds_since_epoch} {}
@@ -483,6 +473,14 @@ struct r_psxct_t : T {
     int32_t year, uint32_t month, uint32_t day, 
     uint32_t hour, uint32_t minute, uint32_t second
   ) : T(internal::get_seconds_since_epoch(year, month, day, hour, minute, second)) {}
+
+  private: 
+  
+  auto chrono_tp() const {
+    return std::chrono::time_point{
+      std::chrono::sys_seconds{std::chrono::seconds{static_cast<int64_t>(T::value)}}
+    };
+  }
 
   // Decomposed date + time-of-day
   auto chrono_ymd() const {
@@ -498,6 +496,8 @@ struct r_psxct_t : T {
     auto dp = floor<days>(tp);
     return hh_mm_ss{tp - dp};
   }
+
+  public: 
 
   r_str datetime_str() const {
     auto ymd = chrono_ymd();
