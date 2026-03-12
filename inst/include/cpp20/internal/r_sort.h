@@ -212,22 +212,20 @@ inline r_vec<r_int> order(const r_vec<T>& x) {
             uint32_t index;
         };
         
-        std::vector<key_index> pairs(n);
+        std::vector<key_index> pairs;
+        pairs.reserve(n);
 
-        OMP_SIMD
         for (uint32_t i = 0; i < n; ++i) {
             unsigned_t key = is_na(px[i]) ? std::numeric_limits<unsigned_t>::max() : detail::to_unsigned_or_bool(px[i]);
-            pairs[i] = {key, i};
+            pairs.push_back({key, i});
         }
-
         ska_sort(pairs.begin(), pairs.end(), 
             [](const key_index& k){ return k.key; });
 
         int* RESTRICT p_out = out.data();
-        auto* RESTRICT p_pairs = pairs.data();
         OMP_SIMD
         for (uint32_t i = 0; i < n; ++i) {
-            p_out[i] = static_cast<int>(p_pairs[i].index);
+            p_out[i] = static_cast<int>(pairs[i].index);
         }
         return out;
     }
