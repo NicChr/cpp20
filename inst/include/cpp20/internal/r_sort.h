@@ -273,7 +273,7 @@ inline r_vec<r_int> order(const r_vec<T>& x) {
         int* RESTRICT p_out = out.data();
         OMP_SIMD
         for (uint32_t i = 0; i < n; ++i) {
-            p_out[i] = pairs[i].index;
+            p_out[i] = static_cast<int>(pairs[i].index);
         }
         return out; 
     } else {
