@@ -6,6 +6,8 @@
 
 namespace cpp20 {
 
+namespace internal {
+
 // named_arg<V>
 // Carries name + value with full type info. Created by arg::operator=
 template <typename V>
@@ -20,6 +22,11 @@ template <typename V>          struct is_named_arg_t<named_arg<V>>: std::true_ty
 template <typename T>
 inline constexpr bool is_named_arg = is_named_arg_t<std::remove_cvref_t<T>>::value;
 
+}
+
+template <typename T>
+concept NamedArg = internal::is_named_arg<T>;
+
 // ── arg ──────────────────────────────────────────────────────────
 struct arg {
   const char* name;
@@ -27,7 +34,7 @@ struct arg {
   explicit constexpr arg(const char* n) : name(n) {}
 
   template <typename V>
-  [[nodiscard]] constexpr named_arg<std::remove_cvref_t<V>>
+  [[nodiscard]] constexpr internal::named_arg<std::remove_cvref_t<V>>
   operator=(V&& v) const {
     return {name, std::forward<V>(v)};
   }
@@ -36,7 +43,7 @@ struct arg {
 
 // ── as<T> for named_arg ──────────────────────────────────────────
 template <RVal T, typename V>
-inline T as(const named_arg<V>& a) {
+inline T as(const internal::named_arg<V>& a) {
   return as<T>(a.value);
 }
 
@@ -53,13 +60,13 @@ inline r_vec<T> make_vec(Args&&... args) {
 
     auto out = r_vec<T>(n);
 
-    constexpr bool any_named = (is_named_arg<Args> || ...);
+    constexpr bool any_named = (NamedArg<Args> || ...);
 
     auto nms = any_named ? r_vec<r_str_view>(n) : r_vec<r_str_view>(r_null);
 
     int i = 0;
     (([&]() {
-      if constexpr (is_named_arg<Args>) {
+      if constexpr (NamedArg<Args>) {
         out.set(i, as<T>(args));
         nms.set(i, as<r_str_view>(args.name));
       } else {

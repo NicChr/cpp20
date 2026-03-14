@@ -24,11 +24,11 @@ inline r_sexp make_pairlist(Args... args) {
     SEXP current = out;
 
     (([&]() {
-      if constexpr (is<Args, arg>) {
-        SETCAR(current, as<r_sexp>(args.value));
-        SET_TAG(current, as<r_sym>(args.name));
+      if constexpr (NamedArg<Args>) {
+        SETCAR(current, internal::as_r<r_sexp>(args.value));
+        SET_TAG(current, r_sym(args.name));
       } else {
-        SETCAR(current, as<r_sexp>(args));
+        SETCAR(current, internal::as_r<r_sexp>(args));
       }
       current = CDR(current);
     }()), ...);
