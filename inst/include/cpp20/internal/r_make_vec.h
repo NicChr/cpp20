@@ -50,7 +50,7 @@ inline T internal::as_r(const internal::named_arg<V>& a) {
 
 // ── make_vec ─────────────────────────────────────────────────────
 template <RVal T, typename... Args>
-inline r_vec<T> make_vec(Args&&... args) {
+inline r_vec<T> make_vec(Args... args) {
 
   constexpr int n = sizeof...(args);
 
