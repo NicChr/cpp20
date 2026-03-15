@@ -274,6 +274,62 @@ struct r_hash : r_hash_impl<std::remove_cvref_t<T>> {};
 template <RVal T>
 struct r_hash_eq : r_hash_eq_impl<std::remove_cvref_t<T>> {};
 
+
+// Return initial hash map reserve size as power of 2
+inline uint64_t get_hash_map_reserve_size(uint64_t data_size){
+    if (data_size == 0) return 0;
+    
+    int64_t expn = std::floor((std::log(data_size) / std::log(2))) - 2;
+    uint64_t res = std::min<uint64_t>(data_size, std::pow(2, expn));
+    return std::min<uint64_t>(res, std::pow(2, 19)); // Cap to 2^19
+}
+
+}
+
+// Useful helper to calculate n unique values - can be useful for various algorithms
+template <RVal T>
+inline r_size_t n_unique(const r_vec<T>& x) {
+    
+    r_size_t n = x.length();
+  
+    // Hash set for O(n) de-duplication
+    ankerl::unordered_dense::set<
+      unwrap_t<T>, 
+      internal::r_hash<T>, 
+      internal::r_hash_eq<T>
+    > seen;
+
+    seen.reserve(internal::get_hash_map_reserve_size(n));
+
+    auto* RESTRICT p_x = x.data(); 
+  
+    for (r_size_t i = 0; i < n; ++i) {
+      seen.insert(p_x[i]);
+    }
+    return seen.size();
+}
+
+template <>
+inline r_size_t n_unique(const r_vec<r_lgl>& x) {
+    
+    r_size_t n = x.length();
+  
+    // Hash set for O(n) de-duplication
+    ankerl::unordered_dense::set<
+      unwrap_t<r_lgl>, 
+      internal::r_hash<r_lgl>, 
+      internal::r_hash_eq<r_lgl>
+    > seen;
+
+    seen.reserve(3); // r_lgl vec can only have 3 max unique values
+
+    auto* RESTRICT p_x = x.data(); 
+  
+    for (r_size_t i = 0; i < n; ++i) {
+      seen.insert(p_x[i]);
+      if (seen.size() == 3) return 3;
+    }
+    return seen.size();
 }
 
 }
