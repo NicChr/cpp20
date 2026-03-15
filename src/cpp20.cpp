@@ -592,6 +592,17 @@ extern "C" SEXP _cpp20_test_factor2(SEXP x) {
   );
   END_CPP20
 }
+// test.h
+extern "C" SEXP _cpp20_test_n_unique(SEXP x) {
+  BEGIN_CPP20
+  return cpp20::internal::dispatch_template_impl<1, 1, std::array<int, 1>{0}>(
+    []<typename T>(SEXP x_internal) -> decltype(cpp20::internal::cpp_to_sexp(test_n_unique(cpp20::as<std::remove_cvref_t<T>>(x_internal)))) {
+        return cpp20::internal::cpp_to_sexp(test_n_unique(cpp20::as<std::remove_cvref_t<T>>(x_internal)));
+    },
+    x
+  );
+  END_CPP20
+}
 
 extern "C" {
 static const R_CallMethodDef CallEntries[] = {
@@ -629,6 +640,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"_cpp20_test_match",               (DL_FUNC) &_cpp20_test_match,               2},
     {"_cpp20_test_mix2",                (DL_FUNC) &_cpp20_test_mix2,                7},
     {"_cpp20_test_multiple_deduction",  (DL_FUNC) &_cpp20_test_multiple_deduction,  2},
+    {"_cpp20_test_n_unique",            (DL_FUNC) &_cpp20_test_n_unique,            1},
     {"_cpp20_test_null",                (DL_FUNC) &_cpp20_test_null,                0},
     {"_cpp20_test_order",               (DL_FUNC) &_cpp20_test_order,               1},
     {"_cpp20_test_range",               (DL_FUNC) &_cpp20_test_range,               2},

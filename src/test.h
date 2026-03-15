@@ -387,6 +387,12 @@ r_vec<r_sexp> test_factor2(T x){
   return make_vec<r_sexp>(x, x.levels(), x.value, r_factors(), r_factors(3), x.as_character(), as<r_vec<r_str_view>>(x));
 }
 
+template <RVector T>
+[[cpp20::register]]
+int test_n_unique(T x){
+  return n_unique(x);
+}
+
 void static_tests(){
   static_assert(is<unwrap_t<r_lgl>, int>);
   static_assert(is<unwrap_t<r_dbl>, double>);
