@@ -68,25 +68,7 @@ inline bool identical(const T& a, const T& b) {
                     if (!identical(names1, names2)) return false;
 
                     for (r_size_t i = 0; i < a_attrs.length(); ++i){
-                    bool ident = internal::view_sexp(a_attrs.view(i), [&](const auto& vec1) -> bool {
-                        using vec1_t = decltype(vec1);
-                
-                        // If we can't map SEXP to a known type then just use R's version
-                        if constexpr (is<vec1_t, r_sexp>){
-                            return R_compute_identical(a_attrs, b_attrs, 16);
-                        } else {
-                            return internal::view_sexp(b_attrs.view(i), [vec1](const auto& vec2) -> bool {
-                                using vec2_t = decltype(vec2);
-                
-                                if constexpr (!is<vec1_t, vec2_t>){
-                                    return false;
-                                } else {
-                                    return identical(vec1, vec2);   
-                                }
-                            });
-                        }
-                        });
-                        if (!ident) return false;
+                        if (!identical(a_attrs.view(i), b_attrs.view(i))) return false;
                     }
             }   
         // Not sure why this produces recursion crash when it can handle lists..
@@ -107,7 +89,7 @@ inline bool identical(const T& a, const T& b) {
     
             // If we can't map SEXP to a known type then just use R's version
             if constexpr (is<vec1_t, r_sexp>){
-                return R_compute_identical(x, y, 16);
+                return R_compute_identical(a.view(i), b.view(i), 16);
             } else {
                 return internal::view_sexp(b.view(i), [vec1](const auto& vec2) -> bool {
                     using vec2_t = decltype(vec2);
