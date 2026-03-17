@@ -11,6 +11,164 @@
 
 namespace cpp20 {
 
+// identical checks that a and b are exactly the same
+// Always returns true if they are both the same NA
+// needed for hash equality
+
+template <typename T>
+inline bool identical(const T& a, const T& b) {
+    if constexpr (RVal<T>){
+        return unwrap(a) == unwrap(b);
+    } else if constexpr (CastableToRVal<T>){
+        using r_t = as_r_val_t<T>;
+        return identical<r_t>(r_t(a), r_t(b));
+    } else {
+        return a == b;
+    }
+}
+
+template<>
+inline bool identical<r_dbl>(const r_dbl& a, const r_dbl& b) {
+  // If both (NA or NaN)
+  if (is_na(a) && is_na(b)){
+    return internal::is_na_real(unwrap(a)) == internal::is_na_real(unwrap(b));
+} else {
+    return unwrap(a) == unwrap(b);
+}
+}
+
+template<>
+inline bool identical<r_cplx>(const r_cplx& a, const r_cplx& b) {
+    return identical(a.re(), b.re()) && identical(a.im(), b.im());
+}
+
+template <RVector T>
+inline bool identical(const T& a, const T& b) {
+    SEXP x = unwrap(a);
+    SEXP y = unwrap(b);
+    if (x == y) return true; // same pointer
+    if (a.length() != b.length()) return false;
+    if (TYPEOF(a) != TYPEOF(b)) return false;
+    
+    bool x_has_attrs = attr::has_attrs(a);
+    bool y_has_attrs = attr::has_attrs(b);
+    if (x_has_attrs != y_has_attrs) return false;
+    
+    if (x_has_attrs && y_has_attrs){
+        r_vec<r_sexp> a_attrs = attr::get_attrs(a);
+        r_vec<r_sexp> b_attrs = attr::get_attrs(b);
+        if (!R_compute_identical(a_attrs, b_attrs, 16)){
+                return false;
+            }
+            // Only do the rest of the attr checks if pointers do not match
+            // if (unwrap(a_attrs) != unwrap(b_attrs)){
+            //     if (a_attrs.length() != b_attrs.length()) return false;
+            //         r_vec<r_str_view> names1 = a_attrs.names();
+            //         r_vec<r_str_view> names2 = b_attrs.names();
+            //         if (!identical(names1, names2)) return false;
+            //         bool ident = return internal::view_elements(a_attrs, [&]<RVector U>(r_size_t i, const U& elem1) -> bool {
+            //             return internal::view_elements(b_attrs, [&]<RVector V>(r_size_t j, const V& elem2) -> bool {
+            //                 if (!identical(elem1, elem2)) return false;
+            //                 if ((j + 1)== b_attrs.length()) return true;
+            //             });
+            //         });
+            //         if (!ident) return false;
+            // }
+            
+            // Not sure why this produces recursion crash when it can handle lists..
+        // if (!identical(a_attrs.sexp, b_attrs.sexp)){
+        //     return false;
+        // }
+    }
+
+    r_size_t n = a.length();
+
+    if constexpr (is<T, r_vec<r_sexp>>){
+        
+        // Visit each list element
+        for (r_size_t i = 0; i < n; ++i){
+
+        bool ident = internal::view_sexp(a.view(i), [&](const auto& vec1) -> bool {
+            using vec1_t = decltype(vec1);
+    
+            // If we can't map SEXP to a known type then just use R's version
+            if constexpr (is<vec1_t, r_sexp>){
+                return R_compute_identical(x, y, 16);
+            } else {
+                return internal::view_sexp(b.view(i), [vec1](const auto& vec2) -> bool {
+                    using vec2_t = decltype(vec2);
+    
+                    if constexpr (!is<vec1_t, vec2_t>){
+                        return false;
+                    } else {
+                        return identical(vec1, vec2);   
+                    }
+                });
+            }
+            });
+            if (!ident){
+                return false;
+            }
+        }
+    } else {
+        for (r_size_t i = 0; i < n; ++i){
+            if (!identical(a.view(i), b.view(i))){
+                return false;
+            }
+        } 
+    }
+    return true;
+}
+
+inline bool identical(const r_factors& a, const r_factors& b) {
+    return identical(a.value, b.value);
+}
+
+template <>
+inline bool identical<r_sexp>(const r_sexp& a, const r_sexp& b) {
+    SEXP x = unwrap(a);
+    SEXP y = unwrap(b);
+    if (x == y) return true; // same pointer
+    
+    // Visit both SEXP
+    return internal::view_sexp(a, [&](const auto& vec1) -> bool {
+        using vec1_t = decltype(vec1);
+
+        if constexpr (is<vec1_t, r_sexp>){
+            return R_compute_identical(x, y, 16);
+        } else {
+            return internal::view_sexp(b, [vec1](const auto& vec2) -> bool {
+                using vec2_t = decltype(vec2);
+
+                if constexpr (!is<vec1_t, vec2_t>){
+                    return false;
+                } else {
+                    return identical(vec1, vec2);
+                }
+                // } else if constexpr (is<vec1_t, r_vec<r_sexp>>) {
+                //         r_size_t n = vec1.length();
+
+                //         for (r_size_t i = 0; i < n; ++i){
+                //             if (!identical(vec1.view(i), vec2.view(i))){
+                //                 return false;
+                //             }
+                //         }
+                //         return true;
+                //     } else {
+                //         return identical(vec1, vec2);
+                //     }
+            });
+        }
+        });
+}
+
+inline bool identical(SEXP a, SEXP b) {
+    return identical<r_sexp>(r_sexp(a, internal::view_tag{}), r_sexp(b, internal::view_tag{}));
+}
+
+
+// Hashing
+
 namespace internal {
 
 // Hash combine helper
@@ -195,86 +353,18 @@ struct r_hash_impl<r_sexp> {
 
 
 template <RVal T>
-struct r_hash_eq_impl {
-    using is_transparent = void;
-    bool operator()(const unwrap_t<T>& a, const unwrap_t<T>& b) const noexcept {
-        return a == b;
-    }
-};
-
-template <>
-struct r_hash_eq_impl<r_dbl> {
-    using is_transparent = void;
-    bool operator()(double a, double b) const noexcept {
-        if (is_na(a) && is_na(b)){
-            return is_na_real(a) == is_na_real(b);
-        } else {
-            return a == b;
-        }
-    }
-};
-
-template <>
-struct r_hash_eq_impl<r_cplx> {
-    using is_transparent = void;
-    bool operator()(std::complex<double> a, std::complex<double> b) const noexcept {
-        r_hash_eq_impl<r_dbl> eq;
-        return eq(a.real(), b.real()) && eq(a.imag(), b.imag());
-    }
-};
-
-// Meant to be used for elements of lists
-// Since they are r_sexp we have to 'visit' the type of vector it is
-template<>
-struct r_hash_eq_impl<r_sexp> {
-    bool operator()(SEXP x, SEXP y) const {
-    if (x == y) return true; // same pointer
-    if (Rf_xlength(x) != Rf_xlength(y)) return false;
-    if (TYPEOF(x) != TYPEOF(y)) return false;
-    
-    bool x_has_attrs = attr::has_attrs(r_sexp(x, internal::view_tag{}));
-    bool y_has_attrs = attr::has_attrs(r_sexp(y, internal::view_tag{}));
-    if (x_has_attrs != y_has_attrs) return false;
-    
-    if (x_has_attrs && y_has_attrs){
-        if (!r_hash_eq_impl<r_sexp>{}(attr::get_attrs(r_sexp(x, internal::view_tag{})), attr::get_attrs(r_sexp(y, internal::view_tag{})))){
-            return false;
-        }
-    }
-
-    return visit_sexp(x, [y](auto vec1) -> bool {
-        using vec_t = decltype(vec1);
-
-        if constexpr (!RVector<vec_t>){
-            abort("List contains non-vector element, current implementation can only hash vectors");
-        } else {
-            
-            // View-only copy of y
-            auto vec2 = vec_t(y, internal::view_tag{});
-
-            if constexpr (is<vec_t, r_sexp>){
-                abort("List contains unsupported element type, current implementation can only hash vectors and factors");
-            } else if constexpr (is<vec_t, r_vec<r_sexp>>) {
-                r_size_t n = vec1.length();
-                for (r_size_t i = 0; i < n; ++i){
-                    if (!r_hash_eq_impl<r_sexp>{}(vec1.view(i), vec2.view(i))){
-                        return false;
-                    }
-                }
-                return true;
-            } else {
-                using data_t = typename vec_t::data_type;
-                return std::memcmp(vec1.data(), vec2.data(), vec1.size() * sizeof(unwrap_t<data_t>)) == 0; 
-            }
-        }
-        });
-    }
-};
-
-template <RVal T>
 struct r_hash : r_hash_impl<std::remove_cvref_t<T>> {};
+
+// Hash equality
+
 template <RVal T>
-struct r_hash_eq : r_hash_eq_impl<std::remove_cvref_t<T>> {};
+struct r_hash_eq {
+    using is_transparent = void;
+    using base_t = unwrap_t<T>;
+    bool operator()(const base_t& a, const base_t& b) const noexcept {
+        return identical(a, b);
+    }
+};
 
 
 // Return initial hash map reserve size as power of 2

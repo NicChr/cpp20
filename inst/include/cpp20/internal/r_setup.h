@@ -8,6 +8,7 @@
 #include <cpp11/sexp.hpp> // For cpp11::sexp
 #include <type_traits> // For concepts
 #include <ankerl/unordered_dense.h> // Hash maps for group IDs + unique + match
+#include <cstdint> // For uint32_t and similar
 #include <cstring> // For strcmp
 #include <string> // For C++ strings
 #include <charconv> // For to_chars

@@ -27,7 +27,7 @@ r_vec<r_int> match(const r_vec<T>& needles, const r_vec<T>& haystack) {
   if (n_needles == 1){
     auto val = needles.view(0);
     for (r_size_t i = 0; i < n_haystack; ++i){
-      if ((val == haystack.view(i)).is_true()){
+      if (identical(val, haystack.view(i))){
         out.set(0, i + 1);
         return out;
       }
