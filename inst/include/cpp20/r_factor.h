@@ -131,6 +131,7 @@ struct r_factors {
   // Inherit standard methods from r_vec<>
 
   FORWARD_METHOD(length)
+  FORWARD_METHOD(is_null)
   FORWARD_METHOD(size)
   FORWARD_METHOD(data)
   FORWARD_METHOD(begin)
