@@ -204,6 +204,9 @@ concept RVector = internal::is_r_vector_v<T>;
 template <typename T>
 concept RMetaVector = RFactor<T>;
 
+template <typename T>
+concept RSortableVector = RVector<T> && RSortableType<typename T::data_type>;
+
 // RObject is any object that can be represented in R - it excludes internal R types like CHARSXP
 // Also, these are all implicitly convertible to `SEXP`
 template <typename T> 
