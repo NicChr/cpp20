@@ -243,79 +243,19 @@ struct r_hash_impl<r_str> {
 
 // Vector hashing
 
-template <RVal T>
-struct r_hash_impl<r_vec<T>> {
-    using is_avalanching = void;
-
-    [[nodiscard]] size_t operator()(const r_vec<T>& x) const noexcept {
-        uint64_t seed = 0;
-
-        if (x.is_null()) return seed;
-
-        r_size_t n = x.length();
-
-        if (n == 0) return r_hash_impl<r_int>{}(r_typeof<r_vec<T>>);
-
-        for (r_size_t i = 0; i < n; ++i) {
-            seed = hash_combine(seed, r_hash_impl<T>{}(unwrap(x.view(i))));
-        }
-        return seed;
-    }
-};
-
-template<>
-struct r_hash_impl<r_factors> {
-    using is_avalanching = void;
-
-    [[nodiscard]] size_t operator()(const r_factors& x) const noexcept {
-        return r_hash_impl<r_vec<r_int>>{}(x.value);
-    }
-};
-
-// Specialization for lists
-template<>
-struct r_hash_impl<r_vec<r_sexp>> {
-    using is_avalanching = void;
-
-    [[nodiscard]] size_t operator()(const r_vec<r_sexp>& x) const {
-
-        if (x.is_null()) return 0;
-
-        size_t seed = r_typeof<r_vec<r_sexp>>;
-        r_size_t n = x.length();
-
-        for (r_size_t i = 0; i < n; ++i){
-
-            // Recursively hash the elements
-            size_t h = internal::view_sexp(x.view(i), [](const auto& vec) -> size_t {
-    
-                using vec_t = std::remove_cvref_t<decltype(vec)>;
-    
-                if constexpr (is<vec_t, r_sexp>){
-                    abort("List contains unsupported element type, current implementation can only hash vectors and factors");
-                } else {
-                    return r_hash_impl<vec_t>{}(vec);
-                }
-            });
-            seed = hash_combine(seed, h);
-        }
-        return seed;
-    }
-};
-
 // Specialization for elements of lists
 template<>
 struct r_hash_impl<r_sexp> {
     using is_avalanching = void;
 
-    [[nodiscard]] size_t operator()(SEXP x) const {
+    [[nodiscard]] uint64_t operator()(SEXP x) const {
 
         auto x_ = r_sexp(x, internal::view_tag{});
 
         if (x_.is_null()) return 0;
         
         // Recursively hash the element
-        return internal::view_sexp(x_, [](const auto& vec) -> size_t {
+        return internal::view_sexp(x_, [](const auto& vec) -> uint64_t {
 
             using vec_t = std::remove_cvref_t<decltype(vec)>;
 
@@ -325,6 +265,67 @@ struct r_hash_impl<r_sexp> {
                 return r_hash_impl<vec_t>{}(vec);
             }
         });
+    }
+};
+
+template <RVal T>
+struct r_hash_impl<r_vec<T>> {
+    using is_avalanching = void;
+
+    [[nodiscard]] uint64_t operator()(const r_vec<T>& x) const noexcept {
+        
+        if (x.is_null()) return 0;
+
+        r_size_t n = x.length();
+
+        // Initialise the seed using the hashed vector type
+        uint64_t seed = r_hash_impl<r_int>{}(r_typeof<r_vec<T>>);
+
+        // Hash the attributes list if it exists
+
+        if (attr::has_attrs(x)){
+            r_vec<r_sexp> attrs = attr::get_attrs(x);
+
+            seed = hash_combine(seed, r_hash_impl<r_vec<r_str_view>>{}(attrs.names()));
+            for (r_size_t i = 0; i < attrs.length(); ++i){
+                seed = hash_combine(seed, r_hash_impl<r_sexp>{}(attrs.view(i)));
+            }
+        }
+
+        // If vector is a list then we recursively combine hashes of vector elements
+        
+        if constexpr (is<T, r_sexp>){
+            
+            for (r_size_t i = 0; i < n; ++i){
+
+                // Recursively hash the elements
+                uint64_t h = internal::view_sexp(x.view(i), [](const auto& vec) -> uint64_t {
+        
+                    using vec_t = std::remove_cvref_t<decltype(vec)>;
+        
+                    if constexpr (is<vec_t, r_sexp>){
+                        abort("List contains unsupported element type, current implementation can only hash vectors and factors");
+                    } else {
+                        return r_hash_impl<vec_t>{}(vec);
+                    }
+                });
+                seed = hash_combine(seed, h);
+        }
+    } else {
+        for (r_size_t i = 0; i < n; ++i) {
+            seed = hash_combine(seed, r_hash_impl<T>{}(unwrap(x.view(i))));
+        }
+    }
+    return seed;
+}
+};
+
+template<>
+struct r_hash_impl<r_factors> {
+    using is_avalanching = void;
+
+    [[nodiscard]] uint64_t operator()(const r_factors& x) const noexcept {
+        return r_hash_impl<r_vec<r_int>>{}(x.value);
     }
 };
 
@@ -385,6 +386,10 @@ inline r_size_t n_unique(const r_vec<T>& x) {
       }
     }
     return seen.size();
+}
+
+inline r_size_t n_unique(const r_factors& x) {
+    return n_unique(x.value);
 }
 
 }
