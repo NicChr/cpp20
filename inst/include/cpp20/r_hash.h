@@ -173,7 +173,7 @@ inline consteval uint64_t nan_hash(){
     return mix_u64(nan_bits());
 }
 
-template <RVal T>
+template <typename T>
 struct r_hash_impl {
     // This tells Ankerl map 'this hash is already high quality'
     using is_avalanching = void;
@@ -243,11 +243,8 @@ struct r_hash_impl<r_str> {
 
 // Vector hashing
 
-template <typename T>
-struct r_vec_hash_impl;
-
 template <RVal T>
-struct r_vec_hash_impl<r_vec<T>> {
+struct r_hash_impl<r_vec<T>> {
     using is_avalanching = void;
 
     [[nodiscard]] size_t operator()(const r_vec<T>& x) const noexcept {
@@ -259,40 +256,54 @@ struct r_vec_hash_impl<r_vec<T>> {
 
         if (n == 0) return r_hash_impl<r_int>{}(r_typeof<r_vec<T>>);
 
-        const auto* p_x = x.data();
-
         for (r_size_t i = 0; i < n; ++i) {
-            seed = hash_combine(seed, r_hash_impl<T>{}(p_x[i]));
+            seed = hash_combine(seed, r_hash_impl<T>{}(unwrap(x.view(i))));
         }
         return seed;
     }
 };
 
 template<>
-struct r_vec_hash_impl<r_factors> {
+struct r_hash_impl<r_factors> {
     using is_avalanching = void;
 
     [[nodiscard]] size_t operator()(const r_factors& x) const noexcept {
-        uint64_t seed = 0;
-
-        r_vec<r_int> codes = x.value;
-
-        if (codes.is_null()) return seed;
-
-        r_size_t n = codes.length();
-
-        if (n == 0) return r_hash_impl<r_int>{}(r_typeof<r_factors>);
-
-        const int* p_x = codes.data();
-
-        for (r_size_t i = 0; i < n; ++i) {
-            seed = hash_combine(seed, r_hash_impl<r_int>{}(p_x[i]));
-        }
-        return hash_combine(seed, r_vec_hash_impl<r_vec<r_str_view>>{}(x.levels()));
+        return r_hash_impl<r_vec<r_int>>{}(x.value);
     }
 };
 
 // Specialization for lists
+template<>
+struct r_hash_impl<r_vec<r_sexp>> {
+    using is_avalanching = void;
+
+    [[nodiscard]] size_t operator()(const r_vec<r_sexp>& x) const {
+
+        if (x.is_null()) return 0;
+
+        size_t seed = r_typeof<r_vec<r_sexp>>;
+        r_size_t n = x.length();
+
+        for (r_size_t i = 0; i < n; ++i){
+
+            // Recursively hash the elements
+            size_t h = internal::view_sexp(x.view(i), [](const auto& vec) -> size_t {
+    
+                using vec_t = std::remove_cvref_t<decltype(vec)>;
+    
+                if constexpr (is<vec_t, r_sexp>){
+                    abort("List contains unsupported element type, current implementation can only hash vectors and factors");
+                } else {
+                    return r_hash_impl<vec_t>{}(vec);
+                }
+            });
+            seed = hash_combine(seed, h);
+        }
+        return seed;
+    }
+};
+
+// Specialization for elements of lists
 template<>
 struct r_hash_impl<r_sexp> {
     using is_avalanching = void;
@@ -302,37 +313,23 @@ struct r_hash_impl<r_sexp> {
         auto x_ = r_sexp(x, internal::view_tag{});
 
         if (x_.is_null()) return 0;
-
-        size_t seed = 0;
-
-        int type = TYPEOF(x);
         
         // Recursively hash the element
-        size_t h = visit_sexp(x_, [this, seed](const auto& vec) -> size_t {
-
-            size_t seed_ = seed;
+        return internal::view_sexp(x_, [](const auto& vec) -> size_t {
 
             using vec_t = std::remove_cvref_t<decltype(vec)>;
 
             if constexpr (is<vec_t, r_sexp>){
-                abort("List contains unsupported element type, current implementation can only hash vectors and factors");
-            } else if constexpr (is<vec_t, r_vec<r_sexp>>){
-                r_size_t n = vec.length();
-                for (r_size_t i = 0; i < n; ++i) {
-                    size_t elem_hash = (*this)(vec.view(i));
-                    seed_ = hash_combine(seed_, elem_hash);
-                }
-                return seed_;
+                abort("Unsupported element type, current implementation can only hash vectors and factors");
             } else {
-                return r_vec_hash_impl<vec_t>{}(vec);
+                return r_hash_impl<vec_t>{}(vec);
             }
         });
-        return hash_combine(h, static_cast<size_t>(type));
     }
 };
 
 
-template <RVal T>
+template <typename T>
 struct r_hash : r_hash_impl<std::remove_cvref_t<T>> {};
 
 // Hash equality
