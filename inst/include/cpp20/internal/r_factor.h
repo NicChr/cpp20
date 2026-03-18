@@ -7,9 +7,9 @@
 
 namespace cpp20 {
 
-struct r_factors { 
+struct r_factors {
 
-  public: 
+  public:
 
   r_vec<r_int> value;
 
@@ -17,8 +17,8 @@ struct r_factors {
     return r_vec<r_str_view>(attr::get_attr(value, symbol::levels_sym));
   }
 
-  private: 
-  
+  private:
+
   template <RStringType T>
   void validate_levels(const r_vec<r_int>& codes, const r_vec<T>& levels){
     r_int max_code = max(codes, true);
@@ -44,7 +44,7 @@ struct r_factors {
     if (check_valid_levels) validate_levels(codes, levels2);
   }
 
-  public: 
+  public:
 
   template <RStringType T>
   void set_levels(const r_vec<T>& levels, bool check_valid_levels = true) {
@@ -66,12 +66,30 @@ struct r_factors {
 
   // Internal direct constructor
   template <RStringType T>
-  explicit r_factors(r_vec<r_int>&& codes, const r_vec<T>& levels, 
+  explicit r_factors(r_vec<r_int>&& codes, const r_vec<T>& levels,
     bool check_valid_levels = true) : value(std::move(codes)){
-      init_factor(levels, check_valid_levels); 
+      init_factor(levels, check_valid_levels);
     }
 
-  public: 
+
+    // For methods that just return a non-factor (like length())
+    #define FORWARD_METHOD(NAME)                               \
+        template <typename... Args>                            \
+        decltype(auto) NAME(Args&&... args) const {            \
+            return value.NAME(std::forward<Args>(args)...);    \
+        }
+
+    // For methods that return a factor
+    #define FORWARD_FACTOR_METHOD(NAME)                                     \
+        template <typename... Args>                                         \
+        r_factors NAME(Args&&... args) const {                              \
+            /* Call the method on the underlying r_vec<r_int> */            \
+            auto new_vec = value.NAME(std::forward<Args>(args)...);         \
+            /* Wrap it in a new r_factors and pass our current levels */    \
+            return r_factors(std::move(new_vec), this->levels(), false);    \
+        }
+
+  public:
 
   // Constructors
   r_factors() : value() {
@@ -96,11 +114,11 @@ struct r_factors {
 
   template <RVal T>
   explicit r_factors(const r_vec<T>& x, const r_vec<T>& levels);
-  
+
   template <RVal T>
   explicit r_factors(const r_vec<T>& x);
 
-  // Implicit coercion to r_vec<r_int> 
+  // Implicit coercion to r_vec<r_int>
   constexpr operator r_vec<r_int>&() noexcept { return value; }
   constexpr operator const r_vec<r_int>&() const noexcept { return value; }
 
@@ -109,6 +127,33 @@ struct r_factors {
   r_vec<r_str_view> as_character() const {
     return levels().subset(value);
   }
+
+  // Inherit standard methods from r_vec<>
+
+  FORWARD_METHOD(length)
+  FORWARD_METHOD(size)
+  FORWARD_METHOD(data)
+  FORWARD_METHOD(begin)
+  FORWARD_METHOD(end)
+  FORWARD_METHOD(address)
+  FORWARD_METHOD(get)
+  FORWARD_METHOD(view)
+  FORWARD_METHOD(set)
+  FORWARD_METHOD(names)
+  FORWARD_METHOD(set_names)
+  FORWARD_METHOD(is_na)
+  FORWARD_METHOD(na_count)
+  FORWARD_METHOD(any_na)
+  FORWARD_METHOD(all_na)
+
+  // Methods that return factors
+  FORWARD_FACTOR_METHOD(subset)
+  FORWARD_FACTOR_METHOD(rep_len)
+  FORWARD_FACTOR_METHOD(resize)
+
+  // Undefine the macros so they don't leak out of the struct
+  #undef FORWARD_METHOD
+  #undef FORWARD_FACTOR_METHOD
 
 };
 
