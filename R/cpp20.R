@@ -212,10 +212,6 @@ test_lengths <- function(x) {
   .Call(`_cpp20_test_lengths`, x)
 }
 
-test_range <- function(x, na_rm) {
-  .Call(`_cpp20_test_range`, x, na_rm)
-}
-
 test_match <- function(x, y) {
   .Call(`_cpp20_test_match`, x, y)
 }
@@ -250,4 +246,16 @@ test_order <- function(x) {
 
 test_sort <- function(x) {
   .Call(`_cpp20_test_sort`, x)
+}
+
+test_range <- function(x, na_rm) {
+  .Call(`_cpp20_test_range`, x, na_rm)
+}
+
+test_sum <- function(x, na_rm) {
+  .Call(`_cpp20_test_sum`, x, na_rm)
+}
+
+test_var <- function(x, na_rm) {
+  .Call(`_cpp20_test_var`, x, na_rm)
 }

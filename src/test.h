@@ -379,12 +379,6 @@ r_vec<r_int> test_lengths(const r_vec<r_sexp>& x){
   return out;
 }
 
-template <RSortableType T>
-[[cpp20::register]]
-r_vec<T> test_range(r_vec<T> x, bool na_rm){
-  return range(x, na_rm);
-}
-
 template <RVal T>
 [[cpp20::register]]
 auto test_match(r_vec<T> x, r_vec<T> y){

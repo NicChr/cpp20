@@ -9,6 +9,7 @@ using namespace cpp20;
 #include "test.h"
 #include "test_nas.h"
 #include "test_sort.h"
+#include "test_stats.h"
 
 // dummy.cpp
 r_str dummy();
@@ -542,18 +543,6 @@ extern "C" SEXP _cpp20_test_lengths(SEXP x) {
   END_CPP20
 }
 // test.h
-extern "C" SEXP _cpp20_test_range(SEXP x, SEXP na_rm) {
-  BEGIN_CPP20
-  cpp20::internal::check_r_cpp_mapping<bool>(na_rm);
-return cpp20::internal::dispatch_template_impl<1, 2, std::array<int, 2>{0, -1}>(
-    []<typename T>(SEXP x_internal, SEXP na_rm_internal) -> decltype(cpp20::internal::cpp_to_sexp(test_range(cpp20::as<std::remove_cvref_t<r_vec<T>>>(x_internal), cpp20::as<std::remove_cvref_t<bool>>(na_rm_internal)))) {
-        return cpp20::internal::cpp_to_sexp(test_range(cpp20::as<std::remove_cvref_t<r_vec<T>>>(x_internal), cpp20::as<std::remove_cvref_t<bool>>(na_rm_internal)));
-    },
-    x, na_rm
-  );
-  END_CPP20
-}
-// test.h
 extern "C" SEXP _cpp20_test_match(SEXP x, SEXP y) {
   BEGIN_CPP20
   return cpp20::internal::dispatch_template_impl<1, 2, std::array<int, 2>{0, 0}>(
@@ -644,6 +633,42 @@ extern "C" SEXP _cpp20_test_sort(SEXP x) {
   );
   END_CPP20
 }
+// test_stats.h
+extern "C" SEXP _cpp20_test_range(SEXP x, SEXP na_rm) {
+  BEGIN_CPP20
+  cpp20::internal::check_r_cpp_mapping<bool>(na_rm);
+return cpp20::internal::dispatch_template_impl<1, 2, std::array<int, 2>{0, -1}>(
+    []<typename T>(SEXP x_internal, SEXP na_rm_internal) -> decltype(cpp20::internal::cpp_to_sexp(test_range(cpp20::as<std::remove_cvref_t<T>>(x_internal), cpp20::as<std::remove_cvref_t<bool>>(na_rm_internal)))) {
+        return cpp20::internal::cpp_to_sexp(test_range(cpp20::as<std::remove_cvref_t<T>>(x_internal), cpp20::as<std::remove_cvref_t<bool>>(na_rm_internal)));
+    },
+    x, na_rm
+  );
+  END_CPP20
+}
+// test_stats.h
+extern "C" SEXP _cpp20_test_sum(SEXP x, SEXP na_rm) {
+  BEGIN_CPP20
+  cpp20::internal::check_r_cpp_mapping<bool>(na_rm);
+return cpp20::internal::dispatch_template_impl<1, 2, std::array<int, 2>{0, -1}>(
+    []<typename T>(SEXP x_internal, SEXP na_rm_internal) -> decltype(cpp20::internal::cpp_to_sexp(test_sum(cpp20::as<std::remove_cvref_t<r_vec<T>>>(x_internal), cpp20::as<std::remove_cvref_t<bool>>(na_rm_internal)))) {
+        return cpp20::internal::cpp_to_sexp(test_sum(cpp20::as<std::remove_cvref_t<r_vec<T>>>(x_internal), cpp20::as<std::remove_cvref_t<bool>>(na_rm_internal)));
+    },
+    x, na_rm
+  );
+  END_CPP20
+}
+// test_stats.h
+extern "C" SEXP _cpp20_test_var(SEXP x, SEXP na_rm) {
+  BEGIN_CPP20
+  cpp20::internal::check_r_cpp_mapping<bool>(na_rm);
+return cpp20::internal::dispatch_template_impl<1, 2, std::array<int, 2>{0, -1}>(
+    []<typename T>(SEXP x_internal, SEXP na_rm_internal) -> decltype(cpp20::internal::cpp_to_sexp(test_var(cpp20::as<std::remove_cvref_t<r_vec<T>>>(x_internal), cpp20::as<std::remove_cvref_t<bool>>(na_rm_internal)))) {
+        return cpp20::internal::cpp_to_sexp(test_var(cpp20::as<std::remove_cvref_t<r_vec<T>>>(x_internal), cpp20::as<std::remove_cvref_t<bool>>(na_rm_internal)));
+    },
+    x, na_rm
+  );
+  END_CPP20
+}
 
 extern "C" {
 static const R_CallMethodDef CallEntries[] = {
@@ -703,11 +728,13 @@ static const R_CallMethodDef CallEntries[] = {
     {"_cpp20_test_str2",                (DL_FUNC) &_cpp20_test_str2,                1},
     {"_cpp20_test_str3",                (DL_FUNC) &_cpp20_test_str3,                1},
     {"_cpp20_test_str4",                (DL_FUNC) &_cpp20_test_str4,                1},
+    {"_cpp20_test_sum",                 (DL_FUNC) &_cpp20_test_sum,                 2},
     {"_cpp20_test_sym",                 (DL_FUNC) &_cpp20_test_sym,                 1},
     {"_cpp20_test_template_null",       (DL_FUNC) &_cpp20_test_template_null,       1},
     {"_cpp20_test_time_coerce",         (DL_FUNC) &_cpp20_test_time_coerce,         0},
     {"_cpp20_test_tz",                  (DL_FUNC) &_cpp20_test_tz,                  1},
     {"_cpp20_test_unique",              (DL_FUNC) &_cpp20_test_unique,              1},
+    {"_cpp20_test_var",                 (DL_FUNC) &_cpp20_test_var,                 2},
     {"_cpp20_vector1",                  (DL_FUNC) &_cpp20_vector1,                  1},
     {"_cpp20_vector2",                  (DL_FUNC) &_cpp20_vector2,                  1},
     {NULL, NULL, 0}
