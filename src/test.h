@@ -368,13 +368,6 @@ r_vec<r_int> test_group_counts(T x, bool order){
   return make_groups(x, order).counts();
 }
 
-template <RVector T>
-requires (RSortableType<typename T::data_type>)
-[[cpp20::register]]
-r_vec<r_int> test_order(T x){
-  return order(x);
-}
-
 [[cpp20::register]]
 r_vec<r_int> test_lengths(const r_vec<r_sexp>& x){
   r_vec<r_int> out(x.length());

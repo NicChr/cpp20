@@ -208,10 +208,6 @@ test_group_counts <- function(x, order) {
   .Call(`_cpp20_test_group_counts`, x, order)
 }
 
-test_order <- function(x) {
-  .Call(`_cpp20_test_order`, x)
-}
-
 test_lengths <- function(x) {
   .Call(`_cpp20_test_lengths`, x)
 }
@@ -242,4 +238,12 @@ test_identical <- function(x, y) {
 
 test_copy <- function(x) {
   .Call(`_cpp20_test_copy`, x)
+}
+
+test_order <- function(x) {
+  .Call(`_cpp20_test_order`, x)
+}
+
+test_sort <- function(x) {
+  .Call(`_cpp20_test_sort`, x)
 }

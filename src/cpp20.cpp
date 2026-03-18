@@ -7,6 +7,7 @@
 using namespace cpp20;
 #include <R_ext/Visibility.h>
 #include "test.h"
+#include "test_sort.h"
 
 // dummy.cpp
 r_str dummy();
@@ -532,17 +533,6 @@ return cpp20::internal::dispatch_template_impl<1, 2, std::array<int, 2>{0, -1}>(
   END_CPP20
 }
 // test.h
-extern "C" SEXP _cpp20_test_order(SEXP x) {
-  BEGIN_CPP20
-  return cpp20::internal::dispatch_template_impl<1, 1, std::array<int, 1>{0}>(
-    []<typename T>(SEXP x_internal) -> decltype(cpp20::internal::cpp_to_sexp(test_order(cpp20::as<std::remove_cvref_t<T>>(x_internal)))) {
-        return cpp20::internal::cpp_to_sexp(test_order(cpp20::as<std::remove_cvref_t<T>>(x_internal)));
-    },
-    x
-  );
-  END_CPP20
-}
-// test.h
 r_vec<r_int> test_lengths(const r_vec<r_sexp>& x);
 extern "C" SEXP _cpp20_test_lengths(SEXP x) {
   BEGIN_CPP20
@@ -620,6 +610,28 @@ extern "C" SEXP _cpp20_test_copy(SEXP x) {
   return cpp20::internal::cpp_to_sexp(test_copy(cpp20::as<std::remove_cvref_t<SEXP>>(x)));
   END_CPP20
 }
+// test_sort.h
+extern "C" SEXP _cpp20_test_order(SEXP x) {
+  BEGIN_CPP20
+  return cpp20::internal::dispatch_template_impl<1, 1, std::array<int, 1>{0}>(
+    []<typename T>(SEXP x_internal) -> decltype(cpp20::internal::cpp_to_sexp(test_order(cpp20::as<std::remove_cvref_t<T>>(x_internal)))) {
+        return cpp20::internal::cpp_to_sexp(test_order(cpp20::as<std::remove_cvref_t<T>>(x_internal)));
+    },
+    x
+  );
+  END_CPP20
+}
+// test_sort.h
+extern "C" SEXP _cpp20_test_sort(SEXP x) {
+  BEGIN_CPP20
+  return cpp20::internal::dispatch_template_impl<1, 1, std::array<int, 1>{0}>(
+    []<typename T>(SEXP x_internal) -> decltype(cpp20::internal::cpp_to_sexp(test_sort(cpp20::as<std::remove_cvref_t<T>>(x_internal)))) {
+        return cpp20::internal::cpp_to_sexp(test_sort(cpp20::as<std::remove_cvref_t<T>>(x_internal)));
+    },
+    x
+  );
+  END_CPP20
+}
 
 extern "C" {
 static const R_CallMethodDef CallEntries[] = {
@@ -672,6 +684,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"_cpp20_test_sexp2",               (DL_FUNC) &_cpp20_test_sexp2,               1},
     {"_cpp20_test_sexp3",               (DL_FUNC) &_cpp20_test_sexp3,               1},
     {"_cpp20_test_sexp4",               (DL_FUNC) &_cpp20_test_sexp4,               1},
+    {"_cpp20_test_sort",                (DL_FUNC) &_cpp20_test_sort,                1},
     {"_cpp20_test_specialisation",      (DL_FUNC) &_cpp20_test_specialisation,      1},
     {"_cpp20_test_str1",                (DL_FUNC) &_cpp20_test_str1,                1},
     {"_cpp20_test_str2",                (DL_FUNC) &_cpp20_test_str2,                1},
