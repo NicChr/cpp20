@@ -64,6 +64,10 @@ file_extension <- function(x){
   stringr::str_extract(x, "(\\.[^.]+)$")
 }
 
+type_is_void <- function(type){
+  stringr::str_detect(type, "\\bvoid\\s*$")
+}
+
 is_header <- function(x){
   file_extension(x) %in% c(".h", ".hpp")
 }
@@ -197,7 +201,7 @@ generate_r_functions <- function(funs, package = "cpp20", use_package = FALSE) {
   funs$package_call <- package_call
   funs$list_params <- vcapply(funs$args, glue_collapse_data, "{name}")
   funs$params <- vcapply(funs$list_params, function(x) if (nzchar(x)) paste0(", ", x) else x)
-  is_void <- funs$return_type == "void"
+  is_void <- type_is_void(funs$return_type)
   funs$calls <- ifelse(is_void,
                        glue::glue_data(funs, 'invisible(.Call({package_names}{params}{package_call}))'),
                        glue::glue_data(funs, '.Call({package_names}{params}{package_call})')
@@ -230,7 +234,7 @@ wrap_call <- function(name, return_type, args, is_template, template_params) {
 
   call <- glue::glue('{name}({list_params})', list_params = glue_collapse_data(args, "cpp20::as<std::remove_cvref_t<{type}>>({name})"))
 
-  if (return_type == "void") {
+  if (type_is_void(return_type)){
     unclass(glue::glue("{checks}  {call};\n  return R_NilValue;", .trim = FALSE))
   } else {
     unclass(glue::glue("{checks}  return cpp20::internal::cpp_to_sexp({call});"))
