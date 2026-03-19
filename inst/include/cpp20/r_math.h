@@ -119,7 +119,7 @@ inline constexpr bool is_neg_inf<r_dbl>(r_dbl x){
   return unwrap(x) == r_limits<r_dbl>::min().value;
 }
 
-template<RMathType T>
+template <RMathType T>
 inline constexpr T abs(T x){
   return is_na(x) ? x : T{internal::cpp_abs(unwrap(x))};
 }

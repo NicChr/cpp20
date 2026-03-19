@@ -167,7 +167,7 @@ inline r_vec<r_int> order(const r_vec<T>& x) {
 
     if constexpr (RNumericType<T>) {
 
-        using unsigned_t = decltype(detail::to_unsigned_or_bool(std::declval<base_t>()));
+        using unsigned_t = decltype(ska_sort::detail::to_unsigned_or_bool(std::declval<base_t>()));
         
         r_vec<r_int> out(n);
         auto* RESTRICT px = x.data();
@@ -181,11 +181,11 @@ inline r_vec<r_int> order(const r_vec<T>& x) {
         pairs.reserve(n);
 
         for (uint32_t i = 0; i < n; ++i) {
-            unsigned_t key = is_na(px[i]) ? std::numeric_limits<unsigned_t>::max() : detail::to_unsigned_or_bool(px[i]);
+            unsigned_t key = is_na(px[i]) ? std::numeric_limits<unsigned_t>::max() : ska_sort::detail::to_unsigned_or_bool(px[i]);
             pairs.push_back({key, i});
         }
         
-        ska_sort(pairs.begin(), pairs.end(), 
+        ska_sort::ska_sort(pairs.begin(), pairs.end(), 
         [](const key_index& k){ return k.key; });
 
         // Use this instead of above for stable sorting
@@ -212,11 +212,15 @@ inline r_vec<r_int> order(const r_vec<T>& x) {
         
         // Single Hash Map to assign group IDs and count frequencies
         ankerl::unordered_dense::map<SEXP, uint32_t, internal::r_hash<T>, internal::r_hash_eq<T>> lookup;
-        lookup.reserve(internal::get_hash_map_reserve_size<T>(n));
+        auto n_uniques_guess = internal::get_hash_map_reserve_size<T>(n);
+        lookup.reserve(n_uniques_guess);
         
         std::vector<SEXP> uniques;
+        uniques.reserve(n_uniques_guess);
         std::vector<uint32_t> counts;
-        std::vector<uint32_t> group_ids(n); // Caches the ID for each element
+        counts.reserve(n_uniques_guess);
+        std::vector<uint32_t> group_ids; // Caches the ID for each element
+        group_ids.reserve(n);
         
         uint32_t na_count = 0;
         uint32_t last_id = uint32_t(-1);
@@ -225,13 +229,13 @@ inline r_vec<r_int> order(const r_vec<T>& x) {
             SEXP str = px[i];
             
             if (str == NA_STRING) {
-                group_ids[i] = uint32_t(-1);
+                group_ids.push_back(uint32_t(-1));
                 last_id = uint32_t(-1); // Break linear cache
                 na_count++;
             } 
             // Linear Scan Cache - identical strings have identical pointers
             else if (i > 0 && str == px[i - 1]) { 
-                group_ids[i] = last_id;
+                group_ids.push_back(last_id);
                 counts[last_id]++;
             } 
             else {
@@ -244,19 +248,25 @@ inline r_vec<r_int> order(const r_vec<T>& x) {
                     last_id = it->second;
                     counts[last_id]++;
                 }
-                group_ids[i] = last_id;
+                group_ids.push_back(last_id);
             }
         }
 
         uint32_t n_uniques = uniques.size();
 
         // Sort the unique group IDs
-        std::vector<uint32_t> sorted_ids(n_uniques);
-        OMP_SIMD
-        for (uint32_t i = 0; i < sorted_ids.size(); ++i) sorted_ids[i] = i;
-        
+        std::vector<uint32_t> sorted_ids;
+        sorted_ids.reserve(n_uniques);
+        std::vector<const char*> raw_strings;
+        raw_strings.reserve(n_uniques);
+
+        for (uint32_t i = 0; i < n_uniques; ++i){
+            sorted_ids.push_back(i);
+            raw_strings.push_back(CHAR(uniques[i]));
+        }
+
         std::sort(sorted_ids.begin(), sorted_ids.end(), [&](uint32_t a, uint32_t b) {
-            return std::strcmp(CHAR(uniques[a]), CHAR(uniques[b])) < 0;
+            return std::strcmp(raw_strings[a], raw_strings[b]) < 0;
         });
         
         // Prefix Sums: calculate the starting write offset for each group

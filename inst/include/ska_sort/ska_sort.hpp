@@ -10,6 +10,9 @@
 #include <tuple>
 #include <utility>
 
+namespace ska_sort 
+{ 
+
 namespace detail
 {
 template<typename count_type, typename It, typename OutIt, typename ExtractKey>
@@ -1442,4 +1445,6 @@ template<typename It, typename OutIt>
 bool ska_sort_copy(It begin, It end, OutIt buffer_begin)
 {
     return ska_sort_copy(begin, end, buffer_begin, detail::IdentityFunctor());
+}
+
 }
