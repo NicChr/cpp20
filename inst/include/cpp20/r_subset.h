@@ -18,7 +18,7 @@ r_vec<U> exclude_locs(const r_vec<U>& exclude, unwrap_t<U> xn) {
   int_t i = 0, k = 0;
 
   // Which elements do we keep?
-  std::vector<bool> keep(n, true);
+  std::vector<uint8_t> keep(n, uint8_t(1));
 
   for (int_t j = 0; j < m; ++j) {
     if (is_na(exclude.get(j))) continue;
@@ -27,8 +27,8 @@ r_vec<U> exclude_locs(const r_vec<U>& exclude, unwrap_t<U> xn) {
     }
     idx = -exclude.get(j);
     // Check keep array for already assigned FALSE to avoid double counting
-    if (idx > 0 && idx <= n && keep[idx - 1] == 1){
-      keep[idx - 1] = false;
+    if (idx > 0 && idx <= n && keep[idx - 1] == uint8_t(1)){
+      keep[idx - 1] = uint8_t(0);
       ++exclude_count;
     }
   }
@@ -36,7 +36,7 @@ r_vec<U> exclude_locs(const r_vec<U>& exclude, unwrap_t<U> xn) {
   r_vec<U> out(out_size);
 
   while(k != out_size){
-    if (keep[i++] == true){
+    if (keep[i++] == uint8_t(1)){
       out.set(k++, i);
     }
   }
