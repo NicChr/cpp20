@@ -611,6 +611,13 @@ extern "C" SEXP _cpp20_test_nas(SEXP x) {
   );
   END_CPP20
 }
+// test_nas.h
+inline r_vec<r_sexp> test_na_types();
+extern "C" SEXP _cpp20_test_na_types() {
+  BEGIN_CPP20
+    return cpp20::internal::cpp_to_sexp(test_na_types());
+  END_CPP20
+}
 // test_sort.h
 extern "C" SEXP _cpp20_test_order(SEXP x) {
   BEGIN_CPP20
@@ -722,6 +729,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"_cpp20_test_mix2",                (DL_FUNC) &_cpp20_test_mix2,                7},
     {"_cpp20_test_multiple_deduction",  (DL_FUNC) &_cpp20_test_multiple_deduction,  2},
     {"_cpp20_test_n_unique",            (DL_FUNC) &_cpp20_test_n_unique,            1},
+    {"_cpp20_test_na_types",            (DL_FUNC) &_cpp20_test_na_types,            0},
     {"_cpp20_test_nas",                 (DL_FUNC) &_cpp20_test_nas,                 1},
     {"_cpp20_test_null",                (DL_FUNC) &_cpp20_test_null,                0},
     {"_cpp20_test_order",               (DL_FUNC) &_cpp20_test_order,               1},

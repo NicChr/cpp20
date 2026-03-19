@@ -13,3 +13,18 @@ r_vec<r_sexp> test_nas(T const& x){
     arg("all_na") = x.all_na()
 );
 }
+
+[[cpp20::register]]
+inline r_vec<r_sexp> test_na_types(){
+   return make_vec<r_sexp>(
+    na<r_lgl>(), 
+    na<r_int>(),
+    na<r_dbl>(),
+    as<r_vec<r_str>>(na<r_str>()),
+    as<r_vec<r_str_view>>(na<r_str_view>()),
+    na<r_sym>(),
+    na<r_sexp>(),
+    na<r_date>(),
+    na<r_psxct>()
+);
+}
