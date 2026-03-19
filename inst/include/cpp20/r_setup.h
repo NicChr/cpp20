@@ -174,8 +174,18 @@ inline constexpr void recycle_index(T& v, T size) {
 }
 
 template <typename... Args>
-[[noreturn]] inline void abort(const char *fmt, Args... args){
-  cpp11::stop(fmt, args...);
+inline void print(const char *fmt, Args&&... args) noexcept {
+  Rprintf(fmt, std::forward<Args>(args)...);
+}
+
+template <typename... Args>
+inline void warn(const char *fmt, Args&&... args){
+  cpp11::warning(fmt, std::forward<Args>(args)...);
+}
+
+template <typename... Args>
+[[noreturn]] inline void abort(const char *fmt, Args&&... args){
+  cpp11::stop(fmt, std::forward<Args>(args)...);
 }
 
 } // end of cpp20 namespace
