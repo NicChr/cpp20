@@ -49,11 +49,11 @@ inline r_sym deep_copy(const r_sym& x){
 }
 
 inline r_sexp deep_copy(const r_sexp& x){
-    return view_sexp(x, [&](const auto& vec) -> r_sexp {
+    return view_sexp(x, [](const auto& vec) -> r_sexp {
         if constexpr (!is<decltype(vec), r_sexp>){
             return r_sexp(static_cast<SEXP>(deep_copy(vec)));
         } else {
-            return r_sexp(Rf_duplicate(x));
+            return r_sexp(Rf_duplicate(vec));
         }
     });
 }

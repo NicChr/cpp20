@@ -86,12 +86,12 @@ inline bool identical_impl(const T& a, const T& b) {
         // Visit each list element
         for (r_size_t i = 0; i < n; ++i){
 
-        bool ident = view_sexp(a.view(i), [&](const auto& vec1) -> bool {
+        bool ident = view_sexp(a.view(i), [&b, i](const auto& vec1) -> bool {
             using vec1_t = std::remove_cvref_t<decltype(vec1)>;
     
             // If we can't map SEXP to a known type then just use R's version
             if constexpr (is<vec1_t, r_sexp>){
-                return R_compute_identical(a.view(i), b.view(i), 16);
+                return R_compute_identical(vec1, b.view(i), 16);
             } else {
                 // Important: to reduce usage of nested view_sexp, we use the fact that
                 // types were checked earlier (via TYPEOF), therefore b[[i]] can be constructed the same way as a[[i]]
@@ -125,13 +125,13 @@ inline bool identical_impl<r_sexp>(const r_sexp& a, const r_sexp& b) {
     if (x == y) return true; // same pointer
     
     // Visit both SEXP
-    return view_sexp(a, [&](const auto& vec1) -> bool {
+    return view_sexp(a, [&b](const auto& vec1) -> bool {
         using vec1_t = decltype(vec1);
 
         if constexpr (is<vec1_t, r_sexp>){
-            return R_compute_identical(x, y, 16);
+            return R_compute_identical(vec1, b, 16);
         } else {
-            return view_sexp(b, [vec1](const auto& vec2) -> bool {
+            return view_sexp(b, [&vec1](const auto& vec2) -> bool {
                 using vec2_t = decltype(vec2);
 
                 if constexpr (!is<vec1_t, vec2_t>){

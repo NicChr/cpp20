@@ -48,7 +48,7 @@ inline to_t as(const from_t& x) {
   } else if constexpr (RFactor<to_t>){
     return r_factors(x);
   } else if constexpr (RVector<to_t> && is_sexp<from_t>){
-    return visit_vector(x, [&](auto xvec) -> to_t {
+    return visit_vector(x, [](const auto& xvec) -> to_t {
       // This will trigger the branch that checks that both are RVector
       return as<to_t>(xvec);
     });
@@ -71,7 +71,7 @@ inline to_t as(const from_t& x) {
       }
     }
     
-    return visit_vector(x, [&](auto xvec) -> to_t {
+    return visit_vector(x, [](const auto& xvec) -> to_t {
       return as<to_t>(xvec);
     });
   } else if constexpr (RVal<to_t> && RVector<from_t>){
