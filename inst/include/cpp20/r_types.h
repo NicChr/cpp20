@@ -332,6 +332,9 @@ struct r_str_view {
   explicit r_str_view(SEXP x) : value{x} {
     internal::check_valid_construction<r_str_view>(value);
   }
+  explicit r_str_view(SEXP x, internal::view_tag) : value(x) {
+    internal::check_valid_construction<r_str_view>(value);
+  }
   // explicit r_str_view(const char *x) : value(Rf_mkCharCE(x, CE_UTF8)) {}
   // Implicit r_str_view -> SEXP
   constexpr operator SEXP() const noexcept { return value; }
@@ -357,6 +360,9 @@ struct r_sym {
 
   r_sym() : value{R_MissingArg} {}
   explicit r_sym(SEXP x) : value{x} {
+    internal::check_valid_construction<r_sym>(value);
+  }
+  explicit r_sym(SEXP x, internal::view_tag) : value(x) {
     internal::check_valid_construction<r_sym>(value);
   }
   explicit r_sym(const char *x) : value(Rf_installChar(Rf_mkCharCE(x, CE_UTF8))) {}
