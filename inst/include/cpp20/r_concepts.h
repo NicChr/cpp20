@@ -143,7 +143,10 @@ template <typename T>
 concept RAtomicScalar = RNumericType<T> || RComplexType<T> || RStringType<T> || RRawType<T>;
 
 template <typename T>
-concept RScalar = RAtomicScalar<T> || RSymbolType<T>;
+concept RCompositeScalar = RSymbolType<T>;
+
+template <typename T>
+concept RScalar = RAtomicScalar<T> || RCompositeScalar<T>;
 
 // RVal is anything that can be stored in `r_vec<>`
 template <typename T>
