@@ -37,7 +37,7 @@ T sexp_to_cpp(SEXP x) {
 // The reverse of above
 // Special case - never return CHARSXP
 template <typename T>
-SEXP cpp_to_sexp(T x) {
+SEXP cpp_to_sexp(const T& x) {
     if constexpr (RStringType<T>){
         return unwrap(as<r_vec<r_str>>(x));
     } else {
