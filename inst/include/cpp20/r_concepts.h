@@ -196,13 +196,13 @@ template <typename T>
 concept RAtomicVector = internal::is_atomic_r_vector_v<T> || internal::is_time_vector_v<T>;
 
 template <typename T>
-concept RListVector = any<T, r_vec<r_sexp>, r_vec<r_sym>>;
+concept RVector = internal::is_r_vector_v<T>;
+
+template <typename T>
+concept RListVector = RVector<T> && (is<typename T::data_type, r_sexp> || RCompositeScalar<typename T::data_type>);
 
 template <typename T>
 concept RFactor = is<T, r_factors>;
-
-template <typename T>
-concept RVector = internal::is_r_vector_v<T>;
 
 template <typename T>
 concept RMetaVector = RFactor<T>;
