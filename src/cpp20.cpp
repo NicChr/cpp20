@@ -29,6 +29,14 @@ extern "C" SEXP _cpp20_test_vec_of_syms(SEXP x) {
   END_CPP20
 }
 // test.cpp
+r_vec<r_sym> test_vec_of_syms2(r_vec<r_sym> x);
+extern "C" SEXP _cpp20_test_vec_of_syms2(SEXP x) {
+  BEGIN_CPP20
+  cpp20::internal::check_r_cpp_mapping<r_vec<r_sym>>(x);
+  return cpp20::internal::cpp_to_sexp(test_vec_of_syms2(cpp20::as<std::remove_cvref_t<r_vec<r_sym>>>(x)));
+  END_CPP20
+}
+// test.cpp
 r_vec<r_int> test_which(r_vec<r_lgl> const& x);
 extern "C" SEXP _cpp20_test_which(SEXP x) {
   BEGIN_CPP20
@@ -83,6 +91,17 @@ extern "C" SEXP _cpp20_test_deduced_scalar_type(SEXP x) {
   return cpp20::internal::dispatch_template_impl<1, 1, std::array<int, 1>{0}>(
     []<typename T>(SEXP x_internal) -> decltype(cpp20::internal::cpp_to_sexp(test_deduced_scalar_type(cpp20::as<std::remove_cvref_t<T>>(x_internal)))) {
         return cpp20::internal::cpp_to_sexp(test_deduced_scalar_type(cpp20::as<std::remove_cvref_t<T>>(x_internal)));
+    },
+    x
+  );
+  END_CPP20
+}
+// test.h
+extern "C" SEXP _cpp20_test_deduced_scalar_type2(SEXP x) {
+  BEGIN_CPP20
+  return cpp20::internal::dispatch_template_impl<1, 1, std::array<int, 1>{0}>(
+    []<typename T>(SEXP x_internal) -> decltype(cpp20::internal::cpp_to_sexp(test_deduced_scalar_type2(cpp20::as<std::remove_cvref_t<T>>(x_internal)))) {
+        return cpp20::internal::cpp_to_sexp(test_deduced_scalar_type2(cpp20::as<std::remove_cvref_t<T>>(x_internal)));
     },
     x
   );
@@ -488,17 +507,6 @@ extern "C" SEXP _cpp20_test_dates2(SEXP x) {
   END_CPP20
 }
 // test.h
-extern "C" SEXP _cpp20_test_classed_vec(SEXP x) {
-  BEGIN_CPP20
-  return cpp20::internal::dispatch_template_impl<1, 1, std::array<int, 1>{0}>(
-    []<typename T>(SEXP x_internal) -> decltype(cpp20::internal::cpp_to_sexp(test_classed_vec(cpp20::as<std::remove_cvref_t<T>>(x_internal)))) {
-        return cpp20::internal::cpp_to_sexp(test_classed_vec(cpp20::as<std::remove_cvref_t<T>>(x_internal)));
-    },
-    x
-  );
-  END_CPP20
-}
-// test.h
 extern "C" SEXP _cpp20_test_unique(SEXP x) {
   BEGIN_CPP20
   return cpp20::internal::dispatch_template_impl<1, 1, std::array<int, 1>{0}>(
@@ -731,77 +739,78 @@ return cpp20::internal::dispatch_template_impl<1, 2, std::array<int, 2>{0, -1}>(
 
 extern "C" {
 static const R_CallMethodDef CallEntries[] = {
-    {"_cpp20_cpp20_typeof",             (DL_FUNC) &_cpp20_cpp20_typeof,             1},
-    {"_cpp20_cpp_get_threads",          (DL_FUNC) &_cpp20_cpp_get_threads,          0},
-    {"_cpp20_cpp_set_threads",          (DL_FUNC) &_cpp20_cpp_set_threads,          1},
-    {"_cpp20_scalar1",                  (DL_FUNC) &_cpp20_scalar1,                  1},
-    {"_cpp20_scalar2",                  (DL_FUNC) &_cpp20_scalar2,                  1},
-    {"_cpp20_scalar3",                  (DL_FUNC) &_cpp20_scalar3,                  2},
-    {"_cpp20_scalar4",                  (DL_FUNC) &_cpp20_scalar4,                  2},
-    {"_cpp20_scalar_vec1",              (DL_FUNC) &_cpp20_scalar_vec1,              2},
-    {"_cpp20_scalar_vec2",              (DL_FUNC) &_cpp20_scalar_vec2,              2},
-    {"_cpp20_scalar_vec3",              (DL_FUNC) &_cpp20_scalar_vec3,              4},
-    {"_cpp20_test_as_date",             (DL_FUNC) &_cpp20_test_as_date,             1},
-    {"_cpp20_test_as_date2",            (DL_FUNC) &_cpp20_test_as_date2,            1},
-    {"_cpp20_test_as_sym",              (DL_FUNC) &_cpp20_test_as_sym,              1},
-    {"_cpp20_test_classed_vec",         (DL_FUNC) &_cpp20_test_classed_vec,         1},
-    {"_cpp20_test_coerce",              (DL_FUNC) &_cpp20_test_coerce,              2},
-    {"_cpp20_test_coerce1",             (DL_FUNC) &_cpp20_test_coerce1,             1},
-    {"_cpp20_test_combine2",            (DL_FUNC) &_cpp20_test_combine2,            2},
-    {"_cpp20_test_construct_date",      (DL_FUNC) &_cpp20_test_construct_date,      1},
-    {"_cpp20_test_copy",                (DL_FUNC) &_cpp20_test_copy,                1},
-    {"_cpp20_test_dates1",              (DL_FUNC) &_cpp20_test_dates1,              1},
-    {"_cpp20_test_dates2",              (DL_FUNC) &_cpp20_test_dates2,              1},
-    {"_cpp20_test_deduced_scalar_type", (DL_FUNC) &_cpp20_test_deduced_scalar_type, 1},
-    {"_cpp20_test_deduced_type",        (DL_FUNC) &_cpp20_test_deduced_type,        1},
-    {"_cpp20_test_deduced_vec_type",    (DL_FUNC) &_cpp20_test_deduced_vec_type,    1},
-    {"_cpp20_test_factor1",             (DL_FUNC) &_cpp20_test_factor1,             1},
-    {"_cpp20_test_factor2",             (DL_FUNC) &_cpp20_test_factor2,             1},
-    {"_cpp20_test_group_counts",        (DL_FUNC) &_cpp20_test_group_counts,        2},
-    {"_cpp20_test_group_id",            (DL_FUNC) &_cpp20_test_group_id,            2},
-    {"_cpp20_test_identical",           (DL_FUNC) &_cpp20_test_identical,           2},
-    {"_cpp20_test_identity",            (DL_FUNC) &_cpp20_test_identity,            1},
-    {"_cpp20_test_identity2",           (DL_FUNC) &_cpp20_test_identity2,           1},
-    {"_cpp20_test_lengths",             (DL_FUNC) &_cpp20_test_lengths,             1},
-    {"_cpp20_test_list_to_scalars",     (DL_FUNC) &_cpp20_test_list_to_scalars,     1},
-    {"_cpp20_test_match",               (DL_FUNC) &_cpp20_test_match,               2},
-    {"_cpp20_test_mean",                (DL_FUNC) &_cpp20_test_mean,                2},
-    {"_cpp20_test_mix2",                (DL_FUNC) &_cpp20_test_mix2,                7},
-    {"_cpp20_test_multiple_deduction",  (DL_FUNC) &_cpp20_test_multiple_deduction,  2},
-    {"_cpp20_test_n_unique",            (DL_FUNC) &_cpp20_test_n_unique,            1},
-    {"_cpp20_test_na_types",            (DL_FUNC) &_cpp20_test_na_types,            0},
-    {"_cpp20_test_nas",                 (DL_FUNC) &_cpp20_test_nas,                 1},
-    {"_cpp20_test_null",                (DL_FUNC) &_cpp20_test_null,                0},
-    {"_cpp20_test_order",               (DL_FUNC) &_cpp20_test_order,               2},
-    {"_cpp20_test_range",               (DL_FUNC) &_cpp20_test_range,               2},
-    {"_cpp20_test_rval_identity",       (DL_FUNC) &_cpp20_test_rval_identity,       1},
-    {"_cpp20_test_scalar",              (DL_FUNC) &_cpp20_test_scalar,              2},
-    {"_cpp20_test_scalar2",             (DL_FUNC) &_cpp20_test_scalar2,             2},
-    {"_cpp20_test_scalar3",             (DL_FUNC) &_cpp20_test_scalar3,             2},
-    {"_cpp20_test_seqs",                (DL_FUNC) &_cpp20_test_seqs,                3},
-    {"_cpp20_test_sexp",                (DL_FUNC) &_cpp20_test_sexp,                1},
-    {"_cpp20_test_sexp2",               (DL_FUNC) &_cpp20_test_sexp2,               1},
-    {"_cpp20_test_sexp3",               (DL_FUNC) &_cpp20_test_sexp3,               1},
-    {"_cpp20_test_sexp4",               (DL_FUNC) &_cpp20_test_sexp4,               1},
-    {"_cpp20_test_sort",                (DL_FUNC) &_cpp20_test_sort,                2},
-    {"_cpp20_test_specialisation",      (DL_FUNC) &_cpp20_test_specialisation,      1},
-    {"_cpp20_test_str1",                (DL_FUNC) &_cpp20_test_str1,                1},
-    {"_cpp20_test_str2",                (DL_FUNC) &_cpp20_test_str2,                1},
-    {"_cpp20_test_str3",                (DL_FUNC) &_cpp20_test_str3,                1},
-    {"_cpp20_test_str4",                (DL_FUNC) &_cpp20_test_str4,                1},
-    {"_cpp20_test_subset",              (DL_FUNC) &_cpp20_test_subset,              2},
-    {"_cpp20_test_sum",                 (DL_FUNC) &_cpp20_test_sum,                 2},
-    {"_cpp20_test_sym",                 (DL_FUNC) &_cpp20_test_sym,                 1},
-    {"_cpp20_test_template_null",       (DL_FUNC) &_cpp20_test_template_null,       1},
-    {"_cpp20_test_time_coerce",         (DL_FUNC) &_cpp20_test_time_coerce,         0},
-    {"_cpp20_test_tz",                  (DL_FUNC) &_cpp20_test_tz,                  1},
-    {"_cpp20_test_unique",              (DL_FUNC) &_cpp20_test_unique,              1},
-    {"_cpp20_test_var",                 (DL_FUNC) &_cpp20_test_var,                 2},
-    {"_cpp20_test_vec_of_syms",         (DL_FUNC) &_cpp20_test_vec_of_syms,         1},
-    {"_cpp20_test_which",               (DL_FUNC) &_cpp20_test_which,               1},
-    {"_cpp20_test_which_inverted",      (DL_FUNC) &_cpp20_test_which_inverted,      1},
-    {"_cpp20_vector1",                  (DL_FUNC) &_cpp20_vector1,                  1},
-    {"_cpp20_vector2",                  (DL_FUNC) &_cpp20_vector2,                  1},
+    {"_cpp20_cpp20_typeof",              (DL_FUNC) &_cpp20_cpp20_typeof,              1},
+    {"_cpp20_cpp_get_threads",           (DL_FUNC) &_cpp20_cpp_get_threads,           0},
+    {"_cpp20_cpp_set_threads",           (DL_FUNC) &_cpp20_cpp_set_threads,           1},
+    {"_cpp20_scalar1",                   (DL_FUNC) &_cpp20_scalar1,                   1},
+    {"_cpp20_scalar2",                   (DL_FUNC) &_cpp20_scalar2,                   1},
+    {"_cpp20_scalar3",                   (DL_FUNC) &_cpp20_scalar3,                   2},
+    {"_cpp20_scalar4",                   (DL_FUNC) &_cpp20_scalar4,                   2},
+    {"_cpp20_scalar_vec1",               (DL_FUNC) &_cpp20_scalar_vec1,               2},
+    {"_cpp20_scalar_vec2",               (DL_FUNC) &_cpp20_scalar_vec2,               2},
+    {"_cpp20_scalar_vec3",               (DL_FUNC) &_cpp20_scalar_vec3,               4},
+    {"_cpp20_test_as_date",              (DL_FUNC) &_cpp20_test_as_date,              1},
+    {"_cpp20_test_as_date2",             (DL_FUNC) &_cpp20_test_as_date2,             1},
+    {"_cpp20_test_as_sym",               (DL_FUNC) &_cpp20_test_as_sym,               1},
+    {"_cpp20_test_coerce",               (DL_FUNC) &_cpp20_test_coerce,               2},
+    {"_cpp20_test_coerce1",              (DL_FUNC) &_cpp20_test_coerce1,              1},
+    {"_cpp20_test_combine2",             (DL_FUNC) &_cpp20_test_combine2,             2},
+    {"_cpp20_test_construct_date",       (DL_FUNC) &_cpp20_test_construct_date,       1},
+    {"_cpp20_test_copy",                 (DL_FUNC) &_cpp20_test_copy,                 1},
+    {"_cpp20_test_dates1",               (DL_FUNC) &_cpp20_test_dates1,               1},
+    {"_cpp20_test_dates2",               (DL_FUNC) &_cpp20_test_dates2,               1},
+    {"_cpp20_test_deduced_scalar_type",  (DL_FUNC) &_cpp20_test_deduced_scalar_type,  1},
+    {"_cpp20_test_deduced_scalar_type2", (DL_FUNC) &_cpp20_test_deduced_scalar_type2, 1},
+    {"_cpp20_test_deduced_type",         (DL_FUNC) &_cpp20_test_deduced_type,         1},
+    {"_cpp20_test_deduced_vec_type",     (DL_FUNC) &_cpp20_test_deduced_vec_type,     1},
+    {"_cpp20_test_factor1",              (DL_FUNC) &_cpp20_test_factor1,              1},
+    {"_cpp20_test_factor2",              (DL_FUNC) &_cpp20_test_factor2,              1},
+    {"_cpp20_test_group_counts",         (DL_FUNC) &_cpp20_test_group_counts,         2},
+    {"_cpp20_test_group_id",             (DL_FUNC) &_cpp20_test_group_id,             2},
+    {"_cpp20_test_identical",            (DL_FUNC) &_cpp20_test_identical,            2},
+    {"_cpp20_test_identity",             (DL_FUNC) &_cpp20_test_identity,             1},
+    {"_cpp20_test_identity2",            (DL_FUNC) &_cpp20_test_identity2,            1},
+    {"_cpp20_test_lengths",              (DL_FUNC) &_cpp20_test_lengths,              1},
+    {"_cpp20_test_list_to_scalars",      (DL_FUNC) &_cpp20_test_list_to_scalars,      1},
+    {"_cpp20_test_match",                (DL_FUNC) &_cpp20_test_match,                2},
+    {"_cpp20_test_mean",                 (DL_FUNC) &_cpp20_test_mean,                 2},
+    {"_cpp20_test_mix2",                 (DL_FUNC) &_cpp20_test_mix2,                 7},
+    {"_cpp20_test_multiple_deduction",   (DL_FUNC) &_cpp20_test_multiple_deduction,   2},
+    {"_cpp20_test_n_unique",             (DL_FUNC) &_cpp20_test_n_unique,             1},
+    {"_cpp20_test_na_types",             (DL_FUNC) &_cpp20_test_na_types,             0},
+    {"_cpp20_test_nas",                  (DL_FUNC) &_cpp20_test_nas,                  1},
+    {"_cpp20_test_null",                 (DL_FUNC) &_cpp20_test_null,                 0},
+    {"_cpp20_test_order",                (DL_FUNC) &_cpp20_test_order,                2},
+    {"_cpp20_test_range",                (DL_FUNC) &_cpp20_test_range,                2},
+    {"_cpp20_test_rval_identity",        (DL_FUNC) &_cpp20_test_rval_identity,        1},
+    {"_cpp20_test_scalar",               (DL_FUNC) &_cpp20_test_scalar,               2},
+    {"_cpp20_test_scalar2",              (DL_FUNC) &_cpp20_test_scalar2,              2},
+    {"_cpp20_test_scalar3",              (DL_FUNC) &_cpp20_test_scalar3,              2},
+    {"_cpp20_test_seqs",                 (DL_FUNC) &_cpp20_test_seqs,                 3},
+    {"_cpp20_test_sexp",                 (DL_FUNC) &_cpp20_test_sexp,                 1},
+    {"_cpp20_test_sexp2",                (DL_FUNC) &_cpp20_test_sexp2,                1},
+    {"_cpp20_test_sexp3",                (DL_FUNC) &_cpp20_test_sexp3,                1},
+    {"_cpp20_test_sexp4",                (DL_FUNC) &_cpp20_test_sexp4,                1},
+    {"_cpp20_test_sort",                 (DL_FUNC) &_cpp20_test_sort,                 2},
+    {"_cpp20_test_specialisation",       (DL_FUNC) &_cpp20_test_specialisation,       1},
+    {"_cpp20_test_str1",                 (DL_FUNC) &_cpp20_test_str1,                 1},
+    {"_cpp20_test_str2",                 (DL_FUNC) &_cpp20_test_str2,                 1},
+    {"_cpp20_test_str3",                 (DL_FUNC) &_cpp20_test_str3,                 1},
+    {"_cpp20_test_str4",                 (DL_FUNC) &_cpp20_test_str4,                 1},
+    {"_cpp20_test_subset",               (DL_FUNC) &_cpp20_test_subset,               2},
+    {"_cpp20_test_sum",                  (DL_FUNC) &_cpp20_test_sum,                  2},
+    {"_cpp20_test_sym",                  (DL_FUNC) &_cpp20_test_sym,                  1},
+    {"_cpp20_test_template_null",        (DL_FUNC) &_cpp20_test_template_null,        1},
+    {"_cpp20_test_time_coerce",          (DL_FUNC) &_cpp20_test_time_coerce,          0},
+    {"_cpp20_test_tz",                   (DL_FUNC) &_cpp20_test_tz,                   1},
+    {"_cpp20_test_unique",               (DL_FUNC) &_cpp20_test_unique,               1},
+    {"_cpp20_test_var",                  (DL_FUNC) &_cpp20_test_var,                  2},
+    {"_cpp20_test_vec_of_syms",          (DL_FUNC) &_cpp20_test_vec_of_syms,          1},
+    {"_cpp20_test_vec_of_syms2",         (DL_FUNC) &_cpp20_test_vec_of_syms2,         1},
+    {"_cpp20_test_which",                (DL_FUNC) &_cpp20_test_which,                1},
+    {"_cpp20_test_which_inverted",       (DL_FUNC) &_cpp20_test_which_inverted,       1},
+    {"_cpp20_vector1",                   (DL_FUNC) &_cpp20_vector1,                   1},
+    {"_cpp20_vector2",                   (DL_FUNC) &_cpp20_vector2,                   1},
     {NULL, NULL, 0}
 };
 }

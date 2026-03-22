@@ -8,6 +8,10 @@ test_vec_of_syms <- function(x) {
   .Call(`_cpp20_test_vec_of_syms`, x)
 }
 
+test_vec_of_syms2 <- function(x) {
+  .Call(`_cpp20_test_vec_of_syms2`, x)
+}
+
 test_which <- function(x) {
   .Call(`_cpp20_test_which`, x)
 }
@@ -30,6 +34,10 @@ test_deduced_vec_type <- function(x) {
 
 test_deduced_scalar_type <- function(x) {
   .Call(`_cpp20_test_deduced_scalar_type`, x)
+}
+
+test_deduced_scalar_type2 <- function(x) {
+  .Call(`_cpp20_test_deduced_scalar_type2`, x)
 }
 
 test_identity <- function(x) {
@@ -190,10 +198,6 @@ test_dates1 <- function(x) {
 
 test_dates2 <- function(x) {
   .Call(`_cpp20_test_dates2`, x)
-}
-
-test_classed_vec <- function(x) {
-  .Call(`_cpp20_test_classed_vec`, x)
 }
 
 test_unique <- function(x) {

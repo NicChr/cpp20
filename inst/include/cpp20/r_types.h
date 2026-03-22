@@ -32,7 +32,6 @@ inline constexpr SEXPTYPE CPP20_INT64PSXTSXP = 202;
 inline constexpr SEXPTYPE CPP20_REALPSXTSXP = 203;
 inline constexpr SEXPTYPE CPP20_FCTSXP = 204;
 inline constexpr SEXPTYPE CPP20_DFSXP = 205;
-inline constexpr SEXPTYPE CPP20_SYMVECSXP = 206;
 
 inline SEXPTYPE CPP20_TYPEOF(SEXP x) noexcept {
 
@@ -53,25 +52,6 @@ inline SEXPTYPE CPP20_TYPEOF(SEXP x) noexcept {
       if (Rf_inherits(x, "integer64")) return CPP20_INT64SXP; 
       return xtype;
     }
-    case VECSXP: {
-
-      // if (Rf_inherits(x, "data.frame")) return CPP20_DFSXP;
-
-      // Determine if list is a list of symbols as that is a valid cpp20 type (r_vec<r_sym>)
-      // This should be relatively inexpensive because lists of symbols are rare and so we exit early
-      // when it's not a list of symbols
-      r_size_t n = Rf_xlength(x);
-      if (n != 0){
-        const SEXP* p_x = (const SEXP*) DATAPTR_RO(x);
-        for (r_size_t i = 0; i < n; ++i){
-          [[likely]] if (TYPEOF(p_x[i]) != SYMSXP){
-            return VECSXP;
-          }
-        }
-        return CPP20_SYMVECSXP;
-      }
-      return VECSXP;
-    }
     default: {
       return xtype;
     }
@@ -88,7 +68,6 @@ inline const char* r_type_to_str(SEXPTYPE x){
     case CPP20_REALPSXTSXP: return "CPP20_REALPSXTSXP";
     case CPP20_FCTSXP: return "CPP20_FCTSXP";
     case CPP20_DFSXP: return "CPP20_DFSXP";
-    case CPP20_SYMVECSXP: return "CPP20_SYMVECSXP";
     default: return Rf_type2char(x);
   }
 }
@@ -155,8 +134,7 @@ template<> constexpr uint16_t r_typeof_impl<r_vec<r_str_view>> =     STRSXP;
 template<> constexpr uint16_t r_typeof_impl<r_vec<r_str>> =          STRSXP;
 template<> constexpr uint16_t r_typeof_impl<r_vec<r_cplx>> =         CPLXSXP;
 template<> constexpr uint16_t r_typeof_impl<r_vec<r_raw>> =          RAWSXP;
-template<> constexpr uint16_t r_typeof_impl<r_vec<r_sexp>> =         VECSXP;
-template<> constexpr uint16_t r_typeof_impl<r_vec<r_sym>> =          VECSXP;
+template<RListVector T> constexpr uint16_t r_typeof_impl<T> =        VECSXP;
 template<> constexpr uint16_t r_typeof_impl<r_str_view> =            CHARSXP;
 template<> constexpr uint16_t r_typeof_impl<r_str> =                 CHARSXP;
 template<> constexpr uint16_t r_typeof_impl<r_sym> =                 SYMSXP;
@@ -177,7 +155,6 @@ template<> constexpr uint16_t r_typeof<r_vec<r_date_t<r_dbl>>> =            CPP2
 template<> constexpr uint16_t r_typeof<r_vec<r_psxct_t<r_int64>>> =         CPP20_INT64PSXTSXP;
 template<> constexpr uint16_t r_typeof<r_vec<r_psxct_t<r_dbl>>> =           CPP20_REALPSXTSXP;
 template<> constexpr uint16_t r_typeof<r_factors> =             CPP20_FCTSXP;
-template<> constexpr uint16_t r_typeof<r_vec<r_sym>> =             CPP20_SYMVECSXP;
 
 // Low-level type ID check, primarily used in constructing classed cpp20 objects from SEXP
 template <typename T>

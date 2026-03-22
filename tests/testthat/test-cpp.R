@@ -22,7 +22,7 @@ test_that("Type deduction on template disptch", {
   expect_identical(test_deduced_type(letters), "r_vec<r_str>")
   expect_identical(test_deduced_type(list(1)), "r_vec<r_sexp>")
   expect_identical(test_deduced_type(iris$Species), "r_factors")
-  expect_identical(test_deduced_type(as.symbol("a")), "r_sym")
+  expect_identical(test_deduced_type(as.symbol("a")), "r_sexp")
   expect_identical(test_deduced_type(mean), "r_sexp")
 
 
@@ -42,8 +42,16 @@ test_that("Type deduction on template disptch", {
   expect_identical(test_deduced_scalar_type(2), "r_dbl")
   expect_identical(test_deduced_scalar_type("yes"), "r_str")
   expect_error(test_deduced_scalar_type(list(1))) # Template is RScalar (doesn't include lists)
-  expect_identical(test_deduced_scalar_type(as.symbol("a")), "r_sym")
+  # expect_identical(test_deduced_scalar_type(as.symbol("a")), "r_sym")
+
+  # Explanation: `r_sym` is not supported in template deduction
+  # Internally it is mapped to `r_sexp` which is not an RScalar and therefore
+  # can't be deduced
+  expect_error(test_deduced_scalar_type(as.symbol("a")))
+
   expect_error(test_deduced_scalar_type(mean)) # Not an RScalar
+
+  expect_identical(test_deduced_scalar_type2(as.symbol("a")), "r_sexp")
 
 })
 
@@ -74,6 +82,16 @@ test_that("Check construction of symbol list from SEXP", {
     rep(as.list(as.symbol(".")), 3)
   )
 
+})
+
+test_that("Explicit symbol arguments", {
+
+  expect_identical(test_sym(as.symbol("1")), as.symbol("1"))
+
+  expect_identical(
+    test_vec_of_syms2(lapply(as.list(1:3), as.symbol)),
+    lapply(as.list(1:3), as.symbol)
+  )
 })
 
 

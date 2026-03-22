@@ -58,6 +58,12 @@ r_vec<r_str> test_deduced_scalar_type(T x){
   return r_vec<r_str>(1, r_str(internal::type_str<decltype(x)>()));
 }
 
+template <RVal T>
+[[cpp20::register]]
+r_vec<r_str> test_deduced_scalar_type2(T x){
+  return r_vec<r_str>(1, r_str(internal::type_str<decltype(x)>()));
+}
+
 // Super permissive identity fn
 template <typename T>
 [[cpp20::register]]

@@ -64,12 +64,8 @@ using r_types = std::tuple<
     r_raw, 
     r_date_t<r_int>, r_date_t<r_dbl>,
     r_psxct_t<r_int64>, r_psxct_t<r_dbl>,
-    r_sym,
     r_sexp // Catch-all
 >;
-
-
-
 
 using r_classed_vector_types = std::tuple<r_factors>;
 
@@ -94,6 +90,14 @@ template <typename T> constexpr uint16_t r_cpp_boundary_map_v = r_typeof<T>;
 template <RAtomicScalar T>
 inline constexpr uint16_t r_cpp_boundary_map_v<T> = r_cpp_boundary_map_v<r_vec<T>>;
 
+// Map composite scalars and vectors of composite scalars to r_sexp equivalent
+// It's simply not well-defined to map a SEXP list of symbols to r_vec<r_sym> by default unless the user 
+// explicitly requests it
+// One of the reasons is that they may want a regular list but it just coincidentally happens to initially only have symbols
+template <RCompositeScalar T>
+inline constexpr uint16_t r_cpp_boundary_map_v<r_vec<T>> = r_cpp_boundary_map_v<r_vec<r_sexp>>;
+// template <RCompositeScalar T>
+// inline constexpr uint16_t r_cpp_boundary_map_v<T> = r_cpp_boundary_map_v<r_sexp>;
 
 // Pure C/C++ types that are constructible to an RVal
 template <typename T>
@@ -170,6 +174,8 @@ using all_candidate_types = decltype(std::tuple_cat(
     std::declval<r_types>()
 ));
 constexpr size_t N_CANDIDATES = std::tuple_size_v<all_candidate_types>;
+
+static_assert(N_CANDIDATES > 0, "`N_CANDIDATES` must be > 0");
 
 
 constexpr size_t static_pow(size_t base, size_t exp) {
