@@ -305,13 +305,6 @@ T test_dates2(T x){
   return x;
 }
 
-
-template <RVector T>
-[[cpp20::register]]
-T test_classed_vec(T x){
-  return x;
-}
-
 template <RVector T>
 [[cpp20::register]]
 T test_unique(T x){

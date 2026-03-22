@@ -58,7 +58,7 @@ inline r_vec<T> make_vec(Args... args) {
     return r_vec<T>(0);
   } else {
 
-    auto out = r_vec<T>(n);
+    r_vec<T> out(n);
 
     constexpr bool any_named = (NamedArg<Args> || ...);
 

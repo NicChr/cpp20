@@ -66,7 +66,7 @@ inline r_vec<r_int> which(const r_vec<r_lgl>& x, bool invert = false){
       r_vec<r_int> out(out_size);
       while (whichi < out_size){
           out.set(whichi, i + 1);
-          whichi += static_cast<int>((x.get(i++) != r_true));
+          whichi += static_cast<int>(!x.get(i++).is_true());
       }
       return out;
   } else {
@@ -74,7 +74,7 @@ inline r_vec<r_int> which(const r_vec<r_lgl>& x, bool invert = false){
       r_vec<r_int> out(out_size);
       while (whichi < out_size){
           out.set(whichi, i + 1);
-          whichi += static_cast<int>((x.get(i++) == r_true));
+          whichi += static_cast<int>(x.get(i++).is_true());
       }
       return out;
   }
@@ -93,7 +93,7 @@ inline r_vec<T> r_vec<T>::subset(const r_vec<U>& indices) const {
     auto locs = which(indices);
     int n = locs.length();
   
-    auto out = r_vec<T>(n);
+    r_vec<T> out(n);
   
     OMP_SIMD
     for (int i = 0; i < n; ++i){

@@ -8,6 +8,14 @@ test_vec_of_syms <- function(x) {
   .Call(`_cpp20_test_vec_of_syms`, x)
 }
 
+test_which <- function(x) {
+  .Call(`_cpp20_test_which`, x)
+}
+
+test_which_inverted <- function(x) {
+  .Call(`_cpp20_test_which_inverted`, x)
+}
+
 test_deduced_type <- function(x) {
   .Call(`_cpp20_test_deduced_type`, x)
 }

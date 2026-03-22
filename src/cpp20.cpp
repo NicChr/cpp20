@@ -28,6 +28,22 @@ extern "C" SEXP _cpp20_test_vec_of_syms(SEXP x) {
   return cpp20::internal::cpp_to_sexp(test_vec_of_syms(cpp20::as<std::remove_cvref_t<SEXP>>(x)));
   END_CPP20
 }
+// test.cpp
+r_vec<r_int> test_which(r_vec<r_lgl> const& x);
+extern "C" SEXP _cpp20_test_which(SEXP x) {
+  BEGIN_CPP20
+  cpp20::internal::check_r_cpp_mapping<r_vec<r_lgl> const&>(x);
+  return cpp20::internal::cpp_to_sexp(test_which(cpp20::as<std::remove_cvref_t<r_vec<r_lgl> const&>>(x)));
+  END_CPP20
+}
+// test.cpp
+r_vec<r_int> test_which_inverted(r_vec<r_lgl> const& x);
+extern "C" SEXP _cpp20_test_which_inverted(SEXP x) {
+  BEGIN_CPP20
+  cpp20::internal::check_r_cpp_mapping<r_vec<r_lgl> const&>(x);
+  return cpp20::internal::cpp_to_sexp(test_which_inverted(cpp20::as<std::remove_cvref_t<r_vec<r_lgl> const&>>(x)));
+  END_CPP20
+}
 // test.h
 extern "C" SEXP _cpp20_test_deduced_type(SEXP x) {
   BEGIN_CPP20
@@ -782,6 +798,8 @@ static const R_CallMethodDef CallEntries[] = {
     {"_cpp20_test_unique",              (DL_FUNC) &_cpp20_test_unique,              1},
     {"_cpp20_test_var",                 (DL_FUNC) &_cpp20_test_var,                 2},
     {"_cpp20_test_vec_of_syms",         (DL_FUNC) &_cpp20_test_vec_of_syms,         1},
+    {"_cpp20_test_which",               (DL_FUNC) &_cpp20_test_which,               1},
+    {"_cpp20_test_which_inverted",      (DL_FUNC) &_cpp20_test_which_inverted,      1},
     {"_cpp20_vector1",                  (DL_FUNC) &_cpp20_vector1,                  1},
     {"_cpp20_vector2",                  (DL_FUNC) &_cpp20_vector2,                  1},
     {NULL, NULL, 0}

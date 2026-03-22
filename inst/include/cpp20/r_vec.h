@@ -208,7 +208,7 @@ struct r_vec {
 
   r_vec<r_lgl> is_na() const {
     r_size_t n = length();
-    auto out = r_vec<r_lgl>(n);
+    r_vec<r_lgl> out(n);
 
     if constexpr (internal::RPtrWritableType<T>){
       int n_threads = internal::calc_threads(n);
@@ -353,7 +353,7 @@ struct r_vec {
       return *this;
     }
 
-    auto out = r_vec<T>(n);
+    r_vec<T> out(n);
 
     if (size == 1){
       out.fill(0, n, view(0));
