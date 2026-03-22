@@ -62,11 +62,13 @@ using r_types = std::tuple<
     r_str, 
     r_cplx, 
     r_raw, 
-    r_sym,
     r_date_t<r_int>, r_date_t<r_dbl>,
     r_psxct_t<r_int64>, r_psxct_t<r_dbl>,
+    r_sym,
     r_sexp // Catch-all
 >;
+
+
 
 
 using r_classed_vector_types = std::tuple<r_factors>;
@@ -88,6 +90,7 @@ template <typename T> constexpr uint16_t r_cpp_boundary_map_v = r_typeof<T>;
 
 // Essentially make it so that scalars (that have natural vector extensions) can be mapped to from R
 // r_sym for example doesn't have a natural vector extension, only a list (VECSXP) can hold it and VECSXP already maps to r_vec<r_sexp>
+// To summarise: this specialisation enables users to write scalar inputs to functions (like `r_int` or `r_sym`)
 template <RAtomicScalar T>
 inline constexpr uint16_t r_cpp_boundary_map_v<T> = r_cpp_boundary_map_v<r_vec<T>>;
 

@@ -12,11 +12,20 @@ using namespace cpp20;
 #include "test_stats.h"
 #include "test_subset.hpp"
 
-// dummy.cpp
-r_str dummy();
-extern "C" SEXP _cpp20_dummy() {
+// test.cpp
+r_str cpp20_typeof(SEXP x);
+extern "C" SEXP _cpp20_cpp20_typeof(SEXP x) {
   BEGIN_CPP20
-    return cpp20::internal::cpp_to_sexp(dummy());
+  cpp20::internal::check_r_cpp_mapping<SEXP>(x);
+  return cpp20::internal::cpp_to_sexp(cpp20_typeof(cpp20::as<std::remove_cvref_t<SEXP>>(x)));
+  END_CPP20
+}
+// test.cpp
+r_vec<r_sym> test_vec_of_syms(SEXP x);
+extern "C" SEXP _cpp20_test_vec_of_syms(SEXP x) {
+  BEGIN_CPP20
+  cpp20::internal::check_r_cpp_mapping<SEXP>(x);
+  return cpp20::internal::cpp_to_sexp(test_vec_of_syms(cpp20::as<std::remove_cvref_t<SEXP>>(x)));
   END_CPP20
 }
 // test.h
@@ -706,9 +715,9 @@ return cpp20::internal::dispatch_template_impl<1, 2, std::array<int, 2>{0, -1}>(
 
 extern "C" {
 static const R_CallMethodDef CallEntries[] = {
+    {"_cpp20_cpp20_typeof",             (DL_FUNC) &_cpp20_cpp20_typeof,             1},
     {"_cpp20_cpp_get_threads",          (DL_FUNC) &_cpp20_cpp_get_threads,          0},
     {"_cpp20_cpp_set_threads",          (DL_FUNC) &_cpp20_cpp_set_threads,          1},
-    {"_cpp20_dummy",                    (DL_FUNC) &_cpp20_dummy,                    0},
     {"_cpp20_scalar1",                  (DL_FUNC) &_cpp20_scalar1,                  1},
     {"_cpp20_scalar2",                  (DL_FUNC) &_cpp20_scalar2,                  1},
     {"_cpp20_scalar3",                  (DL_FUNC) &_cpp20_scalar3,                  2},
@@ -772,6 +781,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"_cpp20_test_tz",                  (DL_FUNC) &_cpp20_test_tz,                  1},
     {"_cpp20_test_unique",              (DL_FUNC) &_cpp20_test_unique,              1},
     {"_cpp20_test_var",                 (DL_FUNC) &_cpp20_test_var,                 2},
+    {"_cpp20_test_vec_of_syms",         (DL_FUNC) &_cpp20_test_vec_of_syms,         1},
     {"_cpp20_vector1",                  (DL_FUNC) &_cpp20_vector1,                  1},
     {"_cpp20_vector2",                  (DL_FUNC) &_cpp20_vector2,                  1},
     {NULL, NULL, 0}

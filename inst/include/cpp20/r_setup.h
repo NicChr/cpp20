@@ -155,7 +155,7 @@ inline void set_threads(int n){
 }
 
 
-// [[noexcept]] inline bool xor_(bool a, bool b){
+// inline bool xor_(bool a, bool b) noexcept {
 //   return (a + b) == 1;
 // }
 

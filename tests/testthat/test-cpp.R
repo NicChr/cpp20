@@ -47,6 +47,36 @@ test_that("Type deduction on template disptch", {
 
 })
 
+test_that("Runtime type ID (via CPP20_TYPEOF) on SEXP", {
+  expect_identical(cpp20_typeof(TRUE), "logical")
+  expect_identical(cpp20_typeof(1L), "integer")
+  expect_identical(cpp20_typeof(1.5), "double")
+  expect_identical(cpp20_typeof(letters), "character")
+  expect_identical(cpp20_typeof(0 + 0i), "complex")
+  expect_identical(cpp20_typeof(raw(1)), "raw")
+  expect_identical(cpp20_typeof(list()), "list")
+  expect_identical(cpp20_typeof(list(1)), "list")
+  expect_identical(cpp20_typeof(Sys.Date()), "CPP20_REALDATESXP")
+  expect_identical(cpp20_typeof(Sys.time()), "CPP20_REALPSXTSXP")
+  expect_identical(cpp20_typeof(`storage.mode<-`(Sys.Date(), "integer")), "CPP20_INTDATESXP")
+  expect_identical(cpp20_typeof(as.factor(0)), "CPP20_FCTSXP")
+
+})
+
+test_that("Check construction of symbol list from SEXP", {
+  expect_identical(
+    test_vec_of_syms(as.list(as.symbol("."))),
+    as.list(as.symbol("."))
+  )
+
+  expect_identical(
+    test_vec_of_syms(rep(as.list(as.symbol(".")), 3)),
+    rep(as.list(as.symbol(".")), 3)
+  )
+
+})
+
+
 test_that("Simple registration tests", {
   expect_error(test_scalar(1, "2"))
   expect_error(test_scalar(1, 2))

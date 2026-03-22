@@ -142,6 +142,7 @@ concept RRawType = is<T, r_raw>;
 template <typename T>
 concept RAtomicScalar = RNumericType<T> || RComplexType<T> || RStringType<T> || RRawType<T>;
 
+// Excludes r_sexp because it can represent vectors
 template <typename T>
 concept RCompositeScalar = RSymbolType<T>;
 
