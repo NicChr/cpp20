@@ -138,6 +138,7 @@ void check_template_homogeneity(uint16_t expected_type, SEXP* args) {
 
 
 // ── FLAT FUNCTION POINTER TABLE ───────────────────────────────────────────────
+
 // The dispatcher pre-builds two flat arrays at compile time, indexed by a
 // flat combo index I (0 to N_CANDIDATES^NumTemplateParams - 1):
 //
@@ -222,7 +223,6 @@ struct is_combo_callable<
 // This is the key to sharing type_table across all Functor instantiations
 using erased_fn_t = SEXP(*)(void*, SEXP*);
 
-
 // Small invoker: each valid combination becomes a tiny, separate function.
 // GCC cannot inline across function pointer calls.
 // void* erases the Functor type — cast back inside invoke() to call correctly.
@@ -240,6 +240,10 @@ struct combo_invoker<Functor, NumArgs, std::tuple<Ts...>> {
     }
 };
 
+#if defined(__GNUC__) && !defined(__clang__)
+#pragma GCC push_options
+#pragma GCC optimize("O1")
+#endif
 
 // Uses a template struct (not a constexpr function) to store the pointer value.
 // Lambda types are non-literal (non-trivially destructible), making a constexpr
@@ -363,6 +367,9 @@ SEXP dispatch_template_impl(Functor&& functor, SexpArgs&&... sexp_args) {
     return nullptr;
 }
 
+#if defined(__GNUC__) && !defined(__clang__)
+#pragma GCC pop_options
+#endif
 
 template <auto Fn, typename Ret, typename... Args, size_t... Is>
 SEXP invoke_impl(SEXP* sexp_args, std::index_sequence<Is...>) {
