@@ -321,16 +321,53 @@ struct r_vec {
     } else {
       r_vec<T> out(n - n_remove);
       r_size_t k = 0;
+      T v = internal::as_r<T>(value);
+
       for (r_size_t i = 0; i < n; ++i){
-        if (!identical(view(i), value)){
+        if (!identical(view(i), v)){
           out.set(k++, view(i));
         }
       }
       return out;
     }
   }
-  // template <typename U>
-  // void find(r_size_t start, r_size_t n, U const& val);
+  template <typename U, internal::RNumericSubscript V = r_int>
+  r_vec<V> find(U const& value, bool invert = false) const {
+
+    r_size_t n = length();
+
+    using int_t = unwrap_t<V>;
+  
+    if constexpr (is<V, r_int>){
+      if ( (n > r_limits<r_int>::max()).is_true()){
+        abort("`x` is a long vector, please use find<U, r_int64> instead");
+      }
+    }
+
+    T v = internal::as_r<T>(value);
+  
+    r_size_t n_vals = count(value);
+    int_t whichi = 0; 
+    int_t i = 0; 
+  
+    if (invert){
+      r_size_t out_size = n - n_vals;
+      r_vec<V> out(out_size);
+      while (whichi < out_size){
+          out.set(whichi, i + 1);
+          whichi += static_cast<int_t>(!identical(get(i++), v));
+      }
+      return out;
+    } else {
+      int_t out_size = n_vals;
+      r_vec<V> out(out_size);
+      while (whichi < out_size){
+        out.set(whichi, i + 1);
+        whichi += static_cast<int_t>(identical(get(i++), v));
+    }
+    return out;
+    }
+  }
 
   // Sequential fill
   template <typename U>

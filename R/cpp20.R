@@ -260,6 +260,14 @@ test_na_types <- function() {
   .Call(`_cpp20_test_na_types`)
 }
 
+test_counts <- function(x, y) {
+  .Call(`_cpp20_test_counts`, x, y)
+}
+
+test_remove <- function(x, y) {
+  .Call(`_cpp20_test_remove`, x, y)
+}
+
 test_order <- function(x, preserve_ties) {
   .Call(`_cpp20_test_order`, x, preserve_ties)
 }

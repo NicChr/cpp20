@@ -52,53 +52,6 @@ r_vec<V> exclude_locs(const r_vec<U>& exclude, r_size_t xn) {
   return out;
 }
 
-inline r_size_t count_true(const r_vec<r_lgl>& x, const uint_fast64_t n){
-  uint_fast64_t size = 0;
-  auto* RESTRICT p_x = x.data();
-  #pragma omp simd reduction(+:size)
-  for (uint_fast64_t j = 0; j != n; ++j) size += (p_x[j] == 1);
-  return size;
-}
-
-}
-
-template <internal::RNumericSubscript U = r_int>
-inline r_vec<U> which(const r_vec<r_lgl>& x, bool invert = false){
-
-  r_size_t n = x.length();
-
-  using int_t = unwrap_t<U>;
-
-  if constexpr (is<U, r_int>){
-    if ( (n > r_limits<r_int>::max()).is_true()){
-      abort("`x` is a long vector, please use which<r_int64> instead");
-    }
-  }
-
-  r_size_t true_count = internal::count_true(x, n);
-  int_t whichi = 0; 
-  int_t i = 0; 
-
-  if (invert){
-    r_size_t out_size = n - true_count;
-    r_vec<U> out(out_size);
-    while (whichi < out_size){
-        out.set(whichi, i + 1);
-        whichi += static_cast<int_t>(!x.get(i++).is_true());
-    }
-    return out;
-  } else {
-    int_t out_size = true_count;
-    r_vec<U> out(out_size);
-    while (whichi < out_size){
-      out.set(whichi, i + 1);
-      whichi += static_cast<int_t>(x.get(i++).is_true());
-  }
-  return out;
-  }
-}
-
-
 template <typename T, internal::RSubscript U, internal::RNumericSubscript V = r_int>
 r_vec<V> clean_locs(const r_vec<U>& locs, const r_vec<T>& x){
 
@@ -130,7 +83,7 @@ r_vec<V> clean_locs(const r_vec<U>& locs, const r_vec<T>& x){
     if (locs.length() != xn){
       abort("length of indices must match vector length when indices is `r_vec<r_lgl>`");
     }
-    return which<V>(locs, false);
+    return locs.template find<r_lgl, V>(r_true, false);
   } else {
     r_size_t zero_count = 0,
     pos_count = 0,
@@ -172,6 +125,8 @@ r_vec<V> clean_locs(const r_vec<U>& locs, const r_vec<T>& x){
   }
 }
 
+}
+
 template <RVal T>
 template <internal::RSubscript U>
 inline r_vec<T> r_vec<T>::subset(const r_vec<U>& indices, bool check) const {
@@ -182,9 +137,9 @@ inline r_vec<T> r_vec<T>::subset(const r_vec<U>& indices, bool check) const {
 
   if constexpr (RLogicalType<U> || RStringType<U>){
     if (is_long()){
-      return subset(clean_locs<T, U, r_int64>(indices, *this), /*check=*/ false);
+      return subset(internal::clean_locs<T, U, r_int64>(indices, *this), /*check=*/ false);
     } else {
-      return subset(clean_locs<T, U, r_int>(indices, *this), /*check=*/ false);
+      return subset(internal::clean_locs<T, U, r_int>(indices, *this), /*check=*/ false);
     }
   } else {
 
@@ -237,7 +192,7 @@ void r_vec<T>::fill(const r_vec<U>& where, const r_vec<T>& with) {
 
   if (is_long()){
     // Clean where vector
-    r_vec<r_int64> where_clean = clean_locs<T, U, r_int64>(where, *this);
+    r_vec<r_int64> where_clean = internal::clean_locs<T, U, r_int64>(where, *this);
     r_size_t where_size = where_clean.length();
   
     for (r_size_t i = 0; i < where_size; recycle_index(withi, with_size), ++i){
@@ -245,7 +200,7 @@ void r_vec<T>::fill(const r_vec<U>& where, const r_vec<T>& with) {
     }
   } else {
     // Clean where vector
-    r_vec<r_int> where_clean = clean_locs<T, U, r_int>(where, *this);
+    r_vec<r_int> where_clean = internal::clean_locs<T, U, r_int>(where, *this);
     r_size_t where_size = where_clean.length();
   
     for (r_size_t i = 0; i < where_size; recycle_index(withi, with_size), ++i){

@@ -11,7 +11,7 @@ r_vec<T> test_exclude_locs(r_int n, r_vec<T> x){
 template <RVal T, internal::RSubscript U>
 [[cpp20::register]]
 SEXP test_clean_locs(r_vec<U> locs, r_vec<T> x){
-    return clean_locs(locs, x);
+    return internal::clean_locs(locs, x);
 }
 
 

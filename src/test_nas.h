@@ -28,3 +28,15 @@ inline r_vec<r_sexp> test_na_types(){
     na<r_psxct>()
 );
 }
+
+template <RVal T>
+[[cpp20::register]]
+inline r_int test_counts(r_vec<T> x, T y){
+   return as<r_int>(x.count(y));
+}
+
+template <RVal T>
+[[cpp20::register]]
+inline r_vec<T> test_remove(r_vec<T> x, T y){
+   return x.remove(y);
+}
