@@ -10,7 +10,7 @@ using namespace cpp20;
 #include "test_nas.h"
 #include "test_sort.h"
 #include "test_stats.h"
-#include "test_subset.hpp"
+#include "test_subset.h"
 
 // test.cpp
 r_str cpp20_typeof(SEXP x);
@@ -746,7 +746,7 @@ return cpp20::internal::dispatch_template_impl<1, 2, std::array<int, 2>{0, -1}>(
   );
   END_CPP20
 }
-// test_subset.hpp
+// test_subset.h
 extern "C" SEXP _cpp20_test_exclude_locs(SEXP n, SEXP x) {
   BEGIN_CPP20
   cpp20::internal::check_r_cpp_mapping<r_int>(n);
@@ -758,7 +758,7 @@ return cpp20::internal::dispatch_template_impl<1, 2, std::array<int, 2>{-1, 0}>(
   );
   END_CPP20
 }
-// test_subset.hpp
+// test_subset.h
 extern "C" SEXP _cpp20_test_clean_locs(SEXP locs, SEXP x) {
   BEGIN_CPP20
   return cpp20::internal::dispatch_template_impl<2, 2, std::array<int, 2>{1, 0}>(
@@ -769,7 +769,7 @@ extern "C" SEXP _cpp20_test_clean_locs(SEXP locs, SEXP x) {
   );
   END_CPP20
 }
-// test_subset.hpp
+// test_subset.h
 extern "C" SEXP _cpp20_test_replace(SEXP x, SEXP y, SEXP z) {
   BEGIN_CPP20
   cpp20::internal::check_r_cpp_mapping<r_vec<r_int>>(y);
@@ -781,7 +781,7 @@ return cpp20::internal::dispatch_template_impl<1, 3, std::array<int, 3>{0, -1, 0
   );
   END_CPP20
 }
-// test_subset.hpp
+// test_subset.h
 extern "C" SEXP _cpp20_test_replace2(SEXP x, SEXP from, SEXP n, SEXP val) {
   BEGIN_CPP20
   cpp20::internal::check_r_cpp_mapping<r_int>(from);
@@ -794,7 +794,7 @@ return cpp20::internal::dispatch_template_impl<1, 4, std::array<int, 4>{0, -1, -
   );
   END_CPP20
 }
-// test_subset.hpp
+// test_subset.h
 extern "C" SEXP _cpp20_test_subset(SEXP x, SEXP i) {
   BEGIN_CPP20
   return cpp20::internal::dispatch_template_impl<2, 2, std::array<int, 2>{0, 1}>(
