@@ -7,7 +7,7 @@ namespace cpp20 {
 
 namespace internal {
 
-template <RIntegerLocation U, RIntegerLocation V = r_int>
+template <RIntegerSubscript U, RIntegerSubscript V = r_int>
 r_vec<V> exclude_locs(const r_vec<U>& exclude, unwrap_t<U> xn) {
 
   using int_t = unwrap_t<common_math_t<U, V>>;
@@ -63,7 +63,7 @@ inline r_size_t count_true(const r_vec<r_lgl>& x, const uint_fast64_t n){
 
 }
 
-template <internal::RIntegerLocation U = r_int>
+template <internal::RIntegerSubscript U = r_int>
 inline r_vec<U> which(const r_vec<r_lgl>& x, bool invert = false){
 
   r_size_t n = x.length();
@@ -100,7 +100,7 @@ inline r_vec<U> which(const r_vec<r_lgl>& x, bool invert = false){
 }
 
 
-template <typename T, internal::RLocation U, internal::RIntegerLocation V = r_int>
+template <typename T, internal::RSubscript U, internal::RIntegerSubscript V = r_int>
 r_vec<V> clean_locs(const r_vec<U>& locs, const r_vec<T>& x){
 
   if (locs.is_null()){
@@ -174,7 +174,7 @@ r_vec<V> clean_locs(const r_vec<U>& locs, const r_vec<T>& x){
 }
 
 template <RVal T>
-template <internal::RLocation U>
+template <internal::RSubscript U>
 inline r_vec<T> r_vec<T>::subset(const r_vec<U>& indices, bool check) const {
 
   if (indices.is_null()){
@@ -222,7 +222,7 @@ inline r_vec<T> r_vec<T>::subset(const r_vec<U>& indices, bool check) const {
 }
 
 template <RVal T>
-template <internal::RLocation U>
+template <internal::RSubscript U>
 void r_vec<T>::replace(const r_vec<U>& where, const r_vec<T>& with) {
 
   if (is_null()) return;

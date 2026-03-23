@@ -11,10 +11,10 @@ namespace cpp20 {
 namespace internal {
 // Concept helpers for location-based subset helpers
 template <typename T>
-concept RLocation = any<T, r_lgl, r_int, r_int64, r_dbl, r_str_view, r_str>;
+concept RSubscript = any<T, r_lgl, r_int, r_int64, r_dbl, r_str_view, r_str>;
 
 template <typename T>
-concept RIntegerLocation = any<T, r_int, r_int64>;
+concept RIntegerSubscript = any<T, r_int, r_int64>;
 }
 
 template<RVal T>
@@ -191,7 +191,7 @@ struct r_vec {
 
   // IMPORTANT - indices are 1-indexed
   // This has the benefit of allowing empty locations (0) and negative indexing
-  template <internal::RLocation U> 
+  template <internal::RSubscript U> 
   r_vec<T> subset(const r_vec<U>& indices, bool check = true) const;
 
   template <IntegerType U>
@@ -344,7 +344,7 @@ struct r_vec {
     }
   }
 
-  template <internal::RLocation U>
+  template <internal::RSubscript U>
   void replace(const r_vec<U>& where, const r_vec<T>& with);
 
   r_vec<T> resize(r_size_t n){
