@@ -293,7 +293,7 @@ struct r_vec {
     T v = internal::as_r<T>(value);
 
     // If there was implicit coercion, then avoid counting matches
-    if (is_na(v) && !is_na(value)){
+    if (cpp20::is_na(v) && !cpp20::is_na(value)){
       return out;
     }
     if constexpr (is<T, r_sexp>){
@@ -309,8 +309,26 @@ struct r_vec {
 
     return out;
   }
-  // template <typename U>
-  // void remove(r_size_t start, r_size_t n, U const& val);
+  template <typename U>
+  r_vec<T> remove(U const& value) const {
+    r_size_t n_remove = count(value);
+    r_size_t n = length();
+
+    if (n_remove == 0){
+      return *this;
+    } else if (n_remove == n){
+      return r_vec<T>();
+    } else {
+      r_vec<T> out(n - n_remove);
+      r_size_t k = 0;
+      for (r_size_t i = 0; i < n; ++i){
+        if (!identical(view(i), value)){
+          out.set(k++, view(i));
+        }
+      }
+      return out;
+    }
+  }
   // template <typename U>
   // void find(r_size_t start, r_size_t n, U const& val);
 
