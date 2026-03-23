@@ -7,11 +7,20 @@ namespace cpp20 {
 
 namespace internal {
 
-template <typename U>
-requires (any<U, r_int, r_int64>)
-r_vec<U> exclude_locs(const r_vec<U>& exclude, unwrap_t<U> xn) {
+template <typename U, typename V = r_int>
+requires (any<U, r_int, r_int64> && any<V, r_int, r_int64>)
+r_vec<V> exclude_locs(const r_vec<U>& exclude, unwrap_t<U> xn) {
 
-  using int_t = unwrap_t<U>;
+  using int_t = unwrap_t<common_math_t<U, V>>;
+
+  if (xn < 0){
+    abort("`xn` must be >= 0");
+  }
+  if constexpr (is<V, r_int>){
+    if (xn > r_limits<r_int>::max()){
+     abort("`xn > r_limits<r_int>::max()`, please use `exclude_locs<%s, r_int64>`", internal::type_str<U>());
+   }
+ }
 
   int_t n = xn;
   int_t m = exclude.length();
@@ -35,7 +44,7 @@ r_vec<U> exclude_locs(const r_vec<U>& exclude, unwrap_t<U> xn) {
     }
   }
   out_size = n - exclude_count;
-  r_vec<U> out(out_size);
+  r_vec<V> out(out_size);
 
   while(k != out_size){
     if (keep[i++] == uint8_t(1)){
@@ -57,6 +66,7 @@ inline r_size_t count_true(const r_vec<r_lgl>& x, const uint_fast64_t n){
 template <typename U = r_int>
 requires (any<U, r_int, r_int64>)
 inline r_vec<U> which(const r_vec<r_lgl>& x, bool invert = false){
+  
   r_size_t n = x.length();
 
   using int_t = unwrap_t<U>;
@@ -91,12 +101,12 @@ inline r_vec<U> which(const r_vec<r_lgl>& x, bool invert = false){
 }
 
 
-template <typename T, typename U>
-requires (any<U, r_lgl, r_int, r_int64, r_str_view, r_str>)
-r_vec<r_int> clean_locs(const r_vec<U>& locs, const r_vec<T>& x){
+template <typename T, typename U, typename V = r_int>
+requires (any<U, r_lgl, r_int, r_int64, r_str_view, r_str> && any<V, r_int, r_int64>)
+r_vec<V> clean_locs(const r_vec<U>& locs, const r_vec<T>& x){
 
   if (locs.is_null()){
-    return r_vec<r_int>(r_null);
+    return r_vec<V>(r_null);
   }
 
   r_size_t xn = x.length();
@@ -109,10 +119,10 @@ r_vec<r_int> clean_locs(const r_vec<U>& locs, const r_vec<T>& x){
     if (names.is_null()){
       abort("Cannot subset on the names of an unnamed vector");
     }
-    r_vec<r_int> matches = match(r_vec<r_str_view>(unwrap(locs), internal::view_tag{}), names);
+    r_vec<V> matches = match<r_str_view, V>(r_vec<r_str_view>(unwrap(locs), internal::view_tag{}), names);
     r_size_t n_na = matches.na_count();
     r_size_t out_size = n - n_na;
-    r_vec<r_int> out(out_size);
+    r_vec<V> out(out_size);
 
     r_size_t k = 0;
     for (r_size_t i = 0; i < n; ++i){
@@ -123,7 +133,7 @@ r_vec<r_int> clean_locs(const r_vec<U>& locs, const r_vec<T>& x){
     if (locs.length() != xn){
       abort("length of indices must match vector length when indices is `r_vec<r_lgl>`");
     }
-    return which(locs, false);
+    return which<V>(locs, false);
   } else {
     r_size_t zero_count = 0,
     pos_count = 0,
@@ -147,11 +157,11 @@ r_vec<r_int> clean_locs(const r_vec<U>& locs, const r_vec<T>& x){
   }
 
   if (neg_count > 0){
-    return internal::exclude_locs(locs, xn);
+    return internal::exclude_locs<V>(locs, xn);
   }
   if (zero_count > 0 || oob_count > 0 || na_count > 0){
     r_size_t out_size = pos_count - oob_count;
-    r_vec<r_int> out(out_size);
+    r_vec<V> out(out_size);
 
     r_size_t k = 0;
     for (r_size_t i = 0; i < n; ++i){
