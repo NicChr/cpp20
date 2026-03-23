@@ -284,6 +284,22 @@ test_var <- function(x, na_rm) {
   .Call(`_cpp20_test_var`, x, na_rm)
 }
 
+test_exclude_locs <- function(n, x) {
+  .Call(`_cpp20_test_exclude_locs`, n, x)
+}
+
+test_clean_locs <- function(locs, x) {
+  .Call(`_cpp20_test_clean_locs`, locs, x)
+}
+
+test_replace <- function(x, y, z) {
+  .Call(`_cpp20_test_replace`, x, y, z)
+}
+
+test_replace2 <- function(x, from, n, val) {
+  .Call(`_cpp20_test_replace2`, x, from, n, val)
+}
+
 test_subset <- function(x, i) {
   .Call(`_cpp20_test_subset`, x, i)
 }

@@ -28,10 +28,10 @@
 #include <cpp20/r_sort.h>
 #include <cpp20/r_groups.h>
 #include <cpp20/r_match.h>
-#include <cpp20/r_subset.h>
 #include <cpp20/r_unique.h>
 #include <cpp20/r_copy.h>
 #include <cpp20/r_coerce.h>
+#include <cpp20/r_subset.h>
 #include <cpp20/r_make_vec.h>
 #include <cpp20/r_df.h>
 #include <cpp20/r_math.h>

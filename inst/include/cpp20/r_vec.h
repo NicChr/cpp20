@@ -11,10 +11,10 @@ namespace cpp20 {
 namespace internal {
 // Concept helpers for location-based subset helpers
 template <typename T>
-concept RSubscript = any<T, r_lgl, r_int, r_int64, r_dbl, r_str_view, r_str>;
+concept RSubscript = any<T, r_lgl, r_int, r_int64, r_str_view, r_str>;
 
 template <typename T>
-concept RIntegerSubscript = any<T, r_int, r_int64>;
+concept RNumericSubscript = any<T, r_int, r_int64>;
 }
 
 template<RVal T>
@@ -309,8 +309,8 @@ struct r_vec {
 
   template <typename U1, typename U2>
   void replace(r_size_t start, r_size_t n, U1 const& old_val, U2 const& new_val){
-    auto old_val2 = internal::as_r<T>(old_val);
-    auto new_val2 = internal::as_r<T>(new_val);
+    T old_val2 = internal::as_r<T>(old_val);
+    T new_val2 = internal::as_r<T>(new_val);
     bool implicit_na_coercion = !cpp20::is_na(old_val) && cpp20::is_na(old_val2);
     if (!implicit_na_coercion){
       if constexpr (internal::RPtrWritableType<T>){
@@ -345,7 +345,9 @@ struct r_vec {
   }
 
   template <internal::RSubscript U>
-  void replace(const r_vec<U>& where, const r_vec<T>& with);
+  void fill(const r_vec<U>& where, const r_vec<T>& with);
+  template <internal::RSubscript U>
+  void replace(const r_vec<U>& where, const r_vec<T>& old_values, const r_vec<T>& new_values);
 
   r_vec<T> resize(r_size_t n){
     r_size_t vec_size = length();
@@ -429,8 +431,8 @@ template <RVal T>
 inline void r_copy_n(r_vec<T>& target, const r_vec<T>& source, r_size_t target_offset, r_size_t n){
 
   if constexpr (internal::RPtrWritableType<T>){
-    auto *p_source = source.data();
-    auto *p_target = target.data();
+    auto* RESTRICT p_target = target.data();
+    auto* RESTRICT p_source = source.data();
 
     int n_threads = internal::calc_threads(n);
     if (n_threads > 1) {

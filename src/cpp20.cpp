@@ -725,6 +725,54 @@ return cpp20::internal::dispatch_template_impl<1, 2, std::array<int, 2>{0, -1}>(
   END_CPP20
 }
 // test_subset.hpp
+extern "C" SEXP _cpp20_test_exclude_locs(SEXP n, SEXP x) {
+  BEGIN_CPP20
+  cpp20::internal::check_r_cpp_mapping<r_int>(n);
+return cpp20::internal::dispatch_template_impl<1, 2, std::array<int, 2>{-1, 0}>(
+    []<typename T>(SEXP n_internal, SEXP x_internal) -> decltype(cpp20::internal::cpp_to_sexp(test_exclude_locs(cpp20::as<std::remove_cvref_t<r_int>>(n_internal), cpp20::as<std::remove_cvref_t<r_vec<T>>>(x_internal)))) {
+        return cpp20::internal::cpp_to_sexp(test_exclude_locs(cpp20::as<std::remove_cvref_t<r_int>>(n_internal), cpp20::as<std::remove_cvref_t<r_vec<T>>>(x_internal)));
+    },
+    n, x
+  );
+  END_CPP20
+}
+// test_subset.hpp
+extern "C" SEXP _cpp20_test_clean_locs(SEXP locs, SEXP x) {
+  BEGIN_CPP20
+  return cpp20::internal::dispatch_template_impl<2, 2, std::array<int, 2>{1, 0}>(
+    []<typename T, typename U>(SEXP locs_internal, SEXP x_internal) -> decltype(cpp20::internal::cpp_to_sexp(test_clean_locs(cpp20::as<std::remove_cvref_t<r_vec<U>>>(locs_internal), cpp20::as<std::remove_cvref_t<r_vec<T>>>(x_internal)))) {
+        return cpp20::internal::cpp_to_sexp(test_clean_locs(cpp20::as<std::remove_cvref_t<r_vec<U>>>(locs_internal), cpp20::as<std::remove_cvref_t<r_vec<T>>>(x_internal)));
+    },
+    locs, x
+  );
+  END_CPP20
+}
+// test_subset.hpp
+extern "C" SEXP _cpp20_test_replace(SEXP x, SEXP y, SEXP z) {
+  BEGIN_CPP20
+  cpp20::internal::check_r_cpp_mapping<r_vec<r_int>>(y);
+return cpp20::internal::dispatch_template_impl<1, 3, std::array<int, 3>{0, -1, 0}>(
+    []<typename T>(SEXP x_internal, SEXP y_internal, SEXP z_internal) -> decltype(cpp20::internal::cpp_to_sexp(test_replace(cpp20::as<std::remove_cvref_t<T>>(x_internal), cpp20::as<std::remove_cvref_t<r_vec<r_int>>>(y_internal), cpp20::as<std::remove_cvref_t<T>>(z_internal)))) {
+        return cpp20::internal::cpp_to_sexp(test_replace(cpp20::as<std::remove_cvref_t<T>>(x_internal), cpp20::as<std::remove_cvref_t<r_vec<r_int>>>(y_internal), cpp20::as<std::remove_cvref_t<T>>(z_internal)));
+    },
+    x, y, z
+  );
+  END_CPP20
+}
+// test_subset.hpp
+extern "C" SEXP _cpp20_test_replace2(SEXP x, SEXP from, SEXP n, SEXP val) {
+  BEGIN_CPP20
+  cpp20::internal::check_r_cpp_mapping<r_int>(from);
+	cpp20::internal::check_r_cpp_mapping<r_int>(n);
+return cpp20::internal::dispatch_template_impl<1, 4, std::array<int, 4>{0, -1, -1, 0}>(
+    []<typename T>(SEXP x_internal, SEXP from_internal, SEXP n_internal, SEXP val_internal) -> decltype(cpp20::internal::cpp_to_sexp(test_replace2(cpp20::as<std::remove_cvref_t<r_vec<T>>>(x_internal), cpp20::as<std::remove_cvref_t<r_int>>(from_internal), cpp20::as<std::remove_cvref_t<r_int>>(n_internal), cpp20::as<std::remove_cvref_t<T>>(val_internal)))) {
+        return cpp20::internal::cpp_to_sexp(test_replace2(cpp20::as<std::remove_cvref_t<r_vec<T>>>(x_internal), cpp20::as<std::remove_cvref_t<r_int>>(from_internal), cpp20::as<std::remove_cvref_t<r_int>>(n_internal), cpp20::as<std::remove_cvref_t<T>>(val_internal)));
+    },
+    x, from, n, val
+  );
+  END_CPP20
+}
+// test_subset.hpp
 extern "C" SEXP _cpp20_test_subset(SEXP x, SEXP i) {
   BEGIN_CPP20
   return cpp20::internal::dispatch_template_impl<2, 2, std::array<int, 2>{0, 1}>(
@@ -751,6 +799,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"_cpp20_test_as_date",              (DL_FUNC) &_cpp20_test_as_date,              1},
     {"_cpp20_test_as_date2",             (DL_FUNC) &_cpp20_test_as_date2,             1},
     {"_cpp20_test_as_sym",               (DL_FUNC) &_cpp20_test_as_sym,               1},
+    {"_cpp20_test_clean_locs",           (DL_FUNC) &_cpp20_test_clean_locs,           2},
     {"_cpp20_test_coerce",               (DL_FUNC) &_cpp20_test_coerce,               2},
     {"_cpp20_test_coerce1",              (DL_FUNC) &_cpp20_test_coerce1,              1},
     {"_cpp20_test_combine2",             (DL_FUNC) &_cpp20_test_combine2,             2},
@@ -762,6 +811,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"_cpp20_test_deduced_scalar_type2", (DL_FUNC) &_cpp20_test_deduced_scalar_type2, 1},
     {"_cpp20_test_deduced_type",         (DL_FUNC) &_cpp20_test_deduced_type,         1},
     {"_cpp20_test_deduced_vec_type",     (DL_FUNC) &_cpp20_test_deduced_vec_type,     1},
+    {"_cpp20_test_exclude_locs",         (DL_FUNC) &_cpp20_test_exclude_locs,         2},
     {"_cpp20_test_factor1",              (DL_FUNC) &_cpp20_test_factor1,              1},
     {"_cpp20_test_factor2",              (DL_FUNC) &_cpp20_test_factor2,              1},
     {"_cpp20_test_group_counts",         (DL_FUNC) &_cpp20_test_group_counts,         2},
@@ -781,6 +831,8 @@ static const R_CallMethodDef CallEntries[] = {
     {"_cpp20_test_null",                 (DL_FUNC) &_cpp20_test_null,                 0},
     {"_cpp20_test_order",                (DL_FUNC) &_cpp20_test_order,                2},
     {"_cpp20_test_range",                (DL_FUNC) &_cpp20_test_range,                2},
+    {"_cpp20_test_replace",              (DL_FUNC) &_cpp20_test_replace,              3},
+    {"_cpp20_test_replace2",             (DL_FUNC) &_cpp20_test_replace2,             4},
     {"_cpp20_test_rval_identity",        (DL_FUNC) &_cpp20_test_rval_identity,        1},
     {"_cpp20_test_scalar",               (DL_FUNC) &_cpp20_test_scalar,               2},
     {"_cpp20_test_scalar2",              (DL_FUNC) &_cpp20_test_scalar2,              2},

@@ -2,43 +2,42 @@
 #define CPP20_R_SUBSET_H
 
 #include <cpp20/r_match.h>
+#include <cpp20/r_coerce.h>
 
 namespace cpp20 {
 
 namespace internal {
 
-template <RIntegerSubscript U, RIntegerSubscript V = r_int>
-r_vec<V> exclude_locs(const r_vec<U>& exclude, unwrap_t<U> xn) {
-
-  using int_t = unwrap_t<common_math_t<U, V>>;
+template <RNumericSubscript U, RNumericSubscript V = r_int>
+r_vec<V> exclude_locs(const r_vec<U>& exclude, r_size_t xn) {
 
   if (xn < 0){
     abort("`xn` must be >= 0");
   }
   if constexpr (is<V, r_int>){
-    if (xn > r_limits<r_int>::max()){
+    if (xn > unwrap(r_limits<r_int>::max())){
      abort("`xn > r_limits<r_int>::max()`, please use `exclude_locs<%s, r_int64>`", internal::type_str<U>());
    }
  }
 
-  int_t n = xn;
-  int_t m = exclude.length();
-  int_t out_size, idx;
-  int_t exclude_count = 0;
-  int_t i = 0, k = 0;
+  r_size_t n = xn;
+  r_size_t m = exclude.length();
+  r_size_t out_size, idx;
+  r_size_t exclude_count = 0;
+  r_size_t i = 0, k = 0;
 
   // Which elements do we keep?
-  std::vector<uint8_t> keep(n, uint8_t(1));
+  std::vector<uint8_t> keep(xn, uint8_t(1));
 
-  for (int_t j = 0; j < m; ++j) {
+  for (r_size_t j = 0; j < m; ++j) {
     if (is_na(exclude.get(j))) continue;
     if (exclude.get(j) > 0){
       abort("Cannot mix positive and negative subscripts");
     }
-    idx = -exclude.get(j);
+    idx = -unwrap(exclude.get(j));
     // Check keep array for already assigned FALSE to avoid double counting
-    if (idx > 0 && idx <= n && keep[idx - 1] == uint8_t(1)){
-      keep[idx - 1] = uint8_t(0);
+    if (idx > 0 && idx <= n && keep[idx - 1] == 1U){
+      keep[idx - 1] = 0U;
       ++exclude_count;
     }
   }
@@ -46,7 +45,7 @@ r_vec<V> exclude_locs(const r_vec<U>& exclude, unwrap_t<U> xn) {
   r_vec<V> out(out_size);
 
   while(k != out_size){
-    if (keep[i++] == uint8_t(1)){
+    if (keep[i++] == 1U){
       out.set(k++, i);
     }
   }
@@ -63,7 +62,7 @@ inline r_size_t count_true(const r_vec<r_lgl>& x, const uint_fast64_t n){
 
 }
 
-template <internal::RIntegerSubscript U = r_int>
+template <internal::RNumericSubscript U = r_int>
 inline r_vec<U> which(const r_vec<r_lgl>& x, bool invert = false){
 
   r_size_t n = x.length();
@@ -71,17 +70,17 @@ inline r_vec<U> which(const r_vec<r_lgl>& x, bool invert = false){
   using int_t = unwrap_t<U>;
 
   if constexpr (is<U, r_int>){
-    if (n > r_limits<r_int>::max()){
+    if ( (n > r_limits<r_int>::max()).is_true()){
       abort("`x` is a long vector, please use which<r_int64> instead");
     }
   }
 
-  int_t true_count = internal::count_true(x, n);
+  r_size_t true_count = internal::count_true(x, n);
   int_t whichi = 0; 
   int_t i = 0; 
 
   if (invert){
-    int_t out_size = n - true_count;
+    r_size_t out_size = n - true_count;
     r_vec<U> out(out_size);
     while (whichi < out_size){
         out.set(whichi, i + 1);
@@ -100,7 +99,7 @@ inline r_vec<U> which(const r_vec<r_lgl>& x, bool invert = false){
 }
 
 
-template <typename T, internal::RSubscript U, internal::RIntegerSubscript V = r_int>
+template <typename T, internal::RSubscript U, internal::RNumericSubscript V = r_int>
 r_vec<V> clean_locs(const r_vec<U>& locs, const r_vec<T>& x){
 
   if (locs.is_null()){
@@ -155,7 +154,7 @@ r_vec<V> clean_locs(const r_vec<U>& locs, const r_vec<T>& x){
   }
 
   if (neg_count > 0){
-    return internal::exclude_locs<V>(locs, xn);
+    return internal::exclude_locs<U, V>(locs, xn);
   }
   if (zero_count > 0 || oob_count > 0 || na_count > 0){
     r_size_t out_size = pos_count - oob_count;
@@ -169,7 +168,7 @@ r_vec<V> clean_locs(const r_vec<U>& locs, const r_vec<T>& x){
     }
     return out;
   }
-  return locs;
+  return as<r_vec<V>>(locs);
   }
 }
 
@@ -182,29 +181,35 @@ inline r_vec<T> r_vec<T>::subset(const r_vec<U>& indices, bool check) const {
   }
 
   if constexpr (RLogicalType<U> || RStringType<U>){
-    return subset(clean_locs(indices, *this), /*check=*/ false);
+    if (is_long()){
+      return subset(clean_locs<T, U, r_int64>(indices, *this), /*check=*/ false);
+    } else {
+      return subset(clean_locs<T, U, r_int>(indices, *this), /*check=*/ false);
+    }
   } else {
 
     using unsigned_int_t = std::make_unsigned_t<unwrap_t<U>>;
-    unsigned_int_t n = indices.length();
+    r_size_t n = indices.length();
 
     r_vec<T> out(n);
 
     if (check){
-      unsigned_int_t
-      xn = length(),
-        k = 0,
-        na_val = unwrap(na<U>()),
-        j;
+      r_size_t xn = length(), k = 0;
+      unsigned_int_t na_val = unwrap(na<U>());
+      unsigned_int_t j;
   
-      for (unsigned_int_t i = 0; i < n; ++i){
+      for (r_size_t i = 0; i < n; ++i){
         j = unwrap(indices.get(i));
-        if (internal::between_impl<unsigned_int_t>(j, unsigned_int_t(1), xn)){
-          out.set(k++, view(--j));
+        if (j >= 1U && static_cast<r_size_t>(j) <= xn){
+          out.set(k++, view(static_cast<r_size_t>(j) - r_size_t(1)));
         } 
         // If j > n_val then it is a negative signed integer
         else if (j > na_val){
-          return subset(internal::exclude_locs(indices, xn));
+          if (is_long()){
+            return subset(internal::exclude_locs<U, r_int64>(indices, xn));
+          } else {
+            return subset(internal::exclude_locs<U, r_int>(indices, xn));
+          }
         } 
         else if (j != 0U){
           out.set(k++, na<T>());
@@ -213,7 +218,7 @@ inline r_vec<T> r_vec<T>::subset(const r_vec<U>& indices, bool check) const {
   
       return out.resize(k);
     } else {
-      for (unsigned_int_t i = 0; i < n; ++i){
+      for (r_size_t i = 0; i < n; ++i){
         out.set(i, view(unwrap(indices.get(i)) - 1));
     }
     return out;
@@ -223,13 +228,11 @@ inline r_vec<T> r_vec<T>::subset(const r_vec<U>& indices, bool check) const {
 
 template <RVal T>
 template <internal::RSubscript U>
-void r_vec<T>::replace(const r_vec<U>& where, const r_vec<T>& with) {
+void r_vec<T>::fill(const r_vec<U>& where, const r_vec<T>& with) {
 
   if (is_null()) return;
 
   r_size_t with_size = with.length();
-
-  r_size_t xi;
   r_size_t withi = 0;
 
   if (is_long()){
@@ -238,7 +241,7 @@ void r_vec<T>::replace(const r_vec<U>& where, const r_vec<T>& with) {
     r_size_t where_size = where_clean.length();
   
     for (r_size_t i = 0; i < where_size; recycle_index(withi, with_size), ++i){
-      set(where_clean.get(i) - 1, with.get(withi));
+      set(unwrap(where_clean.get(i)) - 1, with.get(withi));
     }
   } else {
     // Clean where vector
@@ -246,11 +249,55 @@ void r_vec<T>::replace(const r_vec<U>& where, const r_vec<T>& with) {
     r_size_t where_size = where_clean.length();
   
     for (r_size_t i = 0; i < where_size; recycle_index(withi, with_size), ++i){
-      set(where_clean.get(i) - 1, with.get(withi));
+      set(unwrap(where_clean.get(i)) - 1, with.get(withi));
     }
   }
 }
 
+template <RVal T>
+template <internal::RSubscript U>
+void r_vec<T>::replace(const r_vec<U>& where, const r_vec<T>& old_values, const r_vec<T>& new_values){
+
+  if (is_null()) return;
+
+  r_size_t oldv_size = old_values.length();
+  r_size_t newv_size = new_values.length();
+  r_size_t oldvi = 0, newvi = 0;
+
+  if (is_long()){
+    // Clean where vector
+    r_vec<r_int64> where_clean = clean_locs<T, U, r_int64>(where, *this);
+    r_size_t where_size = where_clean.length();
+    auto* RESTRICT p_where = where_clean.data();
+  
+    for (r_size_t i = 0; i < where_size; 
+      recycle_index(oldvi, oldv_size), 
+      recycle_index(newvi, newv_size),
+      ++i){
+        auto loc = p_where[i] - 1;
+
+        if ( (view(loc) == old_values.view(oldvi)).is_true()){
+          set(loc, new_values.view(newvi));
+        }
+    }
+  } else {
+    // Clean where vector
+    r_vec<r_int> where_clean = clean_locs<T, U, r_int>(where, *this);
+    r_size_t where_size = where_clean.length();
+    auto* RESTRICT p_where = where_clean.data();
+  
+    for (r_size_t i = 0; i < where_size; 
+      recycle_index(oldvi, oldv_size), 
+      recycle_index(newvi, newv_size), 
+      ++i){
+        auto loc = p_where[i] - 1;
+
+        if ( (view(loc) == old_values.view(oldvi)).is_true()){
+          set(loc, new_values.view(newvi));
+        }
+    }
+  }
+}
 
 // 0-indexed negative locations (can't do "everything but first location" with this approach)
 // template <typename U>
