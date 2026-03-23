@@ -652,6 +652,28 @@ extern "C" SEXP _cpp20_test_na_types() {
     return cpp20::internal::cpp_to_sexp(test_na_types());
   END_CPP20
 }
+// test_nas.h
+extern "C" SEXP _cpp20_test_counts(SEXP x, SEXP y) {
+  BEGIN_CPP20
+  return cpp20::internal::dispatch_template_impl<1, 2, std::array<int, 2>{0, 0}>(
+    []<typename T>(SEXP x_internal, SEXP y_internal) -> decltype(cpp20::internal::cpp_to_sexp(test_counts(cpp20::as<std::remove_cvref_t<r_vec<T>>>(x_internal), cpp20::as<std::remove_cvref_t<T>>(y_internal)))) {
+        return cpp20::internal::cpp_to_sexp(test_counts(cpp20::as<std::remove_cvref_t<r_vec<T>>>(x_internal), cpp20::as<std::remove_cvref_t<T>>(y_internal)));
+    },
+    x, y
+  );
+  END_CPP20
+}
+// test_nas.h
+extern "C" SEXP _cpp20_test_remove(SEXP x, SEXP y) {
+  BEGIN_CPP20
+  return cpp20::internal::dispatch_template_impl<1, 2, std::array<int, 2>{0, 0}>(
+    []<typename T>(SEXP x_internal, SEXP y_internal) -> decltype(cpp20::internal::cpp_to_sexp(test_remove(cpp20::as<std::remove_cvref_t<r_vec<T>>>(x_internal), cpp20::as<std::remove_cvref_t<T>>(y_internal)))) {
+        return cpp20::internal::cpp_to_sexp(test_remove(cpp20::as<std::remove_cvref_t<r_vec<T>>>(x_internal), cpp20::as<std::remove_cvref_t<T>>(y_internal)));
+    },
+    x, y
+  );
+  END_CPP20
+}
 // test_sort.h
 extern "C" SEXP _cpp20_test_order(SEXP x, SEXP preserve_ties) {
   BEGIN_CPP20
@@ -805,6 +827,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"_cpp20_test_combine2",             (DL_FUNC) &_cpp20_test_combine2,             2},
     {"_cpp20_test_construct_date",       (DL_FUNC) &_cpp20_test_construct_date,       1},
     {"_cpp20_test_copy",                 (DL_FUNC) &_cpp20_test_copy,                 1},
+    {"_cpp20_test_counts",               (DL_FUNC) &_cpp20_test_counts,               2},
     {"_cpp20_test_dates1",               (DL_FUNC) &_cpp20_test_dates1,               1},
     {"_cpp20_test_dates2",               (DL_FUNC) &_cpp20_test_dates2,               1},
     {"_cpp20_test_deduced_scalar_type",  (DL_FUNC) &_cpp20_test_deduced_scalar_type,  1},
@@ -831,6 +854,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"_cpp20_test_null",                 (DL_FUNC) &_cpp20_test_null,                 0},
     {"_cpp20_test_order",                (DL_FUNC) &_cpp20_test_order,                2},
     {"_cpp20_test_range",                (DL_FUNC) &_cpp20_test_range,                2},
+    {"_cpp20_test_remove",               (DL_FUNC) &_cpp20_test_remove,               2},
     {"_cpp20_test_replace",              (DL_FUNC) &_cpp20_test_replace,              3},
     {"_cpp20_test_replace2",             (DL_FUNC) &_cpp20_test_replace2,             4},
     {"_cpp20_test_rval_identity",        (DL_FUNC) &_cpp20_test_rval_identity,        1},
