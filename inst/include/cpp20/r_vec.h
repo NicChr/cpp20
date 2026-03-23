@@ -178,21 +178,26 @@ struct r_vec {
 
   // IMPORTANT - indices are 1-indexed
   // This has the benefit of allowing empty locations (0) and negative indexing
-  template <typename U>
+  template <typename U> 
   requires (any<U, r_lgl, r_int, r_int64, r_str_view, r_str>)
-  r_vec<T> subset(const r_vec<U>& indices) const;
+  r_vec<T> subset(const r_vec<U>& indices, bool check = true) const;
 
   template <IntegerType U>
-  r_vec<T> subset(U index) const {
+  requires (!any<U, r_lgl, bool>)
+  r_vec<T> subset(U index, bool check = true) const {
     if constexpr (internal::can_definitely_be_int<unwrap_t<U>>()){
-      return subset(r_vec<r_int>(1, internal::as_r<r_int>(index)));
+      return subset(r_vec<r_int>(1, internal::as_r<r_int>(index)), check);
     } else {
-      return subset(r_vec<r_int64>(1, internal::as_r<r_int64>(index)));
+      return subset(r_vec<r_int64>(1, internal::as_r<r_int64>(index)), check);
     }
   }
 
   r_vec<r_str_view> names() const {
-    return r_vec<r_str_view>(Rf_getAttrib(sexp, symbol::names_sym));
+    r_vec<r_str_view> out = r_vec<r_str_view>(Rf_getAttrib(sexp, symbol::names_sym));
+    if (!out.is_null() && out.length() != length()) [[unlikely]] {
+      abort("bad names detected, length of names must match vector length");
+    }
+    return out;
   }
 
   template <RStringType U>
@@ -268,6 +273,7 @@ struct r_vec {
     return na_count() == length();
   }
 
+  // Sequential fill
   template <typename U>
   void fill(r_size_t start, r_size_t n, U const& val){
     auto val2 = internal::as_r<T>(val);
@@ -326,6 +332,10 @@ struct r_vec {
     }
   }
 
+  // template <typename U, typename U1, typename U2>
+  // requires (any<U, r_lgl, r_int, r_int64, r_str_view, r_str>)
+  // void replace(const r_vec<U>& where, const r_vec<T>& with);
+
   r_vec<T> resize(r_size_t n){
     r_size_t vec_size = length();
     if (n == vec_size){
@@ -377,6 +387,9 @@ struct r_vec {
     return out;
   }
 
+  // Forward decl
+  // r_vec<T> remove(r_size_t index) const;
+
 
   // Conditional member functions (only available for certain types)
 
@@ -423,6 +436,13 @@ inline void r_copy_n(r_vec<T>& target, const r_vec<T>& source, r_size_t target_o
     }
   }
 }
+
+// template <RVal T>
+// r_vec<T> r_vec<T>::remove(r_size_t index) const {
+//   std::vector<int> out(3);
+//   out.erase(
+//   if (index 
+// }
 
 // Compact seq generator as ALTREP, same as `seq_len()`
 // ALTREP is currently unsupported due to the overhead in checking altrep
