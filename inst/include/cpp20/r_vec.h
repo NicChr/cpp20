@@ -289,37 +289,24 @@ struct r_vec {
   r_size_t count(U const& value) const {
     r_size_t out = 0;
     r_size_t n = length();
+    
+    T v = internal::as_r<T>(value);
 
-    if constexpr (is<T, U>){
-      if constexpr (is<T, r_sexp>){
-        for (r_size_t i = 0; i < n; ++i){
-          out += identical(view(i), value);
-        }
-      } else {
-        #pragma omp simd reduction(+:out)
-        for (r_size_t i = 0; i < n; ++i){
-          out += identical(view(i), value);
-        }
+    // If there was implicit coercion, then avoid counting matches
+    if (is_na(v) && !is_na(value)){
+      return out;
+    }
+    if constexpr (is<T, r_sexp>){
+      for (r_size_t i = 0; i < n; ++i){
+        out += identical(view(i), v);
       }
     } else {
-      T v = internal::as_r<T>(value);
-
-      // If there was implicit coercion, then avoid counting matches
-      if (is_na(v) && !is_na(value)){
-        return out;
+      #pragma omp simd reduction(+:out)
+      for (r_size_t i = 0; i < n; ++i){
+        out += identical(view(i), v);
       }
-      if constexpr (is<T, r_sexp>){
-        for (r_size_t i = 0; i < n; ++i){
-          out += identical(view(i), v);
-        }
-      } else {
-        #pragma omp simd reduction(+:out)
-        for (r_size_t i = 0; i < n; ++i){
-          out += identical(view(i), v);
-        }
-      }
-
     }
+
     return out;
   }
   // template <typename U>
