@@ -24,6 +24,7 @@
 #include <cpp20/r_exprs.h>
 #include <cpp20/r_fns.h>
 #include <cpp20/r_visit.h>
+#include <cpp20/r_identical.h>
 #include <cpp20/r_hash.h>
 #include <cpp20/r_sort.h>
 #include <cpp20/r_groups.h>
