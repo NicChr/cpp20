@@ -69,7 +69,7 @@ r_vec<V> clean_locs(const r_vec<U>& locs, const r_vec<T>& x){
     if (names.is_null()){
       abort("Cannot subset on the names of an unnamed vector");
     }
-    r_vec<V> matches = match<r_str_view, V>(r_vec<r_str_view>(unwrap(locs), internal::view_tag{}), names);
+    r_vec<V> matches = match<V>(r_vec<r_str_view>(unwrap(locs), internal::view_tag{}), names);
     r_size_t n_na = matches.na_count();
     r_size_t out_size = n - n_na;
     r_vec<V> out(out_size);
@@ -179,6 +179,50 @@ inline r_vec<T> r_vec<T>::subset(const r_vec<U>& indices, bool check) const {
     return out;
   }
 }
+}
+
+// r_vec<T> member functions
+
+template <RVal T>
+template <typename U>
+r_size_t r_vec<T>::count(const r_vec<U>& values) const {
+
+  r_size_t 
+    n_values = values.length(),
+    n_implicit_na_coercions = 0,
+    out = 0;
+
+  if (n_values == 0){
+    return out;
+  } else if (n_values == 1){
+    // Just simple count loop
+    return count(values.view(0)); 
+  }
+
+  // Coerce values to same vec type as r_vec<T>
+
+  r_vec<T> values2 = as<r_vec<T>>(values);
+
+  // Count the number of implicit NA coercions
+
+  for (r_size_t i = 0; i < n_values; ++i){
+    n_implicit_na_coercions += (cpp20::is_na(values2.view(i)) && !cpp20::is_na(values.view(i)));
+  }
+
+  // Have to explicitly request 64-bit matches (annoying)
+  if (is_long()){
+    r_vec<r_int64> matches = match<r_int64>(*this, values2);
+    out = matches.length() - matches.na_count(); // Number of matches
+    out -= n_implicit_na_coercions;
+    out = std::max(out, r_size_t(0));
+    return out;
+  } else {
+    r_vec<r_int> matches = match(*this, values2);
+    out = matches.length() - matches.na_count(); // Number of matches
+    out -= n_implicit_na_coercions;
+    out = std::max(out, r_size_t(0));
+    return out;
+  }
 }
 
 template <RVal T>

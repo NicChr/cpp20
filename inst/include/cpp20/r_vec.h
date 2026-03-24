@@ -428,10 +428,13 @@ struct r_vec {
     }
   }
 
+  template <typename U>
+  r_size_t count(const r_vec<U>& values) const;
   template <internal::RSubscript U>
   void fill(const r_vec<U>& where, const r_vec<T>& with);
   template <internal::RSubscript U>
   void replace(const r_vec<U>& where, const r_vec<T>& old_values, const r_vec<T>& new_values);
+
 
   r_vec<T> resize(r_size_t n){
     r_size_t vec_size = length();

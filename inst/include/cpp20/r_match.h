@@ -6,7 +6,7 @@
 namespace cpp20 {
 
 // 1-indexed match locations
-template <RVal T, typename U = r_int>
+template <typename U = r_int, RVal T>
 requires (is<U, r_int> || is<U, r_int64>)
 r_vec<U> match(const r_vec<T>& needles, const r_vec<T>& haystack) {
 
@@ -15,7 +15,7 @@ r_vec<U> match(const r_vec<T>& needles, const r_vec<T>& haystack) {
 
   if constexpr (is<U, r_int>){
     if (n_haystack > r_limits<r_int>::max()){
-      abort("Cannot match to a long vector, please use match<T, r_int64> instead");
+      abort("Cannot match to a long vector, please use match<r_int64> instead");
     }
   }
 
