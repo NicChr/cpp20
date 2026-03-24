@@ -7,8 +7,18 @@
 #include <cpp20/r_rtype_coerce.h>
 
 namespace cpp20 {
+
+// Forward declaration
+template <typename T, typename U>
+inline constexpr bool identical(const T& a, const U& b);
   
 namespace internal {
+
+template <typename T, typename U>
+inline bool is_implicit_na_coercion(const T& before, const U& after){
+  return !is_na(before) && is_na(after);
+}
+
 // Concept helpers for location-based subset helpers
 template <typename T>
 concept RSubscript = any<T, r_lgl, r_int, r_int64, r_str_view, r_str>;
@@ -403,36 +413,13 @@ struct r_vec {
   void replace(r_size_t start, r_size_t n, U1 const& old_val, U2 const& new_val){
     T old_val2 = internal::as_r<T>(old_val);
     T new_val2 = internal::as_r<T>(new_val);
-    bool implicit_na_coercion = !cpp20::is_na(old_val) && cpp20::is_na(old_val2);
-    if (!implicit_na_coercion){
-      if constexpr (internal::RPtrWritableType<T>){
-        int n_threads = internal::calc_threads(n);
-        auto *p_target = data();
-        if (n_threads > 1) {
-          OMP_PARALLEL_FOR_SIMD(n_threads)
-          for (r_size_t i = 0; i < n; ++i) {
-            r_lgl eq = p_target[start + i] == old_val2;
-            if (eq.is_true()){
-              p_target[start + i] = unwrap(new_val2);
-            }
-          }
-        } else {
-          OMP_SIMD
-          for (r_size_t i = 0; i < n; ++i) {
-            r_lgl eq = p_target[start + i] == old_val2;
-            if (eq.is_true()){
-              p_target[start + i] = unwrap(new_val2);
-            }
-          }
-        }
-      } else {
+    if (!internal::is_implicit_na_coercion(old_val, old_val2)){
         for (r_size_t i = 0; i < n; ++i) {
           r_size_t idx = start + i;
-          if (view(idx) == old_val2){
+          if (identical(view(idx), old_val2)){
             set(idx, new_val2);
           }
         }
-      }
     }
   }
 

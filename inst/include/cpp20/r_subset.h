@@ -8,11 +8,6 @@ namespace cpp20 {
 
 namespace internal {
 
-template <typename T, typename U>
-inline bool is_implicit_na_coercion(const T& before, const U& after){
-  return !is_na(before) && is_na(after);
-}
-
 template <RNumericSubscript V = r_int, RNumericSubscript U>
 r_vec<V> exclude_locs(const r_vec<U>& exclude, r_size_t xn) {
 
@@ -343,14 +338,13 @@ void r_vec<T>::replace(const r_vec<U1>& old_values, const r_vec<U2>& new_values)
 
   r_vec<T> prev = as<r_vec<T>>(old_values);
   r_vec<T> repl = as<r_vec<T>>(new_values);
-  
+
   for (r_size_t i = 0; i < n; 
     recycle_index(oldvi, oldv_size), 
     recycle_index(newvi, newv_size), 
     ++i){
       if (identical(view(i), prev.view(oldvi)) && 
-      !internal::is_implicit_na_coercion(old_values.view(oldvi), prev.view(oldvi)) && 
-      !internal::is_implicit_na_coercion(new_values.view(newvi), repl.view(newvi))){
+      !internal::is_implicit_na_coercion(old_values.view(oldvi), prev.view(oldvi))){
         set(i, repl.view(newvi));
       }
   }
