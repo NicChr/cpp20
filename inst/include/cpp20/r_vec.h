@@ -438,8 +438,8 @@ struct r_vec {
   r_vec<T> remove(const r_vec<U>& values) const;
   template <internal::RSubscript U, typename V>
   void fill(const r_vec<U>& where, const r_vec<V>& with);
-  template <internal::RSubscript U>
-  void replace(const r_vec<U>& where, const r_vec<T>& old_values, const r_vec<T>& new_values);
+  template <typename U1, typename U2>
+  void replace(const r_vec<U1>& old_values, const r_vec<U2>& new_values);
 
 
   r_vec<T> resize(r_size_t n){

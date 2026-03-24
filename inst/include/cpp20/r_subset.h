@@ -8,6 +8,11 @@ namespace cpp20 {
 
 namespace internal {
 
+template <typename T, typename U>
+inline bool is_implicit_na_coercion(const T& before, const U& after){
+  return !is_na(before) && is_na(after);
+}
+
 template <RNumericSubscript V = r_int, RNumericSubscript U>
 r_vec<V> exclude_locs(const r_vec<U>& exclude, r_size_t xn) {
 
@@ -206,7 +211,7 @@ r_size_t r_vec<T>::count(const r_vec<U>& values) const {
   // Count the number of implicit NA coercions
 
   for (r_size_t i = 0; i < n_values; ++i){
-    n_implicit_na_coercions += (cpp20::is_na(values2.view(i)) && !cpp20::is_na(values.view(i)));
+    n_implicit_na_coercions += internal::is_implicit_na_coercion(values.view(i), values2.view(i));
   }
 
   // Have to explicitly request 64-bit matches (annoying)
@@ -265,7 +270,7 @@ r_vec<V> r_vec<T>::find(const r_vec<U>& values, bool invert) const {
   r_size_t k = 0;
   r_vec<V> exclude(n_values, 0); // Fill with 0 to signify no exclusions by default
   for (r_size_t i = 0; i < n_values; ++i){
-    bool implicit_na_coercion = (cpp20::is_na(values2.view(i)) && !cpp20::is_na(values.view(i)));
+    bool implicit_na_coercion = internal::is_implicit_na_coercion(values.view(i), values2.view(i));
     if (implicit_na_coercion){
       exclude.set(k++, -(i + 1));
     }
@@ -324,47 +329,30 @@ void r_vec<T>::fill(const r_vec<U>& where, const r_vec<V>& with) {
 }
 
 template <RVal T>
-template <internal::RSubscript U>
-void r_vec<T>::replace(const r_vec<U>& where, const r_vec<T>& old_values, const r_vec<T>& new_values){
+template <typename U1, typename U2>
+void r_vec<T>::replace(const r_vec<U1>& old_values, const r_vec<U2>& new_values){
 
   if (is_null()) return;
 
+  r_size_t n = length();
   r_size_t oldv_size = old_values.length();
   r_size_t newv_size = new_values.length();
   r_size_t oldvi = 0, newvi = 0;
 
-  if (is_long()){
-    // Clean where vector
-    r_vec<r_int64> where_clean = internal::clean_locs<r_int64>(where, *this);
-    r_size_t where_size = where_clean.length();
-    auto* RESTRICT p_where = where_clean.data();
-  
-    for (r_size_t i = 0; i < where_size; 
-      recycle_index(oldvi, oldv_size), 
-      recycle_index(newvi, newv_size),
-      ++i){
-        r_size_t loc = static_cast<r_size_t>(p_where[i]) - 1;
+  if (oldv_size == 0 || newv_size == 0) return;
 
-        if ( (view(loc) == old_values.view(oldvi)).is_true()){
-          set(loc, new_values.view(newvi));
-        }
-    }
-  } else {
-    // Clean where vector
-    r_vec<r_int> where_clean = internal::clean_locs<r_int>(where, *this);
-    r_size_t where_size = where_clean.length();
-    auto* RESTRICT p_where = where_clean.data();
+  r_vec<T> prev = as<r_vec<T>>(old_values);
+  r_vec<T> repl = as<r_vec<T>>(new_values);
   
-    for (r_size_t i = 0; i < where_size; 
-      recycle_index(oldvi, oldv_size), 
-      recycle_index(newvi, newv_size), 
-      ++i){
-        r_size_t loc = static_cast<r_size_t>(p_where[i]) - 1;
-
-        if ( (view(loc) == old_values.view(oldvi)).is_true()){
-          set(loc, new_values.view(newvi));
-        }
-    }
+  for (r_size_t i = 0; i < n; 
+    recycle_index(oldvi, oldv_size), 
+    recycle_index(newvi, newv_size), 
+    ++i){
+      if (identical(view(i), prev.view(oldvi)) && 
+      !internal::is_implicit_na_coercion(old_values.view(oldvi), prev.view(oldvi)) && 
+      !internal::is_implicit_na_coercion(new_values.view(newvi), repl.view(newvi))){
+        set(i, repl.view(newvi));
+      }
   }
 }
 
