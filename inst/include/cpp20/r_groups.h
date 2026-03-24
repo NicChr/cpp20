@@ -166,7 +166,7 @@ inline groups make_unordered_groups(const r_vec<T>& x) {
     if (n == 0) return groups();
 
     // Table Method (For int with small range)
-    if constexpr (is<key_type, int>) {
+    if constexpr (is<T, r_int>) {
 
         r_vec<T> rng = range(x, /*na_rm=*/true);
         
@@ -214,12 +214,6 @@ inline groups make_unordered_groups(const r_vec<T>& x) {
             
             for(r_size_t i = 0; i < n; ++i) {
                 int val = p_x[i];
-                
-                // Linear Scan Cache
-                if (i > 0 && val == p_x[i-1]) {
-                    p_id[i] = last_id;
-                    continue;
-                }
 
                 int id;
                 if (val == NA_INTEGER) {
