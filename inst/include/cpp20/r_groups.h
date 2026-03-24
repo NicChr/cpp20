@@ -13,7 +13,7 @@ struct groups {
   r_vec<r_int> ids; 
   int n_groups = 0;
   bool ordered = true;
-  bool sorted = true;
+  bool sorted = true; 
 
   // Default constructor
   groups() = default;
@@ -153,7 +153,7 @@ inline groups make_groups_from_order(const r_vec<T>& x, const r_vec<r_int>& o) {
 }
 
 template <RVal T>
-inline groups make_unordered_groups(const r_vec<T>& x) {
+inline groups make_unordered_groups(const r_vec<T>& x) { 
 
     using key_type = unwrap_t<T>;
     r_size_t n = x.length();
@@ -201,8 +201,7 @@ inline groups make_unordered_groups(const r_vec<T>& x) {
             // --- FAST TABLE PATH ---
             
             // Table maps (value - min_val) -> group_id
-            // std::vector<int> table(range_span + 1, -1);
-            r_vec<r_int> table(range_span + 1, -1);
+            std::vector<int> table(range_span + 1, -1);
             int na_group_id = -1; // Special slot for NA
             
             auto* RESTRICT p_x = x.data();
@@ -210,7 +209,6 @@ inline groups make_unordered_groups(const r_vec<T>& x) {
             auto* RESTRICT p_table = table.data();
             
             int next_id = 0;
-            int last_id = 0;
             
             for(r_size_t i = 0; i < n; ++i) {
                 int val = p_x[i];
@@ -223,7 +221,7 @@ inline groups make_unordered_groups(const r_vec<T>& x) {
                     id = na_group_id;
                 } else {
                     // Safe subtraction because we validated range
-                    size_t idx = static_cast<size_t>((long long)val - min_val);
+                    size_t idx = static_cast<size_t>(val - min_val);
                   
                     id = p_table[idx];
                     if (id == -1) {
@@ -231,12 +229,16 @@ inline groups make_unordered_groups(const r_vec<T>& x) {
                         p_table[idx] = id;
                     }
                 }
-                
                 p_id[i] = id;
-                if (g.sorted && id < last_id) g.sorted = false;
-                last_id = id;
             }
             g.n_groups = next_id;
+            // check if group IDs are sorted
+            for (r_size_t i = 1; i < n; ++i) {
+              if (p_id[i] < p_id[i - 1]){ 
+                  g.sorted = false; 
+                  break; 
+              }
+            }
             return g;
         }
       }
@@ -253,28 +255,24 @@ inline groups make_unordered_groups(const r_vec<T>& x) {
       auto* RESTRICT p_id = g.ids.data();
     
       int next_id = 0;
-      int last_id = 0;
-      int id;
     
       for (r_size_t i = 0; i < n; ++i) {
         key_type key = p_x[i];
         auto [it, inserted] = lookup.try_emplace(key, next_id);
         if (inserted) {
-          id = next_id++;
+            p_id[i] = next_id++;
         } else {
-          id = it->second;
+            p_id[i] = it->second;
         }
-
-        p_id[i] = id;
-    
-        // check if group IDs are sorted
-        // Since g.sorted was set to true by default, once it's set to false we don't need to set again
-        if (g.sorted && id < last_id){
-          g.sorted = false;
-        }
-        last_id = id;
       }
-    
+
+      // check if group IDs are sorted
+      for (r_size_t i = 1; i < n; ++i) {
+        if (p_id[i] < p_id[i - 1]){ 
+            g.sorted = false; 
+            break; 
+        }
+      }
       g.n_groups = next_id;
       return g;
 }
