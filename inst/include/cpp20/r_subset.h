@@ -83,7 +83,7 @@ r_vec<V> clean_locs(const r_vec<U>& locs, const r_vec<T>& x){
     if (locs.length() != xn){
       abort("length of indices must match vector length when indices is `r_vec<r_lgl>`");
     }
-    return locs.template find<r_lgl, V>(r_true, false);
+    return locs.template find<V>(r_true, false);
   } else {
     r_size_t zero_count = 0,
     pos_count = 0,

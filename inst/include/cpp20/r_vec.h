@@ -331,7 +331,7 @@ struct r_vec {
       return out;
     }
   }
-  template <typename U, internal::RNumericSubscript V = r_int>
+  template <internal::RNumericSubscript V = r_int, typename U>
   r_vec<V> find(U const& value, bool invert = false) const {
 
     r_size_t n = length();
@@ -340,7 +340,7 @@ struct r_vec {
   
     if constexpr (is<V, r_int>){
       if ( (n > r_limits<r_int>::max()).is_true()){
-        abort("`x` is a long vector, please use find<U, r_int64> instead");
+        abort("`x` is a long vector, please use find<r_int64> instead");
       }
     }
 
@@ -430,6 +430,8 @@ struct r_vec {
 
   template <typename U>
   r_size_t count(const r_vec<U>& values) const;
+  template <typename U>
+  r_vec<T> remove(const r_vec<U>& values) const;
   template <internal::RSubscript U>
   void fill(const r_vec<U>& where, const r_vec<T>& with);
   template <internal::RSubscript U>
