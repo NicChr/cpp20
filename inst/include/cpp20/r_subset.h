@@ -52,7 +52,7 @@ r_vec<V> exclude_locs(const r_vec<U>& exclude, r_size_t xn) {
   return out;
 }
 
-template <typename T, internal::RSubscript U, internal::RNumericSubscript V = r_int>
+template <internal::RNumericSubscript V = r_int, typename T, internal::RSubscript U>
 r_vec<V> clean_locs(const r_vec<U>& locs, const r_vec<T>& x){
 
   if (locs.is_null()){
@@ -137,9 +137,9 @@ inline r_vec<T> r_vec<T>::subset(const r_vec<U>& indices, bool check) const {
 
   if constexpr (RLogicalType<U> || RStringType<U>){
     if (is_long()){
-      return subset(internal::clean_locs<T, U, r_int64>(indices, *this), /*check=*/ false);
+      return subset(internal::clean_locs<r_int64>(indices, *this), /*check=*/ false);
     } else {
-      return subset(internal::clean_locs<T, U, r_int>(indices, *this), /*check=*/ false);
+      return subset(internal::clean_locs<r_int>(indices, *this), /*check=*/ false);
     }
   } else {
 
@@ -280,7 +280,7 @@ void r_vec<T>::fill(const r_vec<U>& where, const r_vec<T>& with) {
 
   if (is_long()){
     // Clean where vector
-    r_vec<r_int64> where_clean = internal::clean_locs<T, U, r_int64>(where, *this);
+    r_vec<r_int64> where_clean = internal::clean_locs<r_int64>(where, *this);
     r_size_t where_size = where_clean.length();
   
     for (r_size_t i = 0; i < where_size; recycle_index(withi, with_size), ++i){
@@ -288,7 +288,7 @@ void r_vec<T>::fill(const r_vec<U>& where, const r_vec<T>& with) {
     }
   } else {
     // Clean where vector
-    r_vec<r_int> where_clean = internal::clean_locs<T, U, r_int>(where, *this);
+    r_vec<r_int> where_clean = internal::clean_locs<r_int>(where, *this);
     r_size_t where_size = where_clean.length();
   
     for (r_size_t i = 0; i < where_size; recycle_index(withi, with_size), ++i){
@@ -309,7 +309,7 @@ void r_vec<T>::replace(const r_vec<U>& where, const r_vec<T>& old_values, const 
 
   if (is_long()){
     // Clean where vector
-    r_vec<r_int64> where_clean = clean_locs<T, U, r_int64>(where, *this);
+    r_vec<r_int64> where_clean = clean_locs<r_int64>(where, *this);
     r_size_t where_size = where_clean.length();
     auto* RESTRICT p_where = where_clean.data();
   
@@ -325,7 +325,7 @@ void r_vec<T>::replace(const r_vec<U>& where, const r_vec<T>& old_values, const 
     }
   } else {
     // Clean where vector
-    r_vec<r_int> where_clean = clean_locs<T, U, r_int>(where, *this);
+    r_vec<r_int> where_clean = clean_locs<r_int>(where, *this);
     r_size_t where_size = where_clean.length();
     auto* RESTRICT p_where = where_clean.data();
   
