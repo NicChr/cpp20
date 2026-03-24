@@ -57,7 +57,7 @@ struct groups {
         // Initialise with largest int
         // so that for each group we take the min(out[i], i)
         // After passing through all data, this should reduce to the first location for each group
-        out.fill(0, n_groups, r_limits<r_int>::max());
+        out.fill(r_limits<r_int>::max());
         
         const int* RESTRICT p_ids = ids.data();
         int* RESTRICT p_out = out.data();
@@ -190,7 +190,7 @@ inline groups make_unordered_groups(const r_vec<T>& x) {
 
         if (all_nas) {
           // If all NAs, just return all zeroes
-          g.ids.fill(0, n, 0);
+          g.ids.fill(0);
           g.n_groups = 1;
           g.sorted = true;
           return g;

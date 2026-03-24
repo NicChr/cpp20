@@ -393,6 +393,12 @@ struct r_vec {
     }
   }
 
+  // Fill entire vector with value
+  template <typename U>
+  void fill(U const& val){
+    fill(0, length(), val);
+  }
+
   template <typename U1, typename U2>
   void replace(r_size_t start, r_size_t n, U1 const& old_val, U2 const& new_val){
     T old_val2 = internal::as_r<T>(old_val);
@@ -428,6 +434,12 @@ struct r_vec {
         }
       }
     }
+  }
+
+  // Replace all occurrences of old_val with new_val
+  template <typename U1, typename U2>
+  void replace(U1 const& old_val, U2 const& new_val){
+    replace(0, length(), old_val, new_val);
   }
 
   template <typename U>
@@ -472,7 +484,7 @@ struct r_vec {
     r_vec<T> out(n);
 
     if (size == 1){
-      out.fill(0, n, view(0));
+      out.fill(view(0));
     } else if (n > 0 && size > 0){
       // Copy first block
       r_copy_n(out, *this, 0, std::min(size, n));
@@ -488,7 +500,7 @@ struct r_vec {
     }
       // If length > 0 but length(x) == 0 then fill with NA
     } else if (size == 0 && n > 0){
-      out.fill(0, n, na<T>());
+      out.fill(na<T>());
     }
     return out;
   }
