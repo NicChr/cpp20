@@ -260,14 +260,6 @@ test_na_types <- function() {
   .Call(`_cpp20_test_na_types`)
 }
 
-test_counts <- function(x, y) {
-  .Call(`_cpp20_test_counts`, x, y)
-}
-
-test_remove <- function(x, y) {
-  .Call(`_cpp20_test_remove`, x, y)
-}
-
 test_order <- function(x, preserve_ties) {
   .Call(`_cpp20_test_order`, x, preserve_ties)
 }
@@ -292,22 +284,26 @@ test_var <- function(x, na_rm) {
   .Call(`_cpp20_test_var`, x, na_rm)
 }
 
-test_exclude_locs <- function(n, x) {
-  .Call(`_cpp20_test_exclude_locs`, n, x)
+test_subset <- function(x, i) {
+  .Call(`_cpp20_test_subset`, x, i)
 }
 
-test_clean_locs <- function(locs, x) {
-  .Call(`_cpp20_test_clean_locs`, locs, x)
+test_fill <- function(x, where, with) {
+  .Call(`_cpp20_test_fill`, x, where, with)
+}
+
+test_counts <- function(x, y) {
+  .Call(`_cpp20_test_counts`, x, y)
+}
+
+test_remove <- function(x, y) {
+  .Call(`_cpp20_test_remove`, x, y)
+}
+
+test_find <- function(x, y) {
+  .Call(`_cpp20_test_find`, x, y)
 }
 
 test_replace <- function(x, y, z) {
   .Call(`_cpp20_test_replace`, x, y, z)
-}
-
-test_replace2 <- function(x, from, n, val) {
-  .Call(`_cpp20_test_replace2`, x, from, n, val)
-}
-
-test_subset <- function(x, i) {
-  .Call(`_cpp20_test_subset`, x, i)
 }
