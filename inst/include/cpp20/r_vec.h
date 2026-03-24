@@ -171,18 +171,18 @@ struct r_vec {
   void set(U index, const V& val) {
     // Avoid copies and extra protections (especially of r_sexp/r_str)
     if constexpr (is<T, V>){
-      if constexpr (any<T, r_sexp, r_sym>){
-        SET_VECTOR_ELT(sexp, index, unwrap(val));
-      } else if constexpr (RStringType<T>){
-        SET_STRING_ELT(sexp, index, unwrap(val));
+      if constexpr (RStringType<T>){
+        SET_STRING_ELT(sexp, index, val);
+      } else if constexpr (RObject<T>){
+        SET_VECTOR_ELT(sexp, index, val);
       } else {
         m_ptr[index] = unwrap(val);
       }
     } else {
-      if constexpr (any<T, r_sexp, r_sym>){
-        SET_VECTOR_ELT(sexp, index, unwrap(cpp20::internal::as_r<T>(val)));
-      } else if constexpr (RStringType<T>){
-        SET_STRING_ELT(sexp, index, unwrap(cpp20::internal::as_r<T>(val)));
+      if constexpr (RStringType<T>){
+        SET_STRING_ELT(sexp, index, cpp20::internal::as_r<T>(val));
+      } else if constexpr (RObject<T>){
+        SET_VECTOR_ELT(sexp, index, cpp20::internal::as_r<T>(val));
       } else {
         m_ptr[index] = unwrap(cpp20::internal::as_r<T>(val));
       }
