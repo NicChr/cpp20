@@ -6,7 +6,7 @@
 #endif
 
 #include <cpp11/sexp.hpp> // For cpp11::sexp
-#include <type_traits> // For concepts
+#include <type_traits> // For concepts`
 #include <ankerl/unordered_dense.h> // Hash maps for group IDs + unique + match
 #include <cstdint> // For uint32_t and similar
 #include <cstring> // For strcmp
@@ -14,7 +14,6 @@
 #include <charconv> // For to_chars
 #include <complex> // For complex<double>
 #include <limits> // For numeric limits
-#include <vector> // For C++ vectors
 #include <algorithm> // For sort + other utilities
 #include <bit> // For bit_cast
 #include <ska_sort/ska_sort.hpp> // For radix sorting via ska_sort

@@ -4,6 +4,7 @@
 #include <cpp20/r_vec.h>
 #include <cpp20/r_hash.h>
 #include <cpp20/r_stats.h>
+#include <vector> // For C++ vectors
 
 namespace cpp20 {
 

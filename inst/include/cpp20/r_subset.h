@@ -3,6 +3,7 @@
 
 #include <cpp20/r_match.h>
 #include <cpp20/r_coerce.h>
+#include <vector> // For C++ vectors
 
 namespace cpp20 {
 
