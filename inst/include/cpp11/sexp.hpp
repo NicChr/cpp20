@@ -1,8 +1,6 @@
 #pragma once
 
 #include <cstddef>  // for size_t
-#include <string>   // for string, basic_string
-
 #include <cpp11/R.hpp>                // for SEXP, SEXPREC, REAL_ELT, R_NilV...
 #include <cpp11/protect.hpp>          // for store
 
@@ -46,8 +44,8 @@ class sexp {
 
   ~sexp() { detail::store::release(preserve_token_); }
 
-  operator SEXP() const { return data_; }
-  SEXP data() const { return data_; }
+  constexpr operator SEXP() const noexcept { return data_; }
+  constexpr SEXP data() const noexcept { return data_; }
 };
 
 }  // namespace cpp11
