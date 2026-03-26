@@ -3,7 +3,6 @@
 #include <csetjmp>    // for longjmp, setjmp, jmp_buf
 #include <exception>  // for exception
 #include <stdexcept>  // for std::runtime_error
-#include <string>     // for string, basic_string
 #include <tuple>      // for tuple, make_tuple
 
 // NB: cpp11/R.hpp must precede R_ext/Error.h to ensure R_NO_REMAP is defined
@@ -13,16 +12,6 @@
 #include <R_ext/Error.h>    // for Rf_error, Rf_warning
 #include <R_ext/Print.h>    // for REprintf
 #include <R_ext/Utils.h>    // for R_CheckUserInterrupt
-
-// We would like to remove this, since all supported versions of R now support proper
-// unwind protect, but some groups rely on it existing, like arrow and systemfonts
-// https://github.com/r-lib/cpp11/issues/412
-#define HAS_UNWIND_PROTECT
-
-#ifdef CPP11_USE_FMT
-#define FMT_HEADER_ONLY
-#include "fmt/core.h"
-#endif
 
 namespace cpp11 {
 class unwind_exception : public std::exception {
@@ -188,51 +177,15 @@ constexpr struct protect safe = {};
 
 inline void check_user_interrupt() { safe[R_CheckUserInterrupt](); }
 
-#ifdef CPP11_USE_FMT
-template <typename... Args>
-void stop [[noreturn]] (const char* fmt_arg, Args&&... args) {
-  std::string msg = fmt::format(fmt_arg, std::forward<Args>(args)...);
-  safe.noreturn(Rf_errorcall)(R_NilValue, "%s", msg.c_str());
-}
-
-template <typename... Args>
-void stop [[noreturn]] (const std::string& fmt_arg, Args&&... args) {
-  std::string msg = fmt::format(fmt_arg, std::forward<Args>(args)...);
-  safe.noreturn(Rf_errorcall)(R_NilValue, "%s", msg.c_str());
-}
-
-template <typename... Args>
-void warning(const char* fmt_arg, Args&&... args) {
-  std::string msg = fmt::format(fmt_arg, std::forward<Args>(args)...);
-  safe[Rf_warningcall](R_NilValue, "%s", msg.c_str());
-}
-
-template <typename... Args>
-void warning(const std::string& fmt_arg, Args&&... args) {
-  std::string msg = fmt::format(fmt_arg, std::forward<Args>(args)...);
-  safe[Rf_warningcall](R_NilValue, "%s", msg.c_str());
-}
-#else
 template <typename... Args>
 void stop [[noreturn]] (const char* fmt, Args... args) {
   safe.noreturn(Rf_errorcall)(R_NilValue, fmt, args...);
 }
 
 template <typename... Args>
-void stop [[noreturn]] (const std::string& fmt, Args... args) {
-  safe.noreturn(Rf_errorcall)(R_NilValue, fmt.c_str(), args...);
-}
-
-template <typename... Args>
 void warning(const char* fmt, Args... args) {
   safe[Rf_warningcall](R_NilValue, fmt, args...);
 }
-
-template <typename... Args>
-void warning(const std::string& fmt, Args... args) {
-  safe[Rf_warningcall](R_NilValue, fmt.c_str(), args...);
-}
-#endif
 
 namespace detail {
 
