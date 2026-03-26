@@ -34,7 +34,7 @@
 #include <cpp20/r_coerce.h>
 #include <cpp20/r_subset.h>
 #include <cpp20/r_make_vec.h>
-#include <cpp20/r_df.h>
+// #include <cpp20/r_df.h>
 #include <cpp20/r_math.h>
 #include <cpp20/r_seq.h>
 

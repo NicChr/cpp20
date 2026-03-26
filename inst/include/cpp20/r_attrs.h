@@ -11,7 +11,7 @@ namespace attr {
 
 template <RObject T>
 inline bool can_have_attributes(const T& x){
-  if constexpr (any<T, r_factors, r_df> || RVector<T>){
+  if constexpr (RVector<T> || RMetaVector<T>){
     return true; 
   } else if constexpr (is_sexp<T>){
     switch (TYPEOF(x)){
@@ -44,7 +44,7 @@ inline bool can_have_attributes(const T& x){
 
 template <RObject T>
 inline bool can_have_names(const T& x){
-  if constexpr (any<T, r_factors, r_df> || RVector<T>){
+  if constexpr (RVector<T> || RMetaVector<T>){
     return true; 
   } else if constexpr (is_sexp<T>){
     switch (TYPEOF(x)){
