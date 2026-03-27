@@ -154,7 +154,7 @@ inline constexpr bool is_na_impl<r_raw>(r_raw const& x){
 
 }
 
-template<typename T>
+template <typename T>
 inline constexpr bool is_na(T const& x) {
     return internal::is_na_impl<std::remove_cvref_t<T>>(x);
 }

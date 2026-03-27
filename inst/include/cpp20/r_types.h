@@ -2,9 +2,9 @@
 #define CPP20_R_TYPES_H
 
 #include <cpp20/r_setup.h>
+#include <cpp20/r_concepts.h>
 #include <cpp20/protect.hpp>
 #include <cstddef>  // for size_t
-#include <cpp20/r_concepts.h>
 #include <chrono> // For r_date/r_psxt
 #include <limits>
 
