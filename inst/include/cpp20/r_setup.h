@@ -1,10 +1,6 @@
 #ifndef CPP20_R_SETUP_H
 #define CPP20_R_SETUP_H
 
-#ifndef R_NO_REMAP
-#define R_NO_REMAP 
-#endif
-
 #ifdef R_INTERNALS_H_
 #if !(defined(R_NO_REMAP) && defined(STRICT_R_HEADERS))
 #error R headers were included before cpp20 headers \
@@ -35,6 +31,13 @@
 # pragma GCC diagnostic ignored "-Wattributes"
 #endif
 // clang-format on
+
+// The R parser will search for the string "[[cpp20::register]]"
+#ifdef __R_GENERATE_
+  #define CPP20_REGISTER [[cpp20::register]]
+#else
+  #define CPP20_REGISTER 
+#endif
 
 #include <complex> // For complex<double>
 #include <cstdint> // For uint32_t and similar

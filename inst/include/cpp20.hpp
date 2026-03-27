@@ -5,7 +5,6 @@
 // License: MIT
 // Author: Nick Christofides
 
-#include <cpp20/register.hpp>
 #include <cpp20/r_setup.h>
 #include <cpp20/r_concepts.h> // Concepts and forward declarations
 #include <cpp20/r_utils.h>
