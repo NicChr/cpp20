@@ -2,7 +2,7 @@
 // clang-format off
 
 
-#include <cpp20/dispatch.hpp>
+#include <cpp20/r_dispatch.h>
 using namespace cpp20;
 #include <R_ext/Visibility.h>
 #include "test.h"

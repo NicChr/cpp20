@@ -3,7 +3,7 @@
 
 #include <cpp20/r_setup.h>
 #include <cpp20/r_concepts.h>
-#include <cpp20/protect.hpp>
+#include <cpp20/r_protect.h>
 #include <cstddef>  // for size_t
 #include <chrono> // For r_date/r_psxt
 #include <limits>

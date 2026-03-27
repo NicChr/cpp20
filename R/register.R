@@ -361,12 +361,6 @@ get_call_entries <- function(path, names, package) {
   res[seq(mid, end)]
 }
 
-pkg_links_to_rcpp <- function(path) {
-  deps <- desc::desc_get_deps(file.path(path, "DESCRIPTION"))
-
-  any(deps$type == "LinkingTo" & deps$package == "Rcpp")
-}
-
 get_cpp_register_needs <- function() {
   res <- read.dcf(system.file("DESCRIPTION", package = "cpp20"))[, "Config/Needs/cpp20/cpp_register"]
   strsplit(res, "[[:space:]]*,[[:space:]]*")[[1]]
@@ -477,10 +471,6 @@ cpp_register <- function(path = ".", quiet = !is_interactive(), extension = c(".
   cpp_function_registration <- glue::glue_collapse(cpp_function_registration, sep  = "\n")
 
   extra_includes <- character()
-  if (pkg_links_to_rcpp(path)) {
-    extra_includes <- c(extra_includes, "#include <cpp11/R.hpp>", "#include <Rcpp.h>", "using namespace Rcpp;")
-  }
-
   extra_includes <- paste0(extra_includes, collapse = "\n")
 
   user_header_files <- unique(funs$file[is_header(funs$file)])
@@ -493,7 +483,7 @@ cpp_register <- function(path = ".", quiet = !is_interactive(), extension = c(".
       // clang-format off
 
       {extra_includes}
-      #include <cpp20/dispatch.hpp>
+      #include <cpp20/r_dispatch.h>
       using namespace cpp20;
       #include <R_ext/Visibility.h>
       {user_includes}

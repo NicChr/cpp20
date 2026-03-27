@@ -1,6 +1,5 @@
-#ifndef CPP20_DISPATCH_HPP
-#define CPP20_DISPATCH_HPP
-
+#ifndef CPP20_R_DISPATCH_H
+#define CPP20_R_DISPATCH_H
 
 // Runtime dispatch for templated and non-templated C++ functions registered to R
 // The dispatch is mainly driven by a modified version of R's TYPEOF

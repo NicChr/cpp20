@@ -1,4 +1,5 @@
-#pragma once
+#ifndef CPP20_R_PROTECT_H
+#define CPP20_R_PROTECT_H
 
 #include <csetjmp>
 #include <exception>
@@ -159,3 +160,5 @@ inline void print() {
 } // namespace detail
 
 } // namespace cpp20
+
+#endif
