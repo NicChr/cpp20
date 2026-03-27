@@ -1,7 +1,6 @@
 #ifndef CPP20_R_CONCEPTS_H
 #define CPP20_R_CONCEPTS_H
 
-#include <cpp20/r_setup.h>
 #include <type_traits> // For concepts
 #include <limits>
 #include <cstring>
