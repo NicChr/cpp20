@@ -107,41 +107,6 @@ inline constexpr bool between_impl(const T x, const U lo, const U hi) {
   return x >= lo && x <= hi;
 }
 
-// Wrap any callable f, and return a new callable that:
-//   - takes (auto&&... args)
-//   - calls f(args...) inside cpp11::unwind_protect
-
-// Like safe but works also  for variadic fns
-template <typename F>
-auto r_safe_impl(F f) {
-  return [f](auto&&... args)
-    -> decltype(f(std::forward<decltype(args)>(args)...)) {
-
-      using result_t = decltype(f(std::forward<decltype(args)>(args)...));
-
-      if constexpr (std::is_void_v<result_t>) {
-        unwind_protect([&] {
-          f(std::forward<decltype(args)>(args)...);
-        });
-        // no return; result_t is void
-      } else {
-        return unwind_protect([&]() -> result_t {
-          return f(std::forward<decltype(args)>(args)...);
-        });
-      }
-    };
-
-}
-
-#define r_safe(F)                                                                      \
-internal::r_safe_impl(                                                                 \
-  [&](auto&&... args)                                                                  \
-    -> decltype(F(std::forward<decltype(args)>(args)...)) {                            \
-      return F(std::forward<decltype(args)>(args)...);                                 \
-    }                                                                                  \
-)
-
-
 // If we find out eager initialisation of R symbols is a problem, we can use the constants below
 // // Generic Lazy Loader for R Constants
 // // Ptr: A pointer to the global R variable (e.g., &R_NilValue)
