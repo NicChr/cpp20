@@ -12,6 +12,7 @@
 
 #include <cpp20/r_sexp_types.h>
 #include <cpp20/r_coerce.h>
+#include <cstdint> // For uint32_t and similar
 #include <tuple>
 #include <utility>
 #include <array>

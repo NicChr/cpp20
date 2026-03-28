@@ -4,6 +4,7 @@
 #include <cpp20/r_vec.h>
 #include <cpp20/r_hash.h>
 #include <cpp20/r_stats.h>
+#include <cstdint> // For uint32_t and similar
 #include <cstring> // For strcmp
 #include <vector> // For C++ vectors
 #include <limits>

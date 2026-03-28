@@ -39,7 +39,6 @@
   #define CPP20_REGISTER 
 #endif
 
-#include <cstdint> // For uint32_t and similar
 #include <iosfwd> // Forward declarations for strings
 
 #ifdef _MSC_VER
@@ -100,7 +99,7 @@ namespace internal {
 // inline constexpr lazy_r_constant<SEXP, &R_BlankString> blank_string_constant{};
 // inline constexpr lazy_r_constant<SEXP, &R_MissingArg> missing_arg_constant{};
 
-inline constexpr int64_t CPP20_OMP_THRESHOLD = 100000;
+inline constexpr long long int CPP20_OMP_THRESHOLD = 100000;
 inline int CPP20_N_THREADS = 1;
 
 }
