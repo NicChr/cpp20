@@ -117,7 +117,7 @@ struct r_str {
   }
   explicit r_str(const char *x) : value(Rf_mkCharCE(x, CE_UTF8)) {}
   // Implicit r_str -> SEXP 
-  constexpr operator SEXP() const noexcept { return value; }
+  operator SEXP() const noexcept { return value; }
 
   // Explicit r_str_view -> r_str
   explicit r_str(r_str_view x);
@@ -151,7 +151,7 @@ struct r_str_view {
   }
   // explicit r_str_view(const char *x) : value(Rf_mkCharCE(x, CE_UTF8)) {}
   // Implicit r_str_view -> SEXP
-  constexpr operator SEXP() const noexcept { return value; }
+  operator SEXP() const noexcept { return value; }
   
   // Implicit r_str -> r_str_view
   r_str_view(const r_str& x) : value(static_cast<SEXP>(x)) {}
@@ -180,7 +180,7 @@ struct r_sym {
     internal::check_valid_construction<r_sym>(value);
   }
   explicit r_sym(const char *x) : value(Rf_installChar(Rf_mkCharCE(x, CE_UTF8))) {}
-  constexpr operator SEXP() const noexcept { return value; }
+  operator SEXP() const noexcept { return value; }
 };
 
 

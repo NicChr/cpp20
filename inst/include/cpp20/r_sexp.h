@@ -76,7 +76,7 @@ struct r_sexp {
   ~r_sexp() { detail::store::release(preserve_token_); }
 
   // Implicit conversion to SEXP
-  constexpr operator SEXP() const noexcept { return value; }
+  operator SEXP() const noexcept { return value; }
   constexpr SEXP data() const noexcept { return value; }
 
   // Optimized constructor
