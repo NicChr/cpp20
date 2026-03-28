@@ -150,7 +150,7 @@ r_vec<T> range(const r_vec<T> &x, bool na_rm = false){
     const auto* RESTRICT p_x = x.data();
 
     if (na_rm){ 
-        #pragma omp simd reduction(std::min:lo_) reduction(std::max:hi_)
+        #pragma omp simd reduction(min:lo_) reduction(max:hi_)
         for (r_size_t i = 0; i < n; ++i){
             // Ignore NA for min()
             lo_ = is_na(T(p_x[i])) ? lo_ : std::min(lo_, p_x[i]);
@@ -168,7 +168,7 @@ r_vec<T> range(const r_vec<T> &x, bool na_rm = false){
         }
 
     } else {
-        #pragma omp simd reduction(std::min:lo_) reduction(std::max:hi_)
+        #pragma omp simd reduction(min:lo_) reduction(max:hi_)
         for (r_size_t i = 0; i < n; ++i){
             lo_ = std::min(lo_, p_x[i]); 
             hi_ = std::max(hi_, p_x[i]);
