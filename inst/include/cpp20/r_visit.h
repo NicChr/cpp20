@@ -3,6 +3,7 @@
 
 #include <cpp20/r_vec.h>
 #include <cpp20/r_factor.h>
+#include <cpp20/r_sexp_types.h>
 
 namespace cpp20 {
 

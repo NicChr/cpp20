@@ -6,6 +6,7 @@
 #include <cpp20/r_visit.h>
 #include <cpp20/r_match.h>
 #include <cpp20/r_unique.h>
+#include <cpp20/r_sexp_types.h>
 
 
 // TO-DO: simplify the if statements below
