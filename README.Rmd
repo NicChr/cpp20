@@ -145,7 +145,7 @@ void lgls(){
 All cpp20 scalar types are implemented as structs that contain the underlying C/C++ types as well as other member functions.
 
 | cpp20 type | Description | Underlying C/C++ Type | Implicitly converts to |
-|:-----------------|------------------|:-----------------|:-----------------|
+|:---|----|:---|:---|
 | `r_lgl` | Scalar logical | `int` | `bool` **only** in if-statements |
 | `r_int` | Scalar integer | `int` | `int` |
 | `r_int64` | Scalar 64-bit integer | `int64_t` | `int64_t` |

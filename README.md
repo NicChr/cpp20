@@ -1,0 +1,652 @@
+
+<!-- README.md is generated from README.Rmd. Please edit that file -->
+
+# cpp20
+
+<!-- badges: start -->
+
+[![CRAN
+status](https://www.r-pkg.org/badges/version/cpp20)](https://CRAN.R-project.org/package=cpp20)
+
+<!-- badges: end -->
+
+**This is a work in progress!**
+
+cpp20 is a high-performance header-only library providing a rich C++20
+API for advanced R data manipulation. Leveraging C++20 Concepts, custom
+R-based classes, templated functions and
+Single-Instruction-Multiple-Data (SIMD) vectorisation, cpp20 enables
+type-safety, performance, flexible templates and readable code.
+
+#### Key cpp20 features
+
+- Custom R-based C++ classes for scalars and vectors
+
+- R-specific `NA` aware methods for the custom classes
+
+- R-specific C++20 Concepts for template programming
+
+- Registering C++ functions (including templated ones) to R
+
+- Powerful coercion through `as<>`
+
+- Seamless arithmetic and math operators
+
+- Common vector manipulation methods provided as member functions
+
+- Hybrid sorting using ska sort
+
+- Fast hashing and grouping
+
+- Fast summary stats
+
+- Attribute manipulation
+
+- Vectorised sequence creation
+
+**Upcoming features**
+
+- Combining vectors
+
+- Common-type casting
+
+### C++ types
+
+cpp20 offers a rich set of R types in C++ that are NA-aware. This means
+that common arithmetic and logical operations will account for `NA` in a
+similar fashion to R.
+
+#### r_lgl
+
+cpp20’s scalar version of `logical`, `r_lgl` can represent true, false
+or NA.
+
+``` cpp
+r_lgl r_true
+r_lgl r_false
+r_lgl r_na
+
+// Alternatively
+
+r_lgl true_value(true);
+r_lgl false_value(false);
+r_lgl na<r_lgl>();
+```
+
+Logical operators work just like in R
+
+``` cpp
+#include <cpp20.hpp>
+using namespace cpp20;
+
+void lgl_ops(){
+  r_true || r_false // true
+  r_true && r_false // false
+  r_na || r_true    // true
+  r_na && r_true    // NA
+  r_na && r_false   // false
+  r_na || r_na      // NA
+  r_na && r_na      // NA
+}
+```
+
+**Using `r_lgl`** in if-statements
+
+For type-safety reasons `r_lgl` cannot be implicitly converted to `bool`
+except in if-statements. When an `r_lgl` is cast to a `bool`, the value
+is checked to be `NA` and throws an error if it is. `NA` values must be
+handled separately just like in R.
+
+``` cpp
+#include <cpp20.hpp>
+using namespace cpp20;
+
+r_lgl condition = r_true;
+
+void lgls(){
+
+  // true is printed
+  
+  if (condition){
+    print("true");
+  } else {
+    print("false");
+  }
+  
+  r_lgl condition = r_na;
+  
+  // DONT DO THIS - an error is thrown!
+  if (condition){
+    print("true");
+  } else {
+    print("false");
+  }
+  
+  // DO THIS instead
+  if (is_na(condition)){
+    print("na")
+  } else if (condition){
+    print("true");
+  } else {
+    print("false");
+  }
+  
+  // Or alternatively without accounting for NA
+  if (condition.is_true()){ // identical to R `isTRUE`
+    print("true");
+  } else {
+    print("not true");
+  }
+
+}
+```
+
+All cpp20 scalar types are implemented as structs that contain the
+underlying C/C++ types as well as other member functions.
+
+| cpp20 type | Description | Underlying C/C++ Type | Implicitly converts to |
+|:---|----|:---|:---|
+| `r_lgl` | Scalar logical | `int` | `bool` **only** in if-statements |
+| `r_int` | Scalar integer | `int` | `int` |
+| `r_int64` | Scalar 64-bit integer | `int64_t` | `int64_t` |
+| `r_dbl` | Scalar double | `double` | `double` |
+| `r_str` | Scalar string | `r_sexp` | `SEXP` |
+| `r_cplx` | Scalar double complex | `std::complex<double>` | `std::complex<double>` |
+| `r_raw` | Scalar raw | `Rbyte` | `Rbyte` |
+| `r_sym` | Symbol | `SEXP` | `SEXP` |
+| `r_date_t<T>` [^1] | Scalar date | `int`/`double` | `int`/`double` |
+| `r_psxct_t<T>` [^2] | Scalar date-time | `int64_t`/`double` | `int64_t`/`double` |
+| `r_sexp` | Generic R object (SEXP)[^3] | `SEXP` | `SEXP` |
+
+`NA` values can be accessed via the template function `na<T>`
+
+#### C++ NA values and their R C API equivalents
+
+| Type      | Value                 | R C API Value  | constexpr?[^4] |
+|-----------|-----------------------|----------------|----------------|
+| `r_lgl`   | `na<r_lgl>()`/`r_na`  | `NA_LOGICAL`   | Yes            |
+| `r_int`   | `na<r_int>()`         | `NA_INTEGER`   | Yes            |
+| `r_int64` | `na<r_int64>()`       | Not applicable | Yes            |
+| `r_dbl`   | `na<r_dbl>()`         | `NA_REAL`      | Yes            |
+| `r_str`   | `na<r_str>()`         | `NA_STRING`    | No             |
+| `r_cplx`  | `na<r_cplx>()`        | Not applicable | Yes            |
+| `r_sym`   | `na<r_sym>()`         | `R_MissingArg` | No             |
+| `r_sexp`  | `na<r_sexp>`/`r_null` | `R_NilValue`   | No             |
+
+#### Accessing the underlying types and values
+
+To access the underlying types or values consistently, use `unwrap()`
+and `unwrap_t<>`. It is recommended to only use these when you
+absolutely need to.
+
+`unwrap()` returns the underlying C/C++ value - for example, `unwrap(x)`
+where `x` is an `r_int` returns the underlying `int`. `unwrap_t<r_int>`
+returns the typename `int`.
+
+### Design choices
+
+**Templates**
+
+cpp20 makes heavy use of templates for powerful object-oriented
+programming. While this offers a powerful framework for writing generic
+functions, it comes at the cost of slower compile times and larger
+binary sizes.
+
+Users can write and optionally register their own templates (to R).
+There two main limitations, a C++ specific one and an R specific one.
+The C++ limitation is that templates generally must be written in header
+files if they are to be used across multiple compilation units. The R
+limitation is fairly niche and has to do with automatic template
+argument deduction. There is a workaround that I will discuss in a later
+section but it is not ideal.
+
+**Scalar R types and custom methods**
+
+As shown in one of the previous sections, cpp20 offers R-based C++
+scalar types that are `NA` aware. To achieve this multiple methods such
+as binary arithmetic operators had to be written to ensure `NA` is
+propagated correctly. While every attempt has been made to make this as
+fast as possible, it adds some overhead and in some cases can prevent
+effective vectorisation (via e.g. SIMD instructions). If you find that
+this is slowing things down too much you can work with the underlying
+C/C++ types using `unwrap_t<>` and `unwrap()`.
+
+**Automatic protection**
+
+Like the excellent cpp11 package, cpp20 automatically protects and
+un-protects R objects. To achieve this we make use of cpp11’s
+double-linked list protection system via the `cpp11::sexp` class by
+placing it as a private member inside `r_sexp`. Note that there is also
+a `SEXP` member, meaning that `r_sexp` does a bit of work to ensure
+these members are kept in sync. While having an extra member makes
+`r_sexp` larger in byte-size, it enables cpp20 to internally avoid
+expensive re-protection when it can by constructing the `r_sexp` object
+via its `SEXP` member only and not via the `cpp11::sexp` member. This is
+something will likely be re-imagined by having for example a separate
+`r_sexp_view` class.
+
+**R String views**
+
+In fact, this is why we created `r_str_view`, a non-owning view of R
+strings. `r_str_view` is used in read-only contexts such as accessing
+and manipulating the elements of a character vector. Using `r_str_view`
+guarantees that no extra re-protections occur when the string object is
+copied or moved, eliminating any protection overhead when using `r_str`.
+Similar to `std::string_view`, the major caveat is that you must ensure
+the `r_str_view` object’s lifetime does not extend beyond the lifetime
+of the R string (CHARSXP) it is pointing to. More on this later.
+
+**Opt-in copying**
+
+Copies are almost never triggered when modifying vectors, a design
+choice that contrasts cpp11’s copy-on-write approach. cpp20’s `r_vec<T>`
+member `set()` always modifies in-place. It is up to the user to ensure
+that a fresh vector is created before further manipulation or that it’s
+safe to modify the existing vector.
+
+**Vector indexing**
+
+Most indexing is 0-based except when dealing with vectors of indices,
+which are 1-indexed. 1-indexed indices are used in `subset()`, `find()`,
+and other functions which accept or return a vector of indices.  
+
+**Differences between cpp20 and R**
+
+### Vectors
+
+cpp20 vectors are templated and can be thought of as containers of the
+scalar elements we talked about previously like `r_int`, `r_dbl`, etc.
+
+We can create vectors like so
+
+``` cpp
+#include <cpp20.hpp>
+using namespace cpp20;
+
+// Integer vector of size n
+r_vec<r_int> new_integer_vector(r_size_t n){
+  r_vec<r_int> int_vctr(n);
+  return int_vctr;
+}
+
+// Usage
+r_vec<r_int> new_filled_integer_vector(r_size_t n, r_int fill_value){
+  r_vec<r_int> out(n, fill_value); // Fills all values with fill_value
+  return out;
+}
+
+// You can also use fill() instead
+r_vec<r_int> new_filled_integer_vector2(r_size_t n, r_int fill_value){
+  r_vec<r_int> out(n);
+  out.fill(0, n, fill_value); // Fill n-elements from 0 with fill_value
+  return out;
+}
+```
+
+### inline vectors
+
+To create inline vectors, use `make_vec<>`
+
+``` cpp
+#include <cpp20.hpp>
+using namespace cpp20;
+
+r_vec<r_dbl> foo(){
+  return make_vec<r_dbl>(1, 1.5, 2, na<r_dbl>());
+}
+```
+
+We can add names on the fly too with `arg()`
+
+``` cpp
+#include <cpp20.hpp>
+using namespace cpp20;
+
+r_vec<r_dbl> bar(){
+  return make_vec<r_dbl>(
+    arg("first") = 1, 
+    arg("second") = 1.5, 
+    arg("third") = 2, 
+    arg("last") = na<r_dbl>()
+  );
+}
+```
+
+In R a list is a generic vector, so cpp20 defines lists as
+`r_vec<r_sexp>`, a vector of the generic type `r_sexp`.
+
+``` cpp
+#include <cpp20.hpp>
+using namespace cpp20;
+
+r_vec<r_sexp> cpp_list(){
+  return make_vec<r_sexp>(1, 2, 3); // list(1, 2, 3)
+}
+```
+
+Here is how to create a list of all cpp20 vectors of length 0
+
+``` cpp
+#include <cpp20.hpp>
+using namespace cpp20;
+
+r_vec<r_sexp> all_vectors(){
+  return make_vec<r_sexp>(
+    arg("logical") = r_vec<r_lgl>(),
+    arg("integer") = r_vec<r_int>(),
+    arg("integer64") = r_vec<r_int64>(),
+    arg("double") = r_vec<r_dbl>(),
+    arg("character") = r_vec<r_str>(),
+    arg("character") = r_vec<r_str_view>(),
+    arg("raw") = r_vec<r_raw>(),
+    arg("date") = r_vec<r_date>(),
+    arg("date-time") = r_vec<r_psxct>(),
+    arg("list") = r_vec<r_sexp>()
+  );
+}
+```
+
+**Using `NULL`**
+
+To avoid the use of additional meta-programming tactics to deal with
+`NULL`, we instead vectors to hold `NULL` which makes programming with R
+attributes easier. This means `r_vec<T>` objects can be `R_NilValue`. To
+detect this, use the `is_null()` member function.
+
+### Concepts
+
+One of the most powerful features of C++20 are concepts. These allow
+users to write human-readable templates and constraints. For example
+cpp20/r_math.h uses the `RMathType` concept for custom math functions to
+ensure that only types that support math (like `r_dbl`) are allowed as
+arguments to those functions. This promotes type-safety and signals to
+the user what types are allowed.
+
+Let’s look at an example in r_math.h
+
+``` cpp
+template <RMathType T>
+inline constexpr T abs(T x){
+  return is_na(x) ? x : T{internal::cpp_abs(unwrap(x))};
+}
+```
+
+The top-line `template <RMathType T>` declares a template that
+encapsulates `T`, an `RMathType`.  
+The input is `x` is of type `T`, an `RMathType` and the return value is
+also `T`
+
+`T{}` is then used to construct the `RMathType` object from the absolute
+result.
+
+Some common concepts available
+
+- RIntegerType - Includes `r_lgl`, `r_int`, `r_int64`
+
+- RMathType - Includes `r_lgl`, `r_int`, `r_int64` and `r_dbl`
+
+- RScalar - Includes all cpp20 specific scalar types
+
+- RVal - Includes anything a cpp20 vector (`r_vec<>`) can contain:
+  RScalar +`r_sexp`
+
+- RStringType - Includes `r_str` and `r_str_view`
+
+- RVector - Includes `r_vec<T>` where `T` is an RVal
+
+Other useful concepts
+
+- RSortableType and RSortableVector - Any scalar/vector that can be
+  sorted
+
+- RNumericType - Similar to RMathType but is more general. It includes
+  types like `r_date_t<>` and `r_psxct_t<>` which can’t be used in
+  certain math contexts (like when calculating logs for example)
+
+- RTimeType - Includes `r_date_t<>` and `r_psxct_t<>`
+
+### Coercion
+
+To coerce from one scalar to another we can use `as<T>`
+
+``` cpp
+#include <cpp20.hpp>
+using namespace cpp20;
+
+// Coerces NA correctly
+r_int double_to_int(r_dbl x){
+  return as<r_int>(x);
+}
+
+// Example usage
+// double_to_int(r_dbl(1.5)) 
+// double_to_int(na<r_dbl>())
+```
+
+We can also coerce from one vector type to another
+
+``` cpp
+#include <cpp20.hpp>
+using namespace cpp20;
+
+// Coerces NA correctly
+r_vec<r_int> to_int_vec(r_vec<r_dbl> x){
+  return as<r_vec<r_int>>(x);
+}
+
+// Example usage
+// to_int_vec(make_vec<r_dbl>(1, 1.5, na<r_dbl>()))
+```
+
+Since `as<T>` is extremely flexible, we can also coerce from a scalar to
+a vector or vice versa, as well as to other types like `r_sexp`.
+
+``` cpp
+#include <cpp20.hpp>
+using namespace cpp20;
+
+r_vec<r_sexp> coercions(){
+  r_dbl a(4.2);
+  r_vec<r_dbl> b(3, 0); // Length 3 double-vector filled with 0
+  
+  return make_vec<r_sexp>(
+    as<r_vec<r_int>>(a),
+    as<r_int>(b),
+    as<r_str>(a),
+    as<r_str>(b),
+    as<r_sexp>(a),
+    as<r_sexp>(b)
+  );
+}
+```
+
+### Strings
+
+cpp20 provides two string types, `r_str` and `r_str_view`.
+
+We can create R strings easily
+
+``` cpp
+r_str hello_str("hello");
+```
+
+To get a C or C++ string, use the members `c_str()` and `cpp_str()`
+respectively
+
+``` cpp
+hello_str.c_str() // C-style string
+hello_str.cpp_str() // C++ style string
+```
+
+`r_str_view` is a non-owning version of `r_str`. It cannot be
+constructed directly from a `const char*` and is generally used as
+elements of a vector. Because `r_str` is a wrapper class around `SEXP`
+it must also protect the underlying `SEXP` from garbage collection. This
+happens whenever the object is copied, carrying with it a substantial
+overhead, destroying tight loops. `r_str_view` avoids this by never
+re-protecting the underlying `SEXP` and trusting that it’s holding a
+`SEXP` that is already protected. This is the case for example when
+`r_str_view` is part of `r_vec<r_str_view>` - since the vector is
+protected, so are its elements by default. As long as the `r_str_view`
+object’s lifetime isn’t longer than the vector that holds it, there
+shouldn’t be an issue.
+
+### Symbols
+
+Symbols are assumed to always be protected and so don’t have the same
+overhead issues that `r_str` has. We can easily create symbols using the
+`const char*` constructor
+
+``` cpp
+r_sym hello_sym("hello");
+```
+
+### Lists and views
+
+`r_sexp` is generally interpreted as an “element of a list” since lists
+are defined as `r_vec<r_sexp>`, a vector that holds generic `r_sexp`
+elements. We can use `visit_vector` to disambiguate the type, i.e. from
+an `r_sexp` to an `r_vec<r_int>` in the case that the element is an
+integer vector. This must be used in a C++ lambda context.
+
+An example of a function that returns list lengths
+
+``` cpp
+[[cpp20::register]]
+r_vec<r_int> lengths(const r_vec<r_sexp>& x){
+  r_size_t n = x.length();
+  r_vec<r_int> out(n); // Initialise lengths vector
+  
+    for (r_size_t i = 0; i < n; ++i){
+       visit_vector(x.view(i), [&](const auto& vec) {
+         out.set(i, vec.length());
+    });
+      
+    }
+
+  return out;
+}
+```
+
+There are more visit variants you can use
+
+**visit_sexp**
+
+This allows one to visit types than just vectors, including factors and
+(soon to implemented) data frames. When an object’s type can’t be
+deduced into a distinct type, `r_sexp` is returned.
+
+**view_sexp**
+
+Like `visit_sexp`, but returns non-owning views of the visited objects
+
+For example, here is a re-written faster version of the above
+list-lengths example, using `view_sexp`, which should remove most of the
+re-protection overhead of `r_sexp`
+
+``` cpp
+[[cpp20::register]]
+r_vec<r_int> lengths(const r_vec<r_sexp>& x){
+  r_size_t n = x.length();
+  r_vec<r_int> out(n); // Initialise lengths vector
+  
+    for (r_size_t i = 0; i < n; ++i){
+       view_sexp(x.view(i), [&](const auto& vec) {
+         if constexpr (is<decltype(vec), r_sexp>){
+           abort("Don't know how to visit this r_sexp!");
+         } else {
+          out.set(i, vec.length()); 
+         }
+    });
+      
+    }
+
+  return out;
+}
+```
+
+It’s likely that `view_sexp` will be soft-deprecated in the future in
+favour of using a new class `r_sexp_view`
+
+### Factors
+
+### Attributes
+
+### High performance functions
+
+unique  
+make_groups  
+order
+
+### Limitations
+
+While some design trade-offs were discussed in **Design Choices**, there
+are some further limitations to be aware of.
+
+### **template instantiation**
+
+In C++….
+
+### Potential solution (use argument as deduction)
+
+**Symbols**
+
+`r_sym` is unsupported in templates when it’s part of a template
+argument but is supported when the argument is explicitly an `r_sym`.
+
+### Registering R functions
+
+To make a C++ function available to R we use the `[[cpp20::register]]`
+tag.
+
+``` cpp
+#include <cpp20.hpp>
+using namespace cpp20;
+
+[[cpp20::register]]
+void hello_world(){
+  print("Hello World!");
+}
+```
+
+Now the function is available in R
+
+``` r
+> hello_world()
+Hello World!
+```
+
+### Registering templates
+
+To register a C++ template to R, one must declare the
+`[[cpp20::register]]` target after the template declaration.
+
+``` cpp
+#include <cpp20.hpp>
+using namespace cpp20;
+
+template <RStringType T>
+[[cpp20::register]]
+void my_print(T x){
+  print(x.c_str());
+}
+```
+
+[^1]: `r_date_t<T>` can be either `r_date_t<r_int>` or `r_date_t<r_dbl>`
+    . An alias `r_date` exists for `r_date_t<r_dbl>` Furthermore,
+    `r_date_t<T>` inherits directly from `r_int` / `r_dbl` .
+
+[^2]: Similarly `r_psxct_t<T>` can be either `r_psxct_t<r_int64>` or
+    `r_psxct_t<r_dbl>` with an alias `r_psxct` existing for
+    `r_psxct_t<r_dbl>` Like `r_date_t<T>` , `r_psxct_t` inherits
+    directly from `r_int64` / `r_dbl` .
+
+[^3]: `r_sexp` represents a generic R object which can be include cpp20
+    vectors. We will explain how to disambiguate `r_sexp` later which is
+    most useful when working with lists and data frames
+
+[^4]: In C++ constexpr is used as a keyword to declare that it’s
+    possible to evaluate values at compile-time, meaning they are known
+    before any code is run by the user. Since `r_na` internally is the
+    largest possible `int` which does not change and is known a priori,
+    it is therefore a compile-time constant.
