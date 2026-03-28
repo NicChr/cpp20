@@ -118,35 +118,35 @@ inline const char* type_str(){
 
 // Mapping from C++ type to R TYPEOF
 
-template <typename T> constexpr uint16_t r_typeof_impl =              std::numeric_limits<uint16_t>::max();
-template<> constexpr uint16_t r_typeof_impl<r_vec<r_lgl>> =          LGLSXP;
-template<> constexpr uint16_t r_typeof_impl<r_vec<r_int>> =          INTSXP;
-template<> constexpr uint16_t r_typeof_impl<r_vec<r_dbl>> =          REALSXP;
-template<> constexpr uint16_t r_typeof_impl<r_vec<r_str_view>> =     STRSXP;
-template<> constexpr uint16_t r_typeof_impl<r_vec<r_str>> =          STRSXP;
-template<> constexpr uint16_t r_typeof_impl<r_vec<r_cplx>> =         CPLXSXP;
-template<> constexpr uint16_t r_typeof_impl<r_vec<r_raw>> =          RAWSXP;
-template<RListVector T> constexpr uint16_t r_typeof_impl<T> =        VECSXP;
-template<> constexpr uint16_t r_typeof_impl<r_str_view> =            CHARSXP;
-template<> constexpr uint16_t r_typeof_impl<r_str> =                 CHARSXP;
-template<> constexpr uint16_t r_typeof_impl<r_sym> =                 SYMSXP;
-template<> constexpr uint16_t r_typeof_impl<r_vec<r_int64>> =             REALSXP;
-template<> constexpr uint16_t r_typeof_impl<r_vec<r_date_t<r_int>>> =            INTSXP;
-template<> constexpr uint16_t r_typeof_impl<r_vec<r_date_t<r_dbl>>> =            REALSXP;
-template<> constexpr uint16_t r_typeof_impl<r_vec<r_psxct_t<r_int64>>> =         REALSXP;
-template<> constexpr uint16_t r_typeof_impl<r_vec<r_psxct_t<r_dbl>>> =           REALSXP;
+template <typename T> inline constexpr uint16_t r_typeof_impl =              std::numeric_limits<uint16_t>::max();
+template<> inline constexpr uint16_t r_typeof_impl<r_vec<r_lgl>> =          LGLSXP;
+template<> inline constexpr uint16_t r_typeof_impl<r_vec<r_int>> =          INTSXP;
+template<> inline constexpr uint16_t r_typeof_impl<r_vec<r_dbl>> =          REALSXP;
+template<> inline constexpr uint16_t r_typeof_impl<r_vec<r_str_view>> =     STRSXP;
+template<> inline constexpr uint16_t r_typeof_impl<r_vec<r_str>> =          STRSXP;
+template<> inline constexpr uint16_t r_typeof_impl<r_vec<r_cplx>> =         CPLXSXP;
+template<> inline constexpr uint16_t r_typeof_impl<r_vec<r_raw>> =          RAWSXP;
+template <RListVector T> inline constexpr uint16_t r_typeof_impl<T> =        VECSXP;
+template<> inline constexpr uint16_t r_typeof_impl<r_str_view> =            CHARSXP;
+template<> inline constexpr uint16_t r_typeof_impl<r_str> =                 CHARSXP;
+template<> inline constexpr uint16_t r_typeof_impl<r_sym> =                 SYMSXP;
+template<> inline constexpr uint16_t r_typeof_impl<r_vec<r_int64>> =             REALSXP;
+template<> inline constexpr uint16_t r_typeof_impl<r_vec<r_date_t<r_int>>> =            INTSXP;
+template<> inline constexpr uint16_t r_typeof_impl<r_vec<r_date_t<r_dbl>>> =            REALSXP;
+template<> inline constexpr uint16_t r_typeof_impl<r_vec<r_psxct_t<r_int64>>> =         REALSXP;
+template<> inline constexpr uint16_t r_typeof_impl<r_vec<r_psxct_t<r_dbl>>> =           REALSXP;
 
 
 // The above mappings represent the plain TYPEOF values of cpp20 objects, this enables r_vec<T> to check the primitive type id during construction
 // without rejecting objects such as `r_factors`
 // The below represents the actual cpp20 type id mapping
 template <typename T> constexpr uint16_t r_typeof =              r_typeof_impl<T>;
-template<> constexpr uint16_t r_typeof<r_vec<r_int64>> =        CPP20_INT64SXP;
-template<> constexpr uint16_t r_typeof<r_vec<r_date_t<r_int>>> =            CPP20_INTDATESXP;
-template<> constexpr uint16_t r_typeof<r_vec<r_date_t<r_dbl>>> =            CPP20_REALDATESXP;
-template<> constexpr uint16_t r_typeof<r_vec<r_psxct_t<r_int64>>> =         CPP20_INT64PSXTSXP;
-template<> constexpr uint16_t r_typeof<r_vec<r_psxct_t<r_dbl>>> =           CPP20_REALPSXTSXP;
-template<> constexpr uint16_t r_typeof<r_factors> =             CPP20_FCTSXP;
+template<> inline constexpr uint16_t r_typeof<r_vec<r_int64>> =        CPP20_INT64SXP;
+template<> inline constexpr uint16_t r_typeof<r_vec<r_date_t<r_int>>> =            CPP20_INTDATESXP;
+template<> inline constexpr uint16_t r_typeof<r_vec<r_date_t<r_dbl>>> =            CPP20_REALDATESXP;
+template<> inline constexpr uint16_t r_typeof<r_vec<r_psxct_t<r_int64>>> =         CPP20_INT64PSXTSXP;
+template<> inline constexpr uint16_t r_typeof<r_vec<r_psxct_t<r_dbl>>> =           CPP20_REALPSXTSXP;
+template<> inline constexpr uint16_t r_typeof<r_factors> =             CPP20_FCTSXP;
 
 // Low-level type ID check, primarily used in constructing classed cpp20 objects from SEXP
 template <typename T>
