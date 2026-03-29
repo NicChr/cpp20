@@ -325,7 +325,7 @@ struct r_psxct_t : T {
   r_str datetime_str() const {
     auto ymd = chrono_ymd();
     auto hms = chrono_hms();
-    char buf[20];
+    char buf[30];
     std::snprintf(buf, sizeof(buf),
       "%04d-%02u-%02u %02u:%02u:%02u",
       static_cast<int32_t>(ymd.year()),
