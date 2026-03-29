@@ -144,6 +144,14 @@ struct r_vec {
       return data() + size();
   }
 
+  ptr_t begin() const {
+      return data();
+  }
+
+  ptr_t end() const {
+      return data() + size();
+  }
+
   r_size_t length() const noexcept {
     return sexp.length();
   }
