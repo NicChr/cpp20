@@ -104,7 +104,7 @@ struct r_vec {
   explicit r_vec(r_sexp s) : sexp(std::move(s)) {
     if (!is_null()) {
       internal::check_valid_construction<r_vec<T>>(sexp);
-      validate_attrs<T>(s.value);
+      validate_attrs<T>(sexp.value);
       initialise_ptr();
     }
   }
@@ -112,7 +112,7 @@ struct r_vec {
   explicit r_vec(const r_sexp& s, internal::view_tag) : sexp(s.value, internal::view_tag{}){
     if (!is_null()){
       internal::check_valid_construction<r_vec<T>>(sexp);
-      validate_attrs<T>(s.value);
+      validate_attrs<T>(sexp.value);
       initialise_ptr();
     }
   }

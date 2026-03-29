@@ -34,7 +34,7 @@ struct r_sexp {
   public: 
 
   r_sexp() = default;
-  r_sexp(SEXP data) : value(data), preserve_token_(detail::store::insert(value)) {}
+  explicit r_sexp(SEXP data) : value(data), preserve_token_(detail::store::insert(value)) {}
 
   // We maintain our own new `preserve_token_`
   r_sexp(const r_sexp& rhs) : value(rhs.value), preserve_token_(detail::store::insert(rhs.value)) {}
@@ -47,15 +47,12 @@ struct r_sexp {
   }
 
   r_sexp& operator=(const r_sexp& rhs) noexcept {
-
     if (this != &rhs) {
       detail::store::release(preserve_token_);
   
       value = rhs.value;
       preserve_token_ = detail::store::insert(value);
     }
-      
-
     return *this;
   }
 
@@ -81,7 +78,7 @@ struct r_sexp {
 
   // Optimized constructor
   // convert SEXP -> r_sexp directly without extra protection
-  explicit r_sexp(SEXP s, internal::view_tag) : value(s) {}
+  explicit r_sexp(SEXP s, internal::view_tag) : value(s), preserve_token_(R_NilValue) {}
 
   r_size_t length() const noexcept {
     return Rf_xlength(value);
