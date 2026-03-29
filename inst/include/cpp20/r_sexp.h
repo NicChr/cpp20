@@ -46,27 +46,25 @@ struct r_sexp {
     rhs.preserve_token_ = R_NilValue;
   }
 
-  r_sexp& operator=(const r_sexp& rhs) noexcept {
+  r_sexp& operator=(const r_sexp& rhs) {
     if (this != &rhs) {
-      detail::store::release(preserve_token_);
-  
-      value = rhs.value;
-      preserve_token_ = detail::store::insert(value);
+        SEXP new_token = detail::store::insert(rhs.value); // insert first
+        detail::store::release(preserve_token_);           // then release old
+        value = rhs.value;
+        preserve_token_ = new_token;
     }
     return *this;
-  }
+}
 
   r_sexp& operator=(r_sexp&& rhs) noexcept {
-    if (this != &rhs) {
-      detail::store::release(preserve_token_);
-      value = rhs.value;
-      
-      // Steal the token, do not create a new one
-      preserve_token_ = rhs.preserve_token_;
-      
-      rhs.value = R_NilValue;
-      rhs.preserve_token_ = R_NilValue;
-    }
+    detail::store::release(preserve_token_);
+    value = rhs.value;
+    
+    // Steal the token, do not create a new one
+    preserve_token_ = rhs.preserve_token_;
+    
+    rhs.value = R_NilValue;
+    rhs.preserve_token_ = R_NilValue;
     return *this;
   }
 
@@ -88,7 +86,7 @@ struct r_sexp {
     return length();
   }
 
-  bool is_null() const { return value == R_NilValue; }
+  bool is_null() const noexcept { return value == R_NilValue; }
   
   r_str address() const;
 };
