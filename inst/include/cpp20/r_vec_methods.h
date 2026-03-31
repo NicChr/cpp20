@@ -335,7 +335,9 @@ inline T& operator%=(T& lhs, const U& rhs) {
 }
 
 #define CPP20_BINARY_OP(lhs, rhs, OP, res_t)                                                       \
-if constexpr (RVector<T> && RVector<U>){                                                           \
+using lhs_t = decltype(lhs);                                                                       \
+using rhs_t = decltype(rhs);                                                                       \
+if constexpr (RVector<lhs_t> && RVector<rhs_t>){                                                   \
   r_size_t n1 = lhs.length();                                                                      \
   r_size_t n2 = rhs.length();                                                                      \
   r_size_t n = std::max(n1, n2);                                                                   \
@@ -374,7 +376,7 @@ if constexpr (RVector<T> && RVector<U>){                                        
     return out;                                                                                    \
   }                                                                                                \
   /*Cases where one is a scalar*/                                                                  \
-} else if constexpr (RVector<T>) {                                                                 \
+} else if constexpr (RVector<lhs_t>) {                                                             \
   r_size_t n = lhs.length();                                                                       \
   res_t out(n);                                                                                    \
   OMP_SIMD                                                                                         \
@@ -421,6 +423,46 @@ template<typename T, typename U>
 requires (RVector<T> || RVector<U>)
 inline r_vec<r_lgl> operator>(const T& lhs, const U& rhs) {
     CPP20_BINARY_OP(lhs, rhs, >, r_vec<r_lgl>)
+}
+
+template <typename T, typename U>
+requires (
+    (is<T, r_vec<r_lgl>> && is<U, r_vec<r_lgl>>) ||
+    (is<T, r_vec<r_lgl>> && is<U, r_lgl>) ||
+    (is<T, r_lgl> && is<U, r_vec<r_lgl>>)
+)
+inline r_vec<r_lgl> operator|(const T& lhs, const U& rhs) {
+    CPP20_BINARY_OP(lhs, rhs, ||, r_vec<r_lgl>)
+}
+template <typename T, typename U>
+requires (
+    (is<T, r_vec<r_lgl>> && is<U, r_vec<r_lgl>>) ||
+    (is<T, r_vec<r_lgl>> && is<U, r_lgl>) ||
+    (is<T, r_lgl> && is<U, r_vec<r_lgl>>)
+)
+inline r_vec<r_lgl> operator&(const T& lhs, const U& rhs) {
+    CPP20_BINARY_OP(lhs, rhs, &&, r_vec<r_lgl>)
+}
+
+inline r_vec<r_lgl> operator!(const r_vec<r_lgl>& x){
+    r_size_t n = x.length();
+    r_vec<r_lgl> out(n);
+    OMP_SIMD
+    for (r_size_t i = 0; i < n; ++i){
+        out.set(i, !x.view(i));
+    }
+    return out;
+}
+
+template <RMathType T>
+inline r_vec<T> operator-(const r_vec<T>& x){
+    r_size_t n = x.length();
+    r_vec<T> out(n);
+    OMP_SIMD
+    for (r_size_t i = 0; i < n; ++i){
+        out.set(i, -x.view(i));
+    }
+    return out;
 }
 
 #undef CPP20_BINARY_OP
