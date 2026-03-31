@@ -217,13 +217,11 @@ struct r_vec {
   template <internal::RSubscript U> 
   r_vec<T> subset(const r_vec<U>& indices, bool check = true) const;
 
-  template <IntegerType U>
-  requires (!any<U, r_lgl, bool>)
-  r_vec<T> subset(U index, bool check = true) const {
-    if constexpr (internal::can_definitely_be_int<unwrap_t<U>>()){
-      return subset(r_vec<r_int>(1, internal::as_r<r_int>(index)), check);
+  r_vec<T> subset(r_size_t index, bool check = true) const {
+    if (internal::can_be_int(index)){
+      return subset(r_vec<r_int>(1, r_int(static_cast<int>(index))), check);
     } else {
-      return subset(r_vec<r_int64>(1, internal::as_r<r_int64>(index)), check);
+      return subset(r_vec<r_int64>(1, r_int64(static_cast<int64_t>(index))), check);
     }
   }
 
