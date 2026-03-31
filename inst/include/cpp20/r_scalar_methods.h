@@ -1,5 +1,5 @@
-#ifndef CPP20_R_METHODS_H
-#define CPP20_R_METHODS_H
+#ifndef CPP20_R_SCALAR_METHODS_H
+#define CPP20_R_SCALAR_METHODS_H
 
 #include <cpp20/r_setup.h>
 #include <cpp20/r_concepts.h>

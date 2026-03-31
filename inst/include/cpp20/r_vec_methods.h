@@ -1,5 +1,5 @@
-#ifndef CPP20_R_VEC_MATH_H
-#define CPP20_R_VEC_MATH_H
+#ifndef CPP20_R_VEC_METHODS_H
+#define CPP20_R_VEC_METHODS_H
 
 #include <cpp20/r_utils.h>
 #include <cpp20/r_vec.h>

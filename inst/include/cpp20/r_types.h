@@ -11,7 +11,7 @@
 #include <limits>
 
 // R-based C++ types that closely align with their R equivalents
-// Further methods (e.g. operators) are defined in r_methods.h
+// Further methods (e.g. operators) are defined in r_scalar_methods.h
 // Please note that constructing R types via e.g. r_dbl() r_int() does not account for NAs
 // For any and all conversions, use the `as<>` template defined in r_coerce.h
 // For example - to construct the integer 0, simply write r_int(0) or as<r_int>(0), 

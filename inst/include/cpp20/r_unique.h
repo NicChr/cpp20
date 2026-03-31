@@ -1,7 +1,7 @@
 #ifndef CPP20_R_UNIQUE_H
 #define CPP20_R_UNIQUE_H
 
-#include <cpp20/r_vec_math.h>
+#include <cpp20/r_vec_methods.h>
 #include <cpp20/r_sort.h>
 #include <cpp20/r_groups.h>
 

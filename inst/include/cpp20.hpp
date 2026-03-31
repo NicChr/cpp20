@@ -16,13 +16,13 @@
 #include <cpp20/r_env.h>
 #include <cpp20/r_limits.h>
 #include <cpp20/r_nas.h>
-#include <cpp20/r_methods.h>
+#include <cpp20/r_scalar_methods.h>
 #include <cpp20/r_vec_utils.h>
 #include <cpp20/r_coerce_impl.h>
 #include <cpp20/r_vec.h>
 #include <cpp20/r_stats.h>
 #include <cpp20/r_factor.h>
-#include <cpp20/r_vec_math.h>
+#include <cpp20/r_vec_methods.h>
 #include <cpp20/r_attrs.h>
 #include <cpp20/r_exprs.h>
 #include <cpp20/r_fns.h>

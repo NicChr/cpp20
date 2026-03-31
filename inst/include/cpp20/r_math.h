@@ -1,7 +1,7 @@
 #ifndef CPP20_R_MATH_H
 #define CPP20_R_MATH_H
 
-#include <cpp20/r_methods.h>
+#include <cpp20/r_scalar_methods.h>
 #include <cpp20/r_limits.h>
 #include <cpp20/r_coerce.h>
 #include <algorithm>
