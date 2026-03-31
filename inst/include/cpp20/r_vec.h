@@ -570,7 +570,7 @@ struct r_vec {
     r_vec<r_int> out(n);
 
     for (r_size_t i = 0; i < n; ++i){
-      r_size_t len = Rf_xlength(data()[i]);
+      r_size_t len = view(i).length();
       if (len > unwrap(r_limits<r_int>::max())){
         abort("`lengths()` does not currently support long-vectors");
       }
