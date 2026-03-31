@@ -129,11 +129,6 @@ inline bool is_na(r_str const& x) {
   return unwrap(x) == unwrap(na_str);
 }
 
-template <RTimeType T>
-inline constexpr bool is_na(T const& x){
-  return is_na(static_cast<internal::inherited_type_t<T>>(x));
-}
-
 template<>
 inline constexpr bool is_na(r_cplx const& x){
   return is_na(x.re()) || is_na(x.im());
