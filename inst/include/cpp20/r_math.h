@@ -43,7 +43,7 @@ inline constexpr common_r_t<T, U> min(T x, U y){
   ));
 }
 
-template<NumericType T, NumericType U>
+template <NumericType T, NumericType U>
 requires (RNumericType<T> || RNumericType<U>)
 inline constexpr auto max(T x, U y){
   

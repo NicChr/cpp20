@@ -110,7 +110,8 @@ inline bool identical_impl(const T& a, const T& b) {
     return true;
 }
 
-inline bool identical_impl(const r_factors& a, const r_factors& b) {
+template<>
+inline bool identical_impl<r_factors>(const r_factors& a, const r_factors& b) {
     return identical_impl(a.value, b.value);
 }
 
@@ -140,7 +141,8 @@ inline bool identical_impl<r_sexp>(const r_sexp& a, const r_sexp& b) {
         });
 }
 
-inline bool identical_impl(SEXP a, SEXP b) {
+template<>
+inline bool identical_impl<SEXP>(const SEXP& a, const SEXP& b) {
     return identical_impl<r_sexp>(r_sexp(a, view_tag{}), r_sexp(b, view_tag{}));
 }
 
@@ -150,7 +152,7 @@ inline bool identical_impl(SEXP a, SEXP b) {
 template <typename T, typename U>
 inline constexpr bool identical(const T& a, const U& b) {
     if constexpr (is<T, U>){
-        return internal::identical_impl(a, b);
+        return internal::identical_impl<T>(a, b);
     } else {
         return false;
     }

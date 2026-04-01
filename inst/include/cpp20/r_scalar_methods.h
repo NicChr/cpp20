@@ -231,7 +231,8 @@ inline constexpr T& operator+=(T &lhs, U rhs) {
   return lhs;
 }
 
-// Fast overload for r_dbl
+// Fast specialisation for r_dbl
+template<>
 inline constexpr r_dbl& operator+=(r_dbl &lhs, r_dbl rhs) {
   lhs.value += rhs.value;
   return lhs;
@@ -247,6 +248,7 @@ inline constexpr T& operator-=(T &lhs, U rhs) {
   return lhs;
 }
 
+template<>
 inline constexpr r_dbl& operator-=(r_dbl &lhs, r_dbl rhs) {
   lhs.value -= rhs.value;
   return lhs;
@@ -261,7 +263,7 @@ inline constexpr T& operator*=(T &lhs, U rhs) {
   }
   return lhs;
 }
-
+template<>
 inline constexpr r_dbl& operator*=(r_dbl &lhs, r_dbl rhs) { 
   lhs.value *= rhs.value;
   return lhs;
@@ -277,7 +279,7 @@ inline constexpr T& operator/=(T &lhs, U rhs) {
   return lhs;
 }
 
-
+template<>
 inline constexpr r_dbl& operator/=(r_dbl &lhs, r_dbl rhs) {
   lhs.value /= rhs.value;
   return lhs;
@@ -299,6 +301,7 @@ template <RMathType T>
 inline constexpr T operator-(T x) {
   return is_na(x) ? x : T{-unwrap(x)};
 }
+template<>
 inline constexpr r_dbl operator-(r_dbl x) {
   return r_dbl{-unwrap(x)};
 }

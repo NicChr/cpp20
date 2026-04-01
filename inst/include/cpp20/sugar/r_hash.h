@@ -44,7 +44,7 @@ struct r_hash_impl {
     // This tells Ankerl map 'this hash is already high quality'
     using is_avalanching = void;
 
-    uint64_t operator()(unwrap_t<T> x) const noexcept {
+    [[nodiscard]] uint64_t operator()(unwrap_t<T> x) const noexcept {
         if constexpr (RTimeType<T>){
             return r_hash_impl<inherited_type_t<T>>{}(T(x));
         } else if constexpr (RIntegerType<T>){
@@ -59,7 +59,7 @@ template <>
 struct r_hash_impl<r_dbl> {
     using is_avalanching = void;
 
-    uint64_t operator()(double x) const noexcept {
+    [[nodiscard]] uint64_t operator()(double x) const noexcept {
         if (is_na(x)){
             // Checks that x matches exactly to R's NA_REAL
             return is_na_real(x) ? na_real_hash() : nan_hash();
@@ -75,7 +75,7 @@ template <>
 struct r_hash_impl<r_cplx> {
     using is_avalanching = void;
 
-    uint64_t operator()(std::complex<double> x) const noexcept {
+    [[nodiscard]] uint64_t operator()(std::complex<double> x) const noexcept {
         r_hash_impl<r_dbl> hasher;
         // Hash real and imag parts and mix
         uint64_t h1 = hasher(x.real());
@@ -88,7 +88,7 @@ template<>
 struct r_hash_impl<r_str_view> {
     using is_avalanching = void;
 
-    uint64_t operator()(SEXP x) const noexcept {
+    [[nodiscard]] uint64_t operator()(SEXP x) const noexcept {
         // Cast pointer to integer (uintptr_t)
         auto ptr_val = reinterpret_cast<uintptr_t>(x);
         
@@ -102,7 +102,7 @@ template<>
 struct r_hash_impl<r_str> {
     using is_avalanching = void;
 
-    uint64_t operator()(SEXP x) const noexcept {
+    [[nodiscard]] uint64_t operator()(SEXP x) const noexcept {
         return r_hash_impl<r_str_view>{}(x);
     }
 };
