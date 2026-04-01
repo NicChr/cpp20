@@ -52,7 +52,6 @@ inline const r_sym previous_sym = r_sym(R_PreviousSymbol);
 inline const r_sym sort_list_sym = r_sym(R_SortListSymbol);
 inline const r_sym eval_sym = r_sym(R_EvalSymbol);
 inline const r_sym drop_sym = r_sym(R_DropSymbol);
-inline const r_sym missing_arg = r_sym(R_MissingArg);
 
 inline r_sym tag(SEXP x){
   return r_sym(TAG(x));
@@ -99,7 +98,6 @@ inline r_sym tag(SEXP x){
 // inline const r_sym& sort_list_sym()       { return internal::lazy_get_global_sym<&R_SortListSymbol>(); }
 // inline const r_sym& eval_sym()            { return internal::lazy_get_global_sym<&R_EvalSymbol>(); }
 // inline const r_sym& drop_sym()            { return internal::lazy_get_global_sym<&R_DropSymbol>(); }
-// inline const r_sym& missing_arg()         { return internal::lazy_get_global_sym<&R_MissingArg>(); }
 
 }
 

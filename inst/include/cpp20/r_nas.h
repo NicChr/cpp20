@@ -93,7 +93,7 @@ inline r_sexp na_value_impl<r_sexp>(){
 
 template<>
 inline r_sym na_value_impl<r_sym>(){
-  return symbol::missing_arg;
+  return r_sym();
 }
 
 }

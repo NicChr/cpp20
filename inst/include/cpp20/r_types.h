@@ -167,12 +167,19 @@ struct r_str_view {
 
 inline r_str::r_str(r_str_view x) : value(static_cast<SEXP>(x)) {}
 
+namespace internal {
+inline SEXP na_sym = NULL;
+inline SEXP lazy_load_symbol(SEXP null_or_symbol, const char* name){
+  return null_or_symbol == NULL ? Rf_installChar(Rf_mkCharCE(name, CE_UTF8)) : null_or_symbol;
+}
+}
+
 // Alias type for SYMSXP
 struct r_sym {
   SEXP value;
   using value_type = r_sexp;
 
-  r_sym() : value{R_MissingArg} {}
+  r_sym() : value(internal::lazy_load_symbol(internal::na_sym, "NA")){}
   explicit r_sym(SEXP x) : value{x} {
     internal::check_valid_construction<r_sym>(value);
   }
