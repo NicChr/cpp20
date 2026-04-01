@@ -1,4 +1,4 @@
-#include <cpp20/r_attrs.h>
+#include <cpp20.hpp>
 using namespace cpp20;
 
 
@@ -6,3 +6,9 @@ using namespace cpp20;
 r_vec<r_sexp> test_attrs(SEXP x){
   return attr::get_attrs(x);
 }
+
+[[cpp20::register]]
+r_vec<r_sexp> test_df(r_vec<r_sexp> cols){
+  return r_vec<r_sexp>(r_df(cols));
+}
+

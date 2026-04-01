@@ -256,6 +256,10 @@ test_attrs <- function(x) {
   .Call(`_cpp20_test_attrs`, x)
 }
 
+test_df <- function(cols) {
+  .Call(`_cpp20_test_df`, cols)
+}
+
 test_nas <- function(x) {
   .Call(`_cpp20_test_nas`, x)
 }

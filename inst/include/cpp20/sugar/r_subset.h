@@ -55,6 +55,8 @@ r_vec<V> exclude_locs(const r_vec<U>& exclude, r_size_t xn) {
   return out;
 }
 
+// Returns valid 1-indexed indices
+// It ignores NA and out-of-bounds (OOB) indices, which differs to subset() which returns NA when given NA or OOB
 template <internal::RNumericSubscript V = r_int, typename T, internal::RSubscript U>
 r_vec<V> clean_locs(const r_vec<U>& locs, const r_vec<T>& x){
 

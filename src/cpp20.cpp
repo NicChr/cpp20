@@ -641,6 +641,14 @@ extern "C" SEXP _cpp20_test_attrs(SEXP x) {
   return cpp20::internal::cpp_to_sexp(test_attrs(cpp20::as<std::remove_cvref_t<SEXP>>(x)));
   END_CPP20
 }
+// test_attrs.cpp
+r_vec<r_sexp> test_df(r_vec<r_sexp> cols);
+extern "C" SEXP _cpp20_test_df(SEXP cols) {
+  BEGIN_CPP20
+  cpp20::internal::check_r_cpp_mapping<r_vec<r_sexp>>(cols);
+  return cpp20::internal::cpp_to_sexp(test_df(cpp20::as<std::remove_cvref_t<r_vec<r_sexp>>>(cols)));
+  END_CPP20
+}
 // test_nas.h
 extern "C" SEXP _cpp20_test_nas(SEXP x) {
   BEGIN_CPP20
@@ -827,6 +835,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"_cpp20_test_deduced_scalar_type2", (DL_FUNC) &_cpp20_test_deduced_scalar_type2, 1},
     {"_cpp20_test_deduced_type",         (DL_FUNC) &_cpp20_test_deduced_type,         1},
     {"_cpp20_test_deduced_vec_type",     (DL_FUNC) &_cpp20_test_deduced_vec_type,     1},
+    {"_cpp20_test_df",                   (DL_FUNC) &_cpp20_test_df,                   1},
     {"_cpp20_test_factor1",              (DL_FUNC) &_cpp20_test_factor1,              1},
     {"_cpp20_test_factor2",              (DL_FUNC) &_cpp20_test_factor2,              1},
     {"_cpp20_test_fill",                 (DL_FUNC) &_cpp20_test_fill,                 3},

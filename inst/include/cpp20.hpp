@@ -27,6 +27,7 @@
 #include <cpp20/sugar/r_exprs.h>
 #include <cpp20/sugar/r_fns.h>
 #include <cpp20/r_visit.h>
+#include <cpp20/r_list_helpers.h>
 #include <cpp20/sugar/r_identical.h>
 #include <cpp20/sugar/r_hash.h>
 #include <cpp20/sugar/r_sort.h>
@@ -38,7 +39,7 @@
 #include <cpp20/sugar/r_subset.h>
 #include <cpp20/sugar/r_make_vec.h>
 #include <cpp20/sugar/r_recycle.h>
-// #include <cpp20/r_df.h>
+#include <cpp20/r_df.h>
 #include <cpp20/r_math.h>
 #include <cpp20/sugar/r_seq.h>
 
