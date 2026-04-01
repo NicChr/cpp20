@@ -169,10 +169,6 @@ struct r_vec {
     return sexp.address();
   }
 
-  bool is_bare() const {
-    return !Rf_isObject(sexp);
-  }
-
   // Get element (no bounds-check)
   T get(r_size_t index) const {
     return T(m_ptr[index]);
