@@ -160,7 +160,7 @@ concept AtLeastOneRMathType =
 template<RVal T>
 struct r_vec;
 struct r_factors;
-// struct r_df;
+struct r_df;
 
 namespace internal {
 

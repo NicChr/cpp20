@@ -21,9 +21,9 @@
 #include <cpp20/r_vec.h>
 #include <cpp20/r_attrs.h>
 #include <cpp20/r_factor.h>
+#include <cpp20/r_df.h>
 #include <cpp20/r_visit.h>
 #include <cpp20/r_list_helpers.h>
 #include <cpp20/r_coerce.h>
-// #include <cpp20/r_df.h>
 
 #endif
