@@ -20,7 +20,6 @@
 #include <cpp20/r_vec_utils.h>
 #include <cpp20/r_coerce_impl.h>
 #include <cpp20/r_vec.h>
-#include <cpp20/r_vec_methods.h>
 #include <cpp20/r_attrs.h>
 #include <cpp20/r_visit.h>
 #include <cpp20/r_list_helpers.h>
