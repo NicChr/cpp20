@@ -9,6 +9,7 @@
 #include <cpp20/r_vec_utils.h>
 #include <limits>
 #include <charconv> // For to_chars
+#include <string>
 
 namespace cpp20 {
 
@@ -50,6 +51,13 @@ inline bool is_implicit_na_coercion(const T& before, const U& after){
   return !is_na(before) && is_na(after);
 }
 
+template <typename T>
+bool parse(std::string_view s, T& out) {
+    auto [ptr, ec] = std::from_chars(s.data(), s.data() + s.size(), out);
+    bool parsed = ec == std::errc{} && ptr == s.data() + s.size();
+    return parsed;
+}
+
 // Coerce functions that account for NA
 template<typename T>
 inline r_lgl as_bool(T const& x){
@@ -57,7 +65,16 @@ inline r_lgl as_bool(T const& x){
     return r_lgl(unwrap(x));
   } else if constexpr (MathType<T>){
     return is_na(x) ? na<r_lgl>() : r_lgl(static_cast<bool>(unwrap(x)));
-  } else [[unlikely]] {
+  } else if constexpr (RStringType<T>){
+    std::string_view str = std::string_view(x.c_str());
+    if ( (str == "TRUE")){
+      return r_true;
+    } else if ( (str == "FALSE")){
+      return r_false;
+    } else {
+      return na<r_lgl>();
+    }
+  } else {
     return na<r_lgl>();
   }
 }
@@ -67,7 +84,13 @@ inline r_int as_int(T const& x){
     return r_int(unwrap(x));
   } else if constexpr (MathType<T>){
     return is_na(x) || !internal::can_be_int(x) ? na<r_int>() : r_int(static_cast<int>(unwrap(x)));
-  } else [[unlikely]] {
+  } else if constexpr (RStringType<T>){
+    int res;
+    if (!parse(x.cpp_str(), res)){
+      return na<r_int>();
+    }
+    return r_int(res);
+  } else {
     return na<r_int>();
   }
 }
@@ -77,7 +100,13 @@ inline r_int64 as_int64(T const& x){
     return r_int64(unwrap(x));
   } else if constexpr (MathType<T>){
     return is_na(x) || !internal::can_be_int64(x) ? na<r_int64>() : r_int64(static_cast<int64_t>(unwrap(x)));
-  } else [[unlikely]] {
+  } else if constexpr (RStringType<T>){
+    int64_t res;
+    if (!parse(x.cpp_str(), res)){
+      return na<r_int64>();
+    }
+    return r_int64(res);
+  } else {
     return na<r_int64>();
   }
 }
@@ -87,7 +116,13 @@ inline r_dbl as_double(T const& x){
     return r_dbl(unwrap(x));
   } else if constexpr (MathType<T>){
     return is_na(x) ? na<r_dbl>() : r_dbl(static_cast<double>(unwrap(x)));
-  } else [[unlikely]] {
+  } else if constexpr (RStringType<T>){
+    double res;
+    if (!parse(x.cpp_str(), res)){
+      return na<r_dbl>();
+    }
+    return r_dbl(res);
+  } else {
     return na<r_dbl>();
   }
 }
@@ -97,7 +132,7 @@ inline r_cplx as_complex(T const& x){
     return r_cplx(unwrap(x));
   } else if constexpr (MathType<T>){
     return r_cplx{as_double(x), r_dbl(0.0)};
-  } else [[unlikely]] {
+  } else {
     return na<r_cplx>();
   }
 }
@@ -110,7 +145,7 @@ inline r_raw as_raw(T const& x){
   } else if constexpr (MathType<T>){
     using r_t = unwrap_t<T>;
     return is_na(x) || !internal::between_impl(unwrap(x), r_t(0), r_t(255)) ? na<r_raw>() : r_raw(static_cast<unsigned char>(unwrap(x)));
-  } else [[unlikely]] {
+  } else {
     return na<r_raw>();
   }
 }
@@ -184,7 +219,7 @@ inline r_str_view as_r_string(T const& x){
     }
     r_sexp str = r_sexp(safe[Rf_coerceVector](x, STRSXP));
     return r_str_view(STRING_ELT(str, 0));
-  } else [[unlikely]] {
+  } else {
     return na<r_str_view>();
   }
 }
