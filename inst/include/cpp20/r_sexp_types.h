@@ -139,7 +139,7 @@ template<> inline constexpr uint16_t r_typeof<r_factors> =             CPP20_FCT
 // Low-level type ID check, primarily used in constructing classed cpp20 objects from SEXP
 template <typename T>
 inline void check_valid_construction(SEXP x){
-    if (r_typeof_impl<T> != TYPEOF(x)){
+    if (r_typeof_impl<T> != TYPEOF(x)) [[unlikely]] {
         abort("Bad construction from R type %s to C++ type %s", Rf_type2char(TYPEOF(x)), type_str<T>());
     }
 }
