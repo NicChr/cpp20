@@ -2,7 +2,6 @@
 #define CPP20_R_COERCE_IMPL_H
 
 #include <cpp20/r_setup.h>
-#include <cpp20/sugar/r_named_arg.h>
 #include <cpp20/r_utils.h>
 #include <cpp20/r_types.h>
 #include <cpp20/r_limits.h>
@@ -358,12 +357,6 @@ inline T as_r(U const& x) {
     using r_t = std::remove_cvref_t<T>;
     return internal::as_impl<r_t, U>::cast(x);
   } 
-}
-
-// ── as_r<T> for named_arg ──────────────────────────────────────────
-template <RVal T, NamedArg U>
-inline T as_r(U const& a) {
-  return internal::as_r<T>(a.value);
 }
 
 }

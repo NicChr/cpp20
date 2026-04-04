@@ -28,7 +28,7 @@ inline r_vec<T> make_vec(Args... args) {
     int i = 0;
     (([&]() {
       if constexpr (NamedArg<Args>) {
-        out.set(i, internal::as_r<T>(args));
+        out.set(i, internal::as_r<T>(args.value));
         nms.set(i, internal::as_r<r_str_view>(args.name));
       } else {
         out.set(i, internal::as_r<T>(args));
