@@ -1,6 +1,7 @@
 #ifndef CPP20_R_COERCE_H
 #define CPP20_R_COERCE_H
 
+#include <cpp20/r_coerce_impl.h>
 #include <cpp20/r_vec.h>
 #include <cpp20/r_visit.h>
 #include <cpp20/r_sexp_types.h>

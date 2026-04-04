@@ -58,7 +58,7 @@ inline r_vec<r_sexp> new_df_impl(const r_vec<r_sexp>& cols, bool recycle, int nr
     out.set_names(names); 
 
     r_vec<r_int> row_names = create_row_names(nrows);
-    attr::set_attr(out, symbol::class_sym, r_vec<r_str_view>(1, "data.frame"));
+    attr::set_attr(out, symbol::class_sym, r_vec<r_str_view>(1, r_str_view(r_str("data.frame"))));
     attr::set_attr(out, symbol::row_names_sym, row_names);
     return out;
 }
@@ -82,7 +82,7 @@ inline r_vec<r_sexp> new_df_impl(int nrows){
     r_vec<r_sexp> out{};
     r_vec<r_int> row_names = create_row_names(nrows);
     out.set_names(r_vec<r_str_view>());
-    attr::set_attr(out, symbol::class_sym, r_vec<r_str_view>(1, "data.frame"));
+    attr::set_attr(out, symbol::class_sym, r_vec<r_str_view>(1, r_str_view(r_str("data.frame"))));
     attr::set_attr(out, symbol::row_names_sym, row_names);
     return out;
 }
@@ -101,7 +101,7 @@ struct r_df {
         r_size_t n = x.length();
         if (n > 0){
             r_size_t init_size = x.view(0).length();
-            if (!internal::can_be_int(x)) [[unlikely]] {
+            if (init_size > unwrap(r_limits<r_int>::max())) [[unlikely]] {
                 abort("Data frames can only contain short vectors, please check");
             }
             for (r_size_t i = 0; i < n; ++i){

@@ -23,7 +23,7 @@ r_vec<r_int> cpp_order(const r_vec<T>& x) {
     int n = x.size();
     r_vec<r_int> p(n);
     OMP_SIMD
-    for (r_size_t i = 0; i < n; ++i) p.set(i, i);
+    for (r_size_t i = 0; i < n; ++i) p.set(i, r_int(static_cast<int>(i)));
 
     auto *p_x = x.data();
 
@@ -55,7 +55,7 @@ r_vec<r_int> cpp_stable_order(const r_vec<T>& x) {
     int n = x.size();
     r_vec<r_int> p(n);
     OMP_SIMD
-    for (r_size_t i = 0; i < n; ++i) p.set(i, i);
+    for (r_size_t i = 0; i < n; ++i) p.set(i, r_int(static_cast<int>(i)));
 
     auto *p_x = x.data();
 
@@ -123,7 +123,7 @@ inline r_vec<r_int> order(const r_vec<T>& x, bool preserve_ties = true) {
         // All NAs - just return sequential indices
         if (all_nas) {
             OMP_SIMD
-            for (uint32_t i = 0; i < n; ++i) out.set(i, static_cast<int>(i));
+            for (uint32_t i = 0; i < n; ++i) out.set(i, r_int(static_cast<int>(i)));
             return out;
         }
 

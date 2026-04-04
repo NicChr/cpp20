@@ -49,7 +49,7 @@ r_vec<V> exclude_locs(const r_vec<U>& exclude, r_size_t xn) {
 
   while(k != out_size){
     if (keep[i++] == 1U){
-      out.set(k++, i);
+      out.set(k++, V(static_cast<unwrap_t<V>>(i)));
     }
   }
   return out;
@@ -121,7 +121,7 @@ r_vec<V> clean_locs(const r_vec<U>& locs, const r_vec<T>& x){
     r_size_t k = 0;
     for (r_size_t i = 0; i < n; ++i){
       if (internal::between_impl<r_size_t>(unwrap(locs.get(i)), r_size_t(1), xn)){
-        out.set(k++, locs.get(i));
+        out.set(k++, V(static_cast<unwrap_t<V>>(unwrap(locs.get(i)))));
       }
     }
     return out;
@@ -189,12 +189,10 @@ inline r_vec<T> r_vec<T>::subset(const r_vec<U>& indices, bool check) const {
 // r_vec<T> member functions
 
 template <RVal T>
-template <typename U>
-r_size_t r_vec<T>::count(const r_vec<U>& values) const {
+r_size_t r_vec<T>::count(const r_vec<T>& values) const {
 
   r_size_t 
     n_values = values.length(),
-    n_implicit_na_coercions = 0,
     out = 0;
 
   if (n_values == 0){
@@ -204,35 +202,23 @@ r_size_t r_vec<T>::count(const r_vec<U>& values) const {
     return count(values.view(0)); 
   }
 
-  // Coerce values to same vec type as r_vec<T>
-
-  r_vec<T> values2 = as<r_vec<T>>(values);
-
-  // Count the number of implicit NA coercions
-
-  for (r_size_t i = 0; i < n_values; ++i){
-    n_implicit_na_coercions += internal::is_implicit_na_coercion(values.view(i), values2.view(i));
-  }
-
   // Have to explicitly request 64-bit matches (annoying)
   if (is_long()){
-    r_vec<r_int64> matches = match<r_int64>(*this, values2);
+    r_vec<r_int64> matches = match<r_int64>(*this, values);
     out = matches.length() - matches.na_count(); // Number of matches
-    out -= n_implicit_na_coercions;
     out = std::max(out, r_size_t(0));
     return out;
   } else {
-    r_vec<r_int> matches = match(*this, values2);
+    r_vec<r_int> matches = match(*this, values);
     out = matches.length() - matches.na_count(); // Number of matches
-    out -= n_implicit_na_coercions;
     out = std::max(out, r_size_t(0));
     return out;
   }
 }
 
 template <RVal T>
-template <internal::RNumericSubscript V, typename U>
-r_vec<V> r_vec<T>::find(const r_vec<U>& values, bool invert) const {
+template <internal::RNumericSubscript V>
+r_vec<V> r_vec<T>::find(const r_vec<T>& values, bool invert) const {
 
 
   if constexpr (is<V, r_int>){
@@ -248,7 +234,7 @@ r_vec<V> r_vec<T>::find(const r_vec<U>& values, bool invert) const {
       r_size_t n = length();
       r_vec<V> out(n);
       OMP_SIMD
-      for (r_size_t i = 0; i < n; ++i) out.set(i, i + 1);
+      for (r_size_t i = 0; i < n; ++i) out.set(i, V(static_cast<unwrap_t<V>>(i + 1)));
       return out;
     } else {
       return r_vec<V>();
@@ -257,34 +243,12 @@ r_vec<V> r_vec<T>::find(const r_vec<U>& values, bool invert) const {
     // Just simple find loop
     return find<V>(values.view(0), /*invert=*/ invert); 
   }
-
-  // Coerce values to same vec type as r_vec<T>
-
-  r_vec<T> values2 = as<r_vec<T>>(values);
-
-  // Remove values that were implicitly coerced to NA
-  // r_size_t n_implicit_na_coercions = 0;
-  // for (r_size_t i = 0; i < n_values; ++i){
-  //   n_implicit_na_coercions += (cpp20::is_na(values2.view(i)) && !cpp20::is_na(values.view(i)));
-  // } 
-  r_size_t k = 0;
-  r_vec<V> exclude(n_values, 0); // Fill with 0 to signify no exclusions by default
-  for (r_size_t i = 0; i < n_values; ++i){
-    bool implicit_na_coercion = internal::is_implicit_na_coercion(values.view(i), values2.view(i));
-    if (implicit_na_coercion){
-      exclude.set(k++, -(i + 1));
-    }
-  }
-  if (k > 0){
-    values2 = values2.subset(exclude);
-  }
-  r_vec<V> matches = match<V>(*this, values2);
+  r_vec<V> matches = match<V>(*this, values);
   return matches.template find<V>(na<V>(), !invert);
 }
 
 template <RVal T>
-template <typename U>
-r_vec<T> r_vec<T>::remove(const r_vec<U>& values) const {
+r_vec<T> r_vec<T>::remove(const r_vec<T>& values) const {
   if (is_long()){
     r_vec<r_int64> keep = find<r_int64>(values, /*invert=*/ true);
     return subset(keep, false);
@@ -295,8 +259,8 @@ r_vec<T> r_vec<T>::remove(const r_vec<U>& values) const {
 }
 
 template <RVal T>
-template <internal::RSubscript U, typename V>
-void r_vec<T>::fill(const r_vec<U>& where, const r_vec<V>& with) {
+template <internal::RSubscript U>
+void r_vec<T>::fill(const r_vec<U>& where, const r_vec<T>& with) {
 
   if (is_null()) return;
 
@@ -329,8 +293,7 @@ void r_vec<T>::fill(const r_vec<U>& where, const r_vec<V>& with) {
 }
 
 template <RVal T>
-template <typename U1, typename U2>
-void r_vec<T>::replace(const r_vec<U1>& old_values, const r_vec<U2>& new_values){
+void r_vec<T>::replace(const r_vec<T>& old_values, const r_vec<T>& new_values){
 
   if (is_null()) return;
 
@@ -353,8 +316,7 @@ void r_vec<T>::replace(const r_vec<U1>& old_values, const r_vec<U2>& new_values)
     recycle_index(oldvi, oldv_size), 
     recycle_index(newvi, newv_size), 
     ++i){
-      if (identical(view(i), prev.view(oldvi)) && 
-      !internal::is_implicit_na_coercion(old_values.view(oldvi), prev.view(oldvi))){
+      if (identical(view(i), prev.view(oldvi))){
         set(i, repl.view(newvi));
       }
   }

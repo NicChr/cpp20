@@ -45,6 +45,11 @@ inline constexpr bool can_be_int64(T const& x){
   }
 }
 
+template <typename T, typename U>
+inline bool is_implicit_na_coercion(const T& before, const U& after){
+  return !is_na(before) && is_na(after);
+}
+
 // Coerce functions that account for NA
 template<typename T>
 inline r_lgl as_bool(T const& x){

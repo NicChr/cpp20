@@ -92,7 +92,7 @@ r_vec<r_int> counts() const {
     r_size_t n = ids.length();
   
     // Counts initialised to zero
-    r_vec<as_r_val_t<decltype(n_groups)>> out(n_groups, 0);
+    r_vec<r_int> out(n_groups, r_int(0));
     const int* RESTRICT p_group_id = ids.data();
     int* RESTRICT p_out = out.data();
   
@@ -107,7 +107,7 @@ r_vec<r_int> order() const {
     if (sorted || is_sorted(ids)){
         int n = ids.length();
         r_vec<r_int> out(n);
-        for (int i = 0; i < n; ++i) out.set(i, i);
+        for (int i = 0; i < n; ++i) out.set(i, r_int(i));
         return out;
     } else {
         return cpp20::order(ids, /*preserve_ties = */ false);
@@ -192,7 +192,7 @@ inline groups make_unordered_groups(const r_vec<T>& x) {
 
         if (all_nas) {
           // If all NAs, just return all zeroes
-          g.ids.fill(0);
+          g.ids.fill(r_int(0));
           g.n_groups = 1;
           g.sorted = true;
           return g;

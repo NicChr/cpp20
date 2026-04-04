@@ -33,7 +33,7 @@ r_vec<U> match(const r_vec<T>& needles, const r_vec<T>& haystack) {
     auto val = needles.view(0);
     for (r_size_t i = 0; i < n_haystack; ++i){
       if (identical(val, haystack.view(i))){
-        out.set(0, i + 1);
+        out.set(0, U(static_cast<unwrap_t<U>>(i + 1)));
         return out;
       }
     }

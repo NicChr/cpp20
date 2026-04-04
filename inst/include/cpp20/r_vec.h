@@ -20,11 +20,6 @@ inline void r_copy_n(r_vec<T>& target, const r_vec<T>& source, r_size_t target_o
   
 namespace internal {
 
-template <typename T, typename U>
-inline bool is_implicit_na_coercion(const T& before, const U& after){
-  return !is_na(before) && is_na(after);
-}
-
 // Concept helpers for location-based subset helpers
 template <typename T>
 concept RSubscript = any<T, r_lgl, r_int, r_int64, r_str_view, r_str>;
@@ -90,8 +85,7 @@ struct r_vec {
     initialise_ptr();
   }
 
-  template<typename U>
-  explicit r_vec(r_size_t n, U default_value)
+  explicit r_vec(r_size_t n, T const& default_value)
     : r_vec(n)
   {
     fill(r_size_t(0), n, default_value);
@@ -173,9 +167,9 @@ struct r_vec {
     return T(m_ptr[index]);
   }
 
-  // View element (like `get()` but copied elements must be short-lived)
+  // View element (like `get()` but elements must be short-lived)
   // Element must not live after parent vector has been destroyed
-  // It is designed to be a simple view into the vector 
+  // It is designed to be a simple view into the vector  and avoid re-protection overhead associated with r_str and r_sexp
   T view(r_size_t index) const {
     if constexpr (std::is_constructible_v<data_type, unwrap_t<data_type>, internal::view_tag>) {
       return T(m_ptr[index], internal::view_tag{});
@@ -184,11 +178,8 @@ struct r_vec {
     }
   }
 
-  // Set element (no bounds-check) - We use flexible template to be able to coerce it to an RVal
-  template <typename V>
-  void set(r_size_t index, const V& val) {
-    // Avoid copies and extra protections (especially of r_sexp/r_str)
-    if constexpr (is<T, V>){
+  // Set element (no bounds-check)
+  void set(r_size_t index, const T& val) {
       if constexpr (RStringType<T>){
         SET_STRING_ELT(sexp, index, val);
       } else if constexpr (RObject<T>){
@@ -196,14 +187,16 @@ struct r_vec {
       } else {
         m_ptr[index] = unwrap(val);
       }
+  }
+  // Set element (no bounds-check)
+  template <typename V>
+  void set(r_size_t index, const V& val) {
+    if constexpr (RStringType<T>){
+      SET_STRING_ELT(sexp, index, cpp20::internal::as_r<T>(val));
+    } else if constexpr (RObject<T>){
+      SET_VECTOR_ELT(sexp, index, cpp20::internal::as_r<T>(val));
     } else {
-      if constexpr (RStringType<T>){
-        SET_STRING_ELT(sexp, index, cpp20::internal::as_r<T>(val));
-      } else if constexpr (RObject<T>){
-        SET_VECTOR_ELT(sexp, index, cpp20::internal::as_r<T>(val));
-      } else {
-        m_ptr[index] = unwrap(cpp20::internal::as_r<T>(val));
-      }
+      m_ptr[index] = unwrap(cpp20::internal::as_r<T>(val));
     }
   }
 
@@ -213,11 +206,7 @@ struct r_vec {
   r_vec<T> subset(const r_vec<U>& indices, bool check = true) const;
 
   r_vec<T> subset(r_size_t index, bool check = true) const {
-    if (internal::can_be_int(index)){
-      return subset(r_vec<r_int>(1, r_int(static_cast<int>(index))), check);
-    } else {
-      return subset(r_vec<r_int64>(1, r_int64(static_cast<int64_t>(index))), check);
-    }
+    return subset(r_vec<r_int64>(1, r_int64(static_cast<int64_t>(index))), check);
   }
 
   r_vec<r_str_view> names() const {
@@ -309,40 +298,29 @@ struct r_vec {
     return true;
   }
 
-  template <typename U>
-  bool any_v(const U& val) const {
-    T val_ = internal::as_r<T>(val);
+  bool any_v(const T& val) const {
     r_size_t n = length();
     for (r_size_t i = 0; i < n; ++i){
-      if (identical(view(i), val_)) return true;
+      if (identical(view(i), val)) return true;
     }
     return false;
   }
 
-  template <typename U>
-  bool all_v(const U& val) const {
-    T val_ = internal::as_r<T>(val);
+  bool all_v(const T& val) const {
     r_size_t n = length();
     for (r_size_t i = 0; i < n; ++i){
-      if (!identical(view(i), val_)) return false;
+      if (!identical(view(i), val)) return false;
     }
     return true;
   } 
 
-  template <typename U>
-  r_size_t count(U const& value) const {
+  r_size_t count(T const& value) const {
     r_size_t out = 0;
     r_size_t n = length();
-    
-    T v = internal::as_r<T>(value);
 
-    // If there was implicit coercion, then avoid counting matches
-    if (cpp20::is_na(v) && !cpp20::is_na(value)){
-      return out;
-    }
-    if constexpr (any<T, r_lgl, r_int, r_int64, r_str, r_str_view, r_sym, r_cplx, r_raw>){
+    if constexpr (!is<T, r_sexp>){
       auto* RESTRICT p_x = data();
-      auto val_ = unwrap(v);
+      auto val_ = unwrap(value);
 
       // SIMD vectorisation isn't working with identical function (sad)
       // Even though the code is simply: unwrap(x) == unwrap(y)
@@ -354,14 +332,13 @@ struct r_vec {
     } else {
       // Fall-back
       for (r_size_t i = 0; i < n; ++i){
-        out += identical(view(i), v);
+        out += identical(view(i), value);
       }
     }
 
     return out;
   }
-  template <typename U>
-  r_vec<T> remove(U const& value) const {
+  r_vec<T> remove(T const& value) const {
     r_size_t n_remove = count(value);
     r_size_t n = length();
 
@@ -372,10 +349,9 @@ struct r_vec {
     } else {
       r_vec<T> out(n - n_remove);
       r_size_t k = 0;
-      T v = internal::as_r<T>(value);
 
       for (r_size_t i = 0; i < n; ++i){
-        if (!identical(view(i), v)){
+        if (!identical(view(i), value)){
           out.set(k++, view(i));
         }
       }
@@ -384,8 +360,8 @@ struct r_vec {
   }
 
   // 1-indexed locations of value in vector
-  template <internal::RNumericSubscript V = r_int, typename U>
-  r_vec<V> find(U const& value, bool invert = false) const {
+  template <internal::RNumericSubscript V = r_int>
+  r_vec<V> find(T const& value, bool invert = false) const {
 
     r_size_t n = length();
 
@@ -396,8 +372,6 @@ struct r_vec {
         abort("`x` is a long vector, please use `find<r_int64>` instead");
       }
     }
-
-    T v = internal::as_r<T>(value);
   
     r_size_t n_vals = count(value);
     int_t whichi = 0; 
@@ -407,79 +381,67 @@ struct r_vec {
       int_t out_size = n - n_vals;
       r_vec<V> out(out_size);
       while (whichi < out_size){
-          out.set(whichi, i + 1);
-          whichi += static_cast<int_t>(!identical(view(i++), v));
+          out.set(whichi, V(i + 1));
+          whichi += static_cast<int_t>(!identical(view(i++), value));
       }
       return out;
     } else {
       int_t out_size = n_vals;
       r_vec<V> out(out_size);
       while (whichi < out_size){
-        out.set(whichi, i + 1);
-        whichi += static_cast<int_t>(identical(view(i++), v));
+        out.set(whichi, V(i + 1));
+        whichi += static_cast<int_t>(identical(view(i++), value));
     }
     return out;
     }
   }
 
   // Sequential fill
-  template <typename U>
-  void fill(r_size_t start, r_size_t n, U const& val){
-    auto val2 = internal::as_r<T>(val);
+  void fill(r_size_t start, r_size_t n, T const& val){
     if constexpr (internal::RPtrWritableType<T>){
       int n_threads = internal::calc_threads(n);
       auto* RESTRICT p_target = data();
       if (n_threads > 1) {
         OMP_PARALLEL_FOR_SIMD(n_threads)
         for (r_size_t i = 0; i < n; ++i) {
-          p_target[start + i] = unwrap(val2);
+          p_target[start + i] = unwrap(val);
         }
       } else {
-        std::fill_n(p_target + start, n, unwrap(val2));
+        std::fill_n(p_target + start, n, unwrap(val));
       }
     } else {
       for (r_size_t i = 0; i < n; ++i) {
-        set(start + i, val2);
+        set(start + i, val);
       }
     }
   }
 
   // Fill entire vector with value
-  template <typename U>
-  void fill(U const& val){
+  void fill(T const& val){
     fill(0, length(), val);
   }
 
-  template <typename U1, typename U2>
-  void replace(r_size_t start, r_size_t n, U1 const& old_val, U2 const& new_val){
-    T old_val2 = internal::as_r<T>(old_val);
-    T new_val2 = internal::as_r<T>(new_val);
-    if (!internal::is_implicit_na_coercion(old_val, old_val2)){
-        for (r_size_t i = 0; i < n; ++i) {
-          r_size_t idx = start + i;
-          if (identical(view(idx), old_val2)){
-            set(idx, new_val2);
-          }
-        }
+  void replace(r_size_t start, r_size_t n, T const& old_val, T const& new_val){
+    for (r_size_t i = 0; i < n; ++i) {
+      r_size_t idx = start + i;
+      if (identical(view(idx), old_val)){
+        set(idx, new_val);
+      }
     }
   }
 
   // Replace all occurrences of old_val with new_val
-  template <typename U1, typename U2>
-  void replace(U1 const& old_val, U2 const& new_val){
+  void replace(T const& old_val, T const& new_val){
     replace(0, length(), old_val, new_val);
   }
 
-  template <typename U>
-  r_size_t count(const r_vec<U>& values) const;
-  template <internal::RNumericSubscript V = r_int, typename U>
-  r_vec<V> find(const r_vec<U>& values, bool invert = false) const;
-  template <typename U>
-  r_vec<T> remove(const r_vec<U>& values) const;
-  template <internal::RSubscript U, typename V>
-  void fill(const r_vec<U>& where, const r_vec<V>& with);
-  template <typename U1, typename U2>
-  void replace(const r_vec<U1>& old_values, const r_vec<U2>& new_values);
+  r_size_t count(const r_vec<T>& values) const;
+  template <internal::RNumericSubscript V = r_int>
+  r_vec<V> find(const r_vec<T>& values, bool invert = false) const;
+  r_vec<T> remove(const r_vec<T>& values) const;
+  template <internal::RSubscript U>
+  void fill(const r_vec<U>& where, const r_vec<T>& with);
+  void replace(const r_vec<T>& old_values, const r_vec<T>& new_values);
 
 
   r_vec<T> resize(r_size_t n) const {
@@ -569,7 +531,7 @@ struct r_vec {
       if (len > unwrap(r_limits<r_int>::max())){
         abort("`lengths()` does not currently support long-vectors");
       }
-      out.set(i, static_cast<int>(len));
+      out.set(i, r_int(static_cast<int>(len)));
     }
     return out;
   }

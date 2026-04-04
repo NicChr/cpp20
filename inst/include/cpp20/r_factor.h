@@ -76,7 +76,7 @@ struct r_factors {
   template <RStringType T>
   void init_factor(const r_vec<T>& levels, bool check_valid_levels = true) {
       // Set class
-      attr::set_attr(value, symbol::class_sym, r_vec<r_str_view>(1, "factor"));
+      attr::set_attr(value, symbol::class_sym, r_vec<r_str_view>(1, r_str_view(r_str("factor"))));
       // Set levels
       set_levels(levels, check_valid_levels);
   }
@@ -159,7 +159,7 @@ struct r_factors {
   FORWARD_METHOD(set)
   FORWARD_METHOD(names)
   FORWARD_METHOD(set_names)
-  FORWARD_METHOD(is_na)
+  // FORWARD_METHOD(is_na)
   FORWARD_METHOD(na_count)
   FORWARD_METHOD(any_na)
   FORWARD_METHOD(all_na)

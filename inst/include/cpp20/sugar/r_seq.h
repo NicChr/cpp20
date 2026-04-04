@@ -60,16 +60,16 @@ r_vec<r_sexp> sequences(const r_vec<r_int>& size, const r_vec<T>& from, const r_
                     interrupt_counter = 0;
                 }
                 if constexpr (RIntegerType<common_t>){
-                    curr_seq.set(j, current_val);
-        
+                    curr_seq.set(j, common_t(current_val));
+
                     // Only add if we need the next value
                     if (j < seq_size - 1) {
-                        if (__builtin_add_overflow(current_val, increment, &current_val)) { 
-                            abort("Integer overflow in sequence %d, please use doubles", i + 1); 
+                        if (__builtin_add_overflow(current_val, increment, &current_val)) {
+                            abort("Integer overflow in sequence %d, please use doubles", i + 1);
                         }
                     }
                 } else {
-                    curr_seq.set(j, ( start + (j * increment) ));
+                    curr_seq.set(j, common_t( start + (j * increment) ));
                 }
 
             }

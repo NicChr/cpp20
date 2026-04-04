@@ -127,8 +127,8 @@ r_vec<T> range(const r_vec<T> &x, bool na_rm = false){
     }
 
     r_vec<T> out(2);
-    out.set(0, lo);
-    out.set(1, hi);
+    out.set(0, T(lo));
+    out.set(1, T(hi));
     return out;
 }
 
