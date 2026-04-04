@@ -3,9 +3,8 @@
 
 #include <cpp20/r_setup.h>
 #include <cpp20/r_sexp.h>
-#include <cpp20/r_types.h>
 #include <cpp20/r_env.h>
-#include <cpp20/r_symbols.h>
+#include <cpp20/r_sym.h>
 #include <cpp20/sugar/r_exprs.h>
 
 namespace cpp20 {

@@ -58,7 +58,7 @@ inline constexpr auto max(T x, U y){
 
 inline r_str_view min(r_str_view x, r_str_view y){
   r_lgl res = x < y;
-  if (res.is_na()){
+  if (is_na(res)){
     return na<r_str_view>();
   } else {
     return res ? x : y;
@@ -66,7 +66,7 @@ inline r_str_view min(r_str_view x, r_str_view y){
 }
 inline r_str_view max(r_str_view x, r_str_view y){
   r_lgl res = x < y;
-  if (res.is_na()){
+  if (is_na(res)){
     return na<r_str_view>();
   } else {
     return res ? y : x;
@@ -75,7 +75,7 @@ inline r_str_view max(r_str_view x, r_str_view y){
 
 inline r_str min(const r_str& x, const r_str& y){
   r_lgl res = x < y;
-  if (res.is_na()){
+  if (is_na(res)){
     return na<r_str>();
   } else {
     return res ? x : y;
@@ -83,7 +83,7 @@ inline r_str min(const r_str& x, const r_str& y){
 }
 inline r_str max(const r_str& x, const r_str& y){
   r_lgl res = x < y;
-  if (res.is_na()){
+  if (is_na(res)){
     return na<r_str>();
   } else {
     return res ? y : x;

@@ -1,9 +1,38 @@
-#ifndef CPP20_R_SYMBOLS_H
-#define CPP20_R_SYMBOLS_H
+#ifndef CPP20_R_SYM_H
+#define CPP20_R_SYM_H
 
-#include <cpp20/r_types.h>
+#include <cpp20/r_setup.h>
+#include <cpp20/r_concepts.h>
+#include <cpp20/r_sexp.h>
+#include <cpp20/r_sexp_types.h>
+#include <cpp20/r_str.h>
 
 namespace cpp20 {
+
+namespace internal {
+inline SEXP na_sym = NULL;
+inline SEXP lazy_load_symbol(SEXP null_or_symbol, const char* name){
+    return null_or_symbol == NULL ? Rf_installChar(Rf_mkCharCE(name, CE_UTF8)) : null_or_symbol;
+}
+}
+
+// Alias type for SYMSXP
+struct r_sym {
+  SEXP value;
+  using value_type = r_sexp;
+
+  r_sym() : value(internal::lazy_load_symbol(internal::na_sym, "NA")){}
+  explicit r_sym(SEXP x) : value{x} {
+    internal::check_valid_construction<r_sym>(value);
+  }
+  explicit r_sym(SEXP x, internal::view_tag) : value(x) {
+    internal::check_valid_construction<r_sym>(value);
+  }
+  explicit r_sym(const char *x) : value(Rf_installChar(Rf_mkCharCE(x, CE_UTF8))) {}
+  explicit r_sym(const r_str& x) : value(Rf_installChar(x)) {}
+  explicit r_sym(const r_str_view& x) : value(Rf_installChar(x)) {}
+  operator SEXP() const noexcept { return value; }
+};
 
 namespace symbol {
 
@@ -12,7 +41,7 @@ inline const r_sym names_sym = r_sym(R_NamesSymbol);
 inline const r_sym row_names_sym = r_sym(R_RowNamesSymbol);
 inline const r_sym levels_sym = r_sym(R_LevelsSymbol);
 inline r_sym tag(SEXP x){
-  return r_sym(TAG(x));
+    return r_sym(TAG(x));
 }
 
 
@@ -62,3 +91,4 @@ inline r_sym tag(SEXP x){
 }
 
 #endif
+

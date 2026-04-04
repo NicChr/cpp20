@@ -12,7 +12,6 @@
 #include <cpp20/r_sexp.h>
 #include <cpp20/r_sexp_types.h>
 #include <cpp20/r_types.h>
-#include <cpp20/r_symbols.h>
 #include <cpp20/r_env.h>
 #include <cpp20/r_limits.h>
 #include <cpp20/r_nas.h>

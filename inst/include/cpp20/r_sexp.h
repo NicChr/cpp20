@@ -91,6 +91,9 @@ struct r_sexp {
   r_str address() const;
 };
 
+// R C NULL constant
+inline const r_sexp r_null = r_sexp();
+
 }
 
 

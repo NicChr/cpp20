@@ -2,7 +2,7 @@
 #define CPP20_VECTOR_UTILS_H
 
 #include <cpp20/r_types.h>
-#include <cpp20/r_symbols.h>
+#include <cpp20/r_sym.h>
 
 namespace cpp20 {
 

@@ -5,7 +5,6 @@
 #include <cpp20/r_concepts.h>
 #include <cpp20/r_utils.h>
 #include <cpp20/r_limits.h>
-#include <cpp20/r_symbols.h>
 #include <cpp20/r_scalar_methods.h>
 #include <cpp20/r_vec_utils.h>
 #include <cpp20/r_coerce_impl.h>

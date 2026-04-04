@@ -2,7 +2,6 @@
 #define CPP20_R_ATTRS_H
 
 #include <cpp20/r_setup.h>
-#include <cpp20/r_symbols.h>
 #include <cpp20/r_vec.h>
 
 namespace cpp20 {

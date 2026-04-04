@@ -123,7 +123,7 @@ inline r_str_view as_r_string(T const& x){
   } else if constexpr (is<T, r_sym>){
     return r_str_view(PRINTNAME(static_cast<SEXP>(x)));
   } else if constexpr (is<T, r_lgl>){
-    if (x.is_na()){
+    if (is_na(x)){
       return na<r_str_view>();
     } else if (x.is_true()){
       return as_r_string("TRUE");
