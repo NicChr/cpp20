@@ -93,7 +93,7 @@ struct r_df {
     r_vec<r_sexp> value;
     
     // Default constructor (empty data frame)
-    r_df() : value(std::move(internal::new_df_impl(0))) {}
+    r_df() : value(internal::new_df_impl(0)) {}
 
     private: 
 
@@ -145,8 +145,8 @@ struct r_df {
     
     // Constructor from list of cols
     // Supply a nrows value for a custom recycle length
-    explicit r_df(const r_vec<r_sexp>& cols, bool recycle = true) : value(std::move(internal::new_df_impl(cols, recycle))){}
-    explicit r_df(const r_vec<r_sexp>& cols, bool recycle, int nrows) : value(std::move(internal::new_df_impl(cols, recycle, nrows))){}
+    explicit r_df(const r_vec<r_sexp>& cols, bool recycle = true) : value(internal::new_df_impl(cols, recycle)){}
+    explicit r_df(const r_vec<r_sexp>& cols, bool recycle, int nrows) : value(internal::new_df_impl(cols, recycle, nrows)){}
 
     // Implicit conversion to SEXP
     operator SEXP() const noexcept { return unwrap(value); }
