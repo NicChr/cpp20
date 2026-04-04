@@ -3,11 +3,14 @@
 
 #include <cpp20/r_setup.h>
 #include <cpp20/r_symbols.h>
-#include <cpp20/r_env.h>
 #include <cpp20/r_vec.h>
 // #include <cpp20/sugar/r_fns.h>
 
 namespace cpp20 {
+
+namespace internal {
+  inline SEXP attrs_sym = NULL;
+}
 
 namespace attr {
 
@@ -85,9 +88,8 @@ template <RObject T>
 inline r_vec<r_sexp> get_attrs(const T& x) {
   if (can_have_attributes(x) && has_attrs(x)){
     SEXP x_ = x;
-    r_sym attributes_fn("attributes");
-    SEXP expr = Rf_protect(Rf_lang2(attributes_fn, x_));
-    SEXP res = Rf_protect(Rf_eval(expr, env::base_env));
+    SEXP expr = Rf_protect(Rf_lang2(cpp20::internal::lazy_load_symbol(cpp20::internal::attrs_sym, "attributes"), x_));
+    SEXP res = Rf_protect(Rf_eval(expr, R_BaseEnv));
     r_vec<r_sexp> out(res);
     Rf_unprotect(2);
     return out;
