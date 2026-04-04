@@ -117,12 +117,10 @@ inline r_raw as_raw(T const& x){
 // As CHARSXP
 template<typename T>
 inline r_str_view as_r_string(T const& x){
-  if constexpr (is<T, r_str_view>){
-    return x;
-  } else if constexpr (is<T, r_str>){
-    return r_str_view(unwrap(x));
+  if constexpr (is<T, r_str>){
+    return r_str_view(x);
   } else if constexpr (std::is_convertible_v<T, const char*>){
-    return r_str_view(Rf_mkCharCE(x, CE_UTF8));
+    return r_str_view(Rf_mkCharCE(static_cast<const char*>(x), CE_UTF8));
   } else if constexpr (is<T, std::string>){
     return r_str_view(x.c_str());
   } else if constexpr (is<T, r_sym>){
@@ -194,9 +192,7 @@ inline r_str_view as_r_string(T const& x){
 // As SYMSXP
 template<typename T>
 inline r_sym as_r_sym(T const& x){
-  if constexpr (is<T, r_sym>){
-    return x;
-  } else if constexpr (is<T, const char *>){
+  if constexpr (is<T, const char*>){
     return r_sym(x);
   } else if constexpr (RStringType<T>){
     return r_sym(x.c_str());
@@ -211,43 +207,21 @@ inline r_sym as_r_sym(T const& x){
 // CHARSXP is always converted to STRSXP here, see `r_types.h` for info
 template<typename T>
 inline r_sexp as_sexp(T const& x){
-  if constexpr (is<T, r_sexp>){
-    return x;
-  } else if constexpr (RVector<T>){
+  if constexpr (RVector<T>){
     return x.sexp;
-  } else if constexpr (std::is_convertible_v<T, SEXP>){
+  } else if constexpr (RObject<T>){
     return r_sexp(static_cast<SEXP>(x));
   } else if constexpr (RVal<T>){
     return r_sexp(new_scalar_vec(x));
+  } else if constexpr (CastableToRVal<T>) {
+    return r_sexp(new_scalar_vec(as_r_val(x)));
   } else {
     return new_scalar_vec(as_r_val(x)); 
   }
 }
-
-template<>
-inline r_sexp as_sexp<bool>(bool const& x){
-  return r_sexp(new_scalar_vec(r_lgl(static_cast<int>(x))));
-}
-template<>
-inline r_sexp as_sexp<const char *>(const char * const& x){
-  return new_scalar_vec(as_r_string(x));
-}
 template<>
 inline r_sexp as_sexp<r_sym>(r_sym const& x){
   return r_sexp(x.value, internal::view_tag{});
-}
-template<>
-inline r_sexp as_sexp<r_str_view>(r_str_view const& x){
-  return r_sexp(static_cast<SEXP>(x));
-}
-template<>
-inline r_sexp as_sexp<r_str>(r_str const& x){
-  return x.value;
-}
-
-template<>
-inline r_sexp as_sexp<SEXP>(SEXP const& x){ 
-  return r_sexp(x);
 }
 
 // R version of static_cast
