@@ -3,12 +3,6 @@
 using namespace cpp20;
 
 [[cpp20::register]]
-r_int foo(r_vec<r_int> x){
-    return as<r_int>(x);
-}
-
-
-[[cpp20::register]]
 SEXP test_as_sym(SEXP a, r_str b, r_dbl c, r_sym d, r_vec<r_str> e, r_vec<r_dbl> f){
     return make_vec<r_sexp>(
         as<r_sym>(a), as<r_sym>(b), as<r_sym>(c), as<r_sym>(d), as<r_sym>(e), as<r_sym>(f)

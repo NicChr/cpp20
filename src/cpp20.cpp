@@ -604,14 +604,6 @@ extern "C" SEXP _cpp20_test_df(SEXP cols) {
   END_CPP20
 }
 // test_coerce.cpp
-r_int foo(r_vec<r_int> x);
-extern "C" SEXP _cpp20_foo(SEXP x) {
-  BEGIN_CPP20
-  check_r_cpp_mapping<r_vec<r_int>>(x);
-  return cpp_to_sexp(foo(cpp20::as<r_vec<r_int>>(x)));
-  END_CPP20
-}
-// test_coerce.cpp
 SEXP test_as_sym(SEXP a, r_str b, r_dbl c, r_sym d, r_vec<r_str> e, r_vec<r_dbl> f);
 extern "C" SEXP _cpp20_test_as_sym(SEXP a, SEXP b, SEXP c, SEXP d, SEXP e, SEXP f) {
   BEGIN_CPP20
@@ -826,7 +818,6 @@ static const R_CallMethodDef CallEntries[] = {
     {"_cpp20_cpp20_typeof",              (DL_FUNC) &_cpp20_cpp20_typeof,              1},
     {"_cpp20_cpp_get_threads",           (DL_FUNC) &_cpp20_cpp_get_threads,           0},
     {"_cpp20_cpp_set_threads",           (DL_FUNC) &_cpp20_cpp_set_threads,           1},
-    {"_cpp20_foo",                       (DL_FUNC) &_cpp20_foo,                       1},
     {"_cpp20_scalar1",                   (DL_FUNC) &_cpp20_scalar1,                   1},
     {"_cpp20_scalar2",                   (DL_FUNC) &_cpp20_scalar2,                   1},
     {"_cpp20_scalar3",                   (DL_FUNC) &_cpp20_scalar3,                   2},

@@ -236,10 +236,6 @@ test_df <- function(cols) {
   .Call(`_cpp20_test_df`, cols)
 }
 
-foo <- function(x) {
-  .Call(`_cpp20_foo`, x)
-}
-
 test_as_sym <- function(a, b, c, d, e, f) {
   .Call(`_cpp20_test_as_sym`, a, b, c, d, e, f)
 }
