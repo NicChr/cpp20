@@ -127,7 +127,7 @@ test_that("Simple registration tests", {
   expect_equal(test_str3("hi"), "hi")
   expect_equal(test_str4("hi"), "hi")
 
-  expect_equal(test_as_sym("hi"), as.symbol("hi"))
+  # expect_equal(test_as_sym("hi"), as.symbol("hi"))
 
   expect_identical(test_sexp2(mean), test_sexp2(mean))
   expect_error(test_sexp3(mean)) # Expects a list

@@ -431,17 +431,6 @@ extern "C" SEXP _cpp20_test_str4(SEXP x) {
   END_CPP20
 }
 // test.h
-extern "C" SEXP _cpp20_test_as_sym(SEXP x) {
-  BEGIN_CPP20
-  return dispatch_template_impl<1, 1, std::array<int, 1>{0}>(
-    []<typename T>(SEXP x_internal) -> decltype(cpp_to_sexp(test_as_sym(cpp20::as<T>(x_internal)))) {
-        return cpp_to_sexp(test_as_sym(cpp20::as<T>(x_internal)));
-    },
-    x
-  );
-  END_CPP20
-}
-// test.h
 extern "C" SEXP _cpp20_test_specialisation(SEXP x) {
   BEGIN_CPP20
   return dispatch_template_impl<1, 1, std::array<int, 1>{0}>(
@@ -614,6 +603,66 @@ extern "C" SEXP _cpp20_test_df(SEXP cols) {
   return cpp_to_sexp(test_df(cpp20::as<r_vec<r_sexp>>(cols)));
   END_CPP20
 }
+// test_coerce.cpp
+r_int foo(r_vec<r_int> x);
+extern "C" SEXP _cpp20_foo(SEXP x) {
+  BEGIN_CPP20
+  check_r_cpp_mapping<r_vec<r_int>>(x);
+  return cpp_to_sexp(foo(cpp20::as<r_vec<r_int>>(x)));
+  END_CPP20
+}
+// test_coerce.cpp
+SEXP test_as_sym(SEXP a, r_str b, r_dbl c, r_sym d, r_vec<r_str> e, r_vec<r_dbl> f);
+extern "C" SEXP _cpp20_test_as_sym(SEXP a, SEXP b, SEXP c, SEXP d, SEXP e, SEXP f) {
+  BEGIN_CPP20
+  check_r_cpp_mapping<SEXP>(a);
+	check_r_cpp_mapping<r_str>(b);
+	check_r_cpp_mapping<r_dbl>(c);
+	check_r_cpp_mapping<r_sym>(d);
+	check_r_cpp_mapping<r_vec<r_str>>(e);
+	check_r_cpp_mapping<r_vec<r_dbl>>(f);
+  return cpp_to_sexp(test_as_sym(cpp20::as<SEXP>(a), cpp20::as<r_str>(b), cpp20::as<r_dbl>(c), cpp20::as<r_sym>(d), cpp20::as<r_vec<r_str>>(e), cpp20::as<r_vec<r_dbl>>(f)));
+  END_CPP20
+}
+// test_coerce.cpp
+SEXP test_as_int(SEXP a, r_str b, r_dbl c, r_sym d, r_vec<r_str> e, r_vec<r_dbl> f);
+extern "C" SEXP _cpp20_test_as_int(SEXP a, SEXP b, SEXP c, SEXP d, SEXP e, SEXP f) {
+  BEGIN_CPP20
+  check_r_cpp_mapping<SEXP>(a);
+	check_r_cpp_mapping<r_str>(b);
+	check_r_cpp_mapping<r_dbl>(c);
+	check_r_cpp_mapping<r_sym>(d);
+	check_r_cpp_mapping<r_vec<r_str>>(e);
+	check_r_cpp_mapping<r_vec<r_dbl>>(f);
+  return cpp_to_sexp(test_as_int(cpp20::as<SEXP>(a), cpp20::as<r_str>(b), cpp20::as<r_dbl>(c), cpp20::as<r_sym>(d), cpp20::as<r_vec<r_str>>(e), cpp20::as<r_vec<r_dbl>>(f)));
+  END_CPP20
+}
+// test_coerce.cpp
+SEXP test_as_dbl(SEXP a, r_str b, r_int c, r_sym d, r_vec<r_str> e, r_vec<r_int> f);
+extern "C" SEXP _cpp20_test_as_dbl(SEXP a, SEXP b, SEXP c, SEXP d, SEXP e, SEXP f) {
+  BEGIN_CPP20
+  check_r_cpp_mapping<SEXP>(a);
+	check_r_cpp_mapping<r_str>(b);
+	check_r_cpp_mapping<r_int>(c);
+	check_r_cpp_mapping<r_sym>(d);
+	check_r_cpp_mapping<r_vec<r_str>>(e);
+	check_r_cpp_mapping<r_vec<r_int>>(f);
+  return cpp_to_sexp(test_as_dbl(cpp20::as<SEXP>(a), cpp20::as<r_str>(b), cpp20::as<r_int>(c), cpp20::as<r_sym>(d), cpp20::as<r_vec<r_str>>(e), cpp20::as<r_vec<r_int>>(f)));
+  END_CPP20
+}
+// test_coerce.cpp
+SEXP test_as_str(SEXP a, r_int b, r_dbl c, r_sym d, r_vec<r_int> e, r_vec<r_dbl> f);
+extern "C" SEXP _cpp20_test_as_str(SEXP a, SEXP b, SEXP c, SEXP d, SEXP e, SEXP f) {
+  BEGIN_CPP20
+  check_r_cpp_mapping<SEXP>(a);
+	check_r_cpp_mapping<r_int>(b);
+	check_r_cpp_mapping<r_dbl>(c);
+	check_r_cpp_mapping<r_sym>(d);
+	check_r_cpp_mapping<r_vec<r_int>>(e);
+	check_r_cpp_mapping<r_vec<r_dbl>>(f);
+  return cpp_to_sexp(test_as_str(cpp20::as<SEXP>(a), cpp20::as<r_int>(b), cpp20::as<r_dbl>(c), cpp20::as<r_sym>(d), cpp20::as<r_vec<r_int>>(e), cpp20::as<r_vec<r_dbl>>(f)));
+  END_CPP20
+}
 // test_nas.h
 extern "C" SEXP _cpp20_test_nas(SEXP x) {
   BEGIN_CPP20
@@ -777,6 +826,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"_cpp20_cpp20_typeof",              (DL_FUNC) &_cpp20_cpp20_typeof,              1},
     {"_cpp20_cpp_get_threads",           (DL_FUNC) &_cpp20_cpp_get_threads,           0},
     {"_cpp20_cpp_set_threads",           (DL_FUNC) &_cpp20_cpp_set_threads,           1},
+    {"_cpp20_foo",                       (DL_FUNC) &_cpp20_foo,                       1},
     {"_cpp20_scalar1",                   (DL_FUNC) &_cpp20_scalar1,                   1},
     {"_cpp20_scalar2",                   (DL_FUNC) &_cpp20_scalar2,                   1},
     {"_cpp20_scalar3",                   (DL_FUNC) &_cpp20_scalar3,                   2},
@@ -786,7 +836,10 @@ static const R_CallMethodDef CallEntries[] = {
     {"_cpp20_scalar_vec3",               (DL_FUNC) &_cpp20_scalar_vec3,               4},
     {"_cpp20_test_as_date",              (DL_FUNC) &_cpp20_test_as_date,              1},
     {"_cpp20_test_as_date2",             (DL_FUNC) &_cpp20_test_as_date2,             1},
-    {"_cpp20_test_as_sym",               (DL_FUNC) &_cpp20_test_as_sym,               1},
+    {"_cpp20_test_as_dbl",               (DL_FUNC) &_cpp20_test_as_dbl,               6},
+    {"_cpp20_test_as_int",               (DL_FUNC) &_cpp20_test_as_int,               6},
+    {"_cpp20_test_as_str",               (DL_FUNC) &_cpp20_test_as_str,               6},
+    {"_cpp20_test_as_sym",               (DL_FUNC) &_cpp20_test_as_sym,               6},
     {"_cpp20_test_attrs",                (DL_FUNC) &_cpp20_test_attrs,                1},
     {"_cpp20_test_coerce",               (DL_FUNC) &_cpp20_test_coerce,               2},
     {"_cpp20_test_coerce1",              (DL_FUNC) &_cpp20_test_coerce1,              1},

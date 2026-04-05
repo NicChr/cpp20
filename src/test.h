@@ -171,12 +171,6 @@ inline r_vec<r_str> test_str4(T x){
   return as<r_vec<r_str>>(x);
 }
 
-template <typename T>
-[[cpp20::register]]
-inline r_sym test_as_sym(T x){
-  return as<r_sym>(x);
-}
-
 // Testing template specialisations
 template <RMathType T>
 [[cpp20::register]]

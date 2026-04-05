@@ -168,10 +168,6 @@ test_str4 <- function(x) {
   .Call(`_cpp20_test_str4`, x)
 }
 
-test_as_sym <- function(x) {
-  .Call(`_cpp20_test_as_sym`, x)
-}
-
 test_specialisation <- function(x) {
   .Call(`_cpp20_test_specialisation`, x)
 }
@@ -238,6 +234,26 @@ test_attrs <- function(x) {
 
 test_df <- function(cols) {
   .Call(`_cpp20_test_df`, cols)
+}
+
+foo <- function(x) {
+  .Call(`_cpp20_foo`, x)
+}
+
+test_as_sym <- function(a, b, c, d, e, f) {
+  .Call(`_cpp20_test_as_sym`, a, b, c, d, e, f)
+}
+
+test_as_int <- function(a, b, c, d, e, f) {
+  .Call(`_cpp20_test_as_int`, a, b, c, d, e, f)
+}
+
+test_as_dbl <- function(a, b, c, d, e, f) {
+  .Call(`_cpp20_test_as_dbl`, a, b, c, d, e, f)
+}
+
+test_as_str <- function(a, b, c, d, e, f) {
+  .Call(`_cpp20_test_as_str`, a, b, c, d, e, f)
 }
 
 test_nas <- function(x) {
