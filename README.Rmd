@@ -145,7 +145,7 @@ void lgls(){
 All cpp20 scalar types are implemented as structs that contain the underlying C/C++ types as well as other member functions.
 
 | cpp20 type | Description | Underlying C/C++ Type | Implicitly converts to |
-|:---|----|:---|:---|
+|:-----------------|------------------|:-----------------|:-----------------|
 | `r_lgl` | Scalar logical | `int` | `bool` **only** in if-statements |
 | `r_int` | Scalar integer | `int` | `int` |
 | `r_int64` | Scalar 64-bit integer | `int64_t` | `int64_t` |
@@ -506,6 +506,10 @@ order
 
 While some design trade-offs were discussed in **Design Choices**, there are some further limitations to be aware of.
 
+### templates
+
+templates must be defined in header files, not cpp files.
+
 ### **template instantiation**
 
 In C++....
@@ -551,3 +555,4 @@ void my_print(T x){
   print(x.c_str());
 }
 ```
+
