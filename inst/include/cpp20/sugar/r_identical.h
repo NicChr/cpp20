@@ -26,6 +26,11 @@ inline bool identical_impl(const T& a, const T& b) {
 }
 
 template<>
+inline bool identical_impl<r_sym>(const r_sym& a, const r_sym& b) {
+    return unwrap(a) == unwrap(b);
+}
+
+template<>
 inline bool identical_impl<r_dbl>(const r_dbl& a, const r_dbl& b) {
     // If both (NA or NaN)
     if (is_na(a) && is_na(b)){
