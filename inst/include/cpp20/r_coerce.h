@@ -12,16 +12,20 @@
 namespace cpp20 {
 
 // Powerful and flexible coercion function that can handle many types and convert to R-specific C++ types and R vectors
+
+template <typename T, typename U>
+requires is<T, U>
+inline std::remove_cvref_t<T> as(const U& x) {
+  return x;
+}
+
 template <typename T, typename U>
 inline std::remove_cvref_t<T> as(const U& x) {
 
   using to_t = std::remove_cvref_t<T>;
   using from_t = std::remove_cvref_t<U>;
-
-  if constexpr (is<from_t, to_t>){ // If same type return early
-    return x;
-
-  } else if constexpr (is<to_t, SEXP>){ // To C-level plain SEXP
+  
+  if constexpr (is<to_t, SEXP>){ // To C-level plain SEXP
     // Special case for SEXP
     // While it's not an RVal or a type that is generally explicitly supported in cpp20, it's needed for
     // registering C++ functions in R
