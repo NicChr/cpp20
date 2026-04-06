@@ -137,30 +137,6 @@ inline void check_r_cpp_mapping(SEXP x){
 // ArgToTemplateMap maps argument positions to template parameter indices
 // e.g., {0, 0, 1} means args 0 and 1 share template param T, arg 2 uses U.
 // -1 means the argument is not templated (fixed type, already checked via check_r_cpp_mapping)
-// This function finds the first argument that "drives" template param TemplateParamIdx
-template <size_t TemplateParamIdx, size_t NumArgs, auto ArgToTemplateMap>
-constexpr size_t first_arg_for_template() {
-    for (size_t i = 0; i < NumArgs; ++i)
-        if (ArgToTemplateMap[i] == static_cast<int>(TemplateParamIdx)) return i;
-    return NumArgs;
-}
-
-
-// When multiple arguments share the same template parameter (e.g., f(T x, T y)),
-// they must all have the same R TYPEOF at runtime
-template <size_t TemplateParamIdx, size_t NumArgs, auto ArgToTemplateMap>
-void check_template_homogeneity(uint16_t expected_type, SEXP* args) {
-    for (size_t i = 0; i < NumArgs; ++i) {
-        if (ArgToTemplateMap[i] == static_cast<int>(TemplateParamIdx)) {
-            if (CPP20_TYPEOF(args[i]) != expected_type) {
-                abort(
-                    "R type: %s for arg %zu does not match the first instance: %s for this template arg",
-                    r_type_to_str(CPP20_TYPEOF(args[i])), i + 1, r_type_to_str(expected_type)
-                );
-            }
-        }
-    }
-}
 
 
 // ── FLAT FUNCTION POINTER TABLE ───────────────────────────────────────────────
@@ -338,19 +314,6 @@ struct shared_type_table {
 };
 
 
-// Recursive helper to collect runtime types — avoids lambda/fold ICE in Clang 22
-template <size_t K, size_t NumTemplateParams, size_t NumArgs, auto ArgToTemplateMap>
-void collect_runtime_types(uint32_t* runtime_types, SEXP* args) {
-    if constexpr (K < NumTemplateParams) {
-        constexpr size_t FirstArgIdx = first_arg_for_template<K, NumArgs, ArgToTemplateMap>();
-        runtime_types[K] = static_cast<uint32_t>(CPP20_TYPEOF(args[FirstArgIdx]));
-        check_template_homogeneity<K, NumArgs, ArgToTemplateMap>(
-            static_cast<uint16_t>(runtime_types[K]), args
-        );
-        collect_runtime_types<K + 1, NumTemplateParams, NumArgs, ArgToTemplateMap>(runtime_types, args);
-    }
-}
-
 // ── DISPATCH ENTRY POINT ─────────────────────────────────────────────────────
 
 
@@ -374,9 +337,32 @@ SEXP dispatch_template_impl(Functor&& functor, SexpArgs&&... sexp_args) {
     constexpr const auto& type_table = shared_type_table<NumTemplateParams>::value;
 
 
-    // Compile-time unroll to collect runtime types into a plain array
+    // Collect runtime types — uses plain loops instead of template forwarding
+    // of ArgToTemplateMap to avoid Clang 22 ICE with NTTP std::array in nested templates
     uint32_t runtime_types[NumTemplateParams > 0 ? NumTemplateParams : 1]{};
-    collect_runtime_types<0, NumTemplateParams, NumArgs, ArgToTemplateMap>(runtime_types, args);
+    for (size_t k = 0; k < NumTemplateParams; ++k) {
+        // Find first argument that drives template param k
+        size_t first_arg = NumArgs;
+        for (size_t i = 0; i < NumArgs; ++i) {
+            if (ArgToTemplateMap[i] == static_cast<int>(k)) {
+                first_arg = i;
+                break;
+            }
+        }
+        runtime_types[k] = static_cast<uint32_t>(CPP20_TYPEOF(args[first_arg]));
+        // Check that all args sharing this template param have the same TYPEOF
+        for (size_t i = 0; i < NumArgs; ++i) {
+            if (ArgToTemplateMap[i] == static_cast<int>(k)) {
+                if (CPP20_TYPEOF(args[i]) != static_cast<uint16_t>(runtime_types[k])) {
+                    abort(
+                        "R type: %s for arg %zu does not match the first instance: %s for this template arg",
+                        r_type_to_str(CPP20_TYPEOF(args[i])), i + 1,
+                        r_type_to_str(static_cast<uint16_t>(runtime_types[k]))
+                    );
+                }
+            }
+        }
+    }
 
 
     // Linear scan — one indirect call through void*, no inlining possible
