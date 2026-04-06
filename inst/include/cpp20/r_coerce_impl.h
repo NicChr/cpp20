@@ -9,7 +9,7 @@
 #include <cpp20/r_vec_utils.h>
 #include <limits>
 #include <charconv> // For to_chars
-#include <string>
+#include <cstring> // For strcmp
 
 namespace cpp20 {
 
@@ -65,10 +65,10 @@ inline r_lgl as_bool(T const& x){
   } else if constexpr (MathType<T>){
     return is_na(x) ? na<r_lgl>() : r_lgl(static_cast<bool>(unwrap(x)));
   } else if constexpr (RStringType<T>){
-    std::string_view str = std::string_view(x.c_str());
-    if ( (str == "TRUE")){
+    const char* str = x.c_str();
+    if (std::strcmp(str, "TRUE") == 0){
       return r_true;
-    } else if ( (str == "FALSE")){
+    } else if ( std::strcmp(str, "FALSE") == 0){
       return r_false;
     } else {
       double res;
