@@ -171,23 +171,9 @@ struct r_hash_impl<r_vec<T>> {
                 seed = hash_combine(seed, r_hash_impl<r_sexp>{}(attrs.view(i)));
             }
         }
-        // If vector is a list then we recursively combine hashes of vector elements
-        if constexpr (is<T, r_sexp>){
-            for (r_size_t i = 0; i < n; ++i){
-                uint64_t h = view_sexp(xvec.view(i), [](const auto& vec) -> uint64_t {
-                    using vec_t = std::remove_cvref_t<decltype(vec)>;
-                    if constexpr (is<vec_t, r_sexp>){
-                        abort("List contains unsupported element type, current implementation can only hash vectors and factors");
-                    } else {
-                        return r_hash_impl<vec_t>{}(vec);
-                    }
-                });
-                seed = hash_combine(seed, h);
-            }
-        } else {
-            for (r_size_t i = 0; i < n; ++i) {
-                seed = hash_combine(seed, r_hash_impl<T>{}(unwrap(xvec.view(i))));
-            }
+        // Recursively combine hashes of elements (even if elements are vectors)
+        for (r_size_t i = 0; i < n; ++i) {
+            seed = hash_combine(seed, r_hash_impl<T>{}(unwrap(xvec.view(i))));
         }
         return seed;
     }
