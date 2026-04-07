@@ -230,6 +230,10 @@ concept Scalar = CppScalar<T> || RScalar<T>;
 template <typename T>
 inline constexpr bool is_sexp = any<T, SEXP, r_sexp>;
 
+// All R types defined by cpp20
+template <typename T>
+concept RCpp20Type = RVal<T> || RVector<T> || RMetaVector<T> || RDataFrame<T> || RSymbolType<T>;
+
 // Internal helpers
 namespace internal {
 
@@ -306,23 +310,12 @@ template <RVal T>
 struct r_val_mapping_impl<T> { using type = T; };
 
 template<> struct r_val_mapping_impl<bool>                      { using type = r_lgl; };
-template<> struct r_val_mapping_impl<int>                       { using type = r_int; };
-template<> struct r_val_mapping_impl<int64_t>                   { using type = r_int64; };
-template<> struct r_val_mapping_impl<double>                    { using type = r_dbl; };
 template<> struct r_val_mapping_impl<const char*>               { using type = r_str; };
 template<> struct r_val_mapping_impl<std::complex<double>>      { using type = r_cplx; };
 template<> struct r_val_mapping_impl<unsigned char>             { using type = r_raw; };
 template<> struct r_val_mapping_impl<SEXP>                      { using type = r_sexp; };
 
-// R vectors & other containers
-template <RVector T>
-struct r_val_mapping_impl<T> { using type = r_sexp; };
-template <RFactor T>
-struct r_val_mapping_impl<T> { using type = r_sexp; };
-template <RDataFrame T>
-struct r_val_mapping_impl<T> { using type = r_sexp; };
-
-template<CppMathType T>
+template <CppMathType T>
 struct r_val_mapping_impl<T> {
     using type = std::conditional_t<
     can_definitely_be_int<T>(), 
@@ -333,8 +326,15 @@ struct r_val_mapping_impl<T> {
         r_dbl
     >
 >;
-
 };
+
+// R vectors & other containers
+template <RVector T>
+struct r_val_mapping_impl<T> { using type = r_sexp; };
+template <RMetaVector T>
+struct r_val_mapping_impl<T> { using type = r_sexp; };
+template <RDataFrame T>
+struct r_val_mapping_impl<T> { using type = r_sexp; };
 
 }
 
@@ -393,8 +393,10 @@ using unwrap_t = typename internal::unwrapped_type<T>::type;
 
 namespace internal {
 
-template <RVal T>
+template <RCpp20Type T>
 consteval uint8_t r_type_rank() {
+
+    // Scalars
     if constexpr (is<T, r_lgl>)                     return 0;
     if constexpr (is<T, r_int>)                     return 1;
     if constexpr (is<T, r_int64>)                   return 2;
@@ -405,7 +407,23 @@ consteval uint8_t r_type_rank() {
     if constexpr (is<T, r_psxct>)                   return 7;
     if constexpr (is<T, r_str>)                     return 8;
     if constexpr (is<T, r_str_view>)                return 9;
-    if constexpr (is<T, r_sexp>)                    return 10;
+
+    // Vectors
+    // if constexpr (is<T, r_vec<r_lgl>>)              return 10;
+    // if constexpr (is<T, r_vec<r_int>>)              return 11;
+    // if constexpr (is<T, r_vec<r_int64>>)            return 12;
+    // if constexpr (is<T, r_vec<r_dbl>>)              return 13;
+    // if constexpr (is<T, r_vec<r_cplx>>)             return 14;
+    // if constexpr (is<T, r_vec<r_raw>>)              return 15;
+    // if constexpr (is<T, r_vec<r_date>>)             return 16;
+    // if constexpr (is<T, r_vec<r_psxct>>)            return 17;
+    // if constexpr (is<T, r_vec<r_str_view>>)         return 18;
+    // if constexpr (is<T, r_vec<r_str>>)              return 19;
+    // if constexpr (is<T, r_vec<r_str>>)              return 20;
+    // if constexpr (is<T, r_factors>)                 return 21;
+    // if constexpr (is<T, r_df>)                      return 22;
+
+    if constexpr (is<T, r_sexp>)                     return std::numeric_limits<uint8_t>::max()  - 1;
     return std::numeric_limits<uint8_t>::max();
 }
 
@@ -417,16 +435,30 @@ struct common_r_math_impl {
 
     static constexpr uint8_t rank_t = r_type_rank<lhs_math_t>();
     static constexpr uint8_t rank_u = r_type_rank<rhs_math_t>();
-    
     using type = std::conditional_t<(rank_t >= rank_u), lhs_math_t, rhs_math_t>;
 };
 
 
-template <RVal T, RVal U>
+template <RCpp20Type T, RCpp20Type U>
 struct common_r_type_impl {
     static constexpr uint8_t rank_t = r_type_rank<T>();
     static constexpr uint8_t rank_u = r_type_rank<U>();
     using type = std::conditional_t<(rank_t >= rank_u), T, U>;
+};
+
+template <RVector T, RScalar U>
+struct common_r_type_impl<T, U> {
+    using type = r_vec<typename common_r_type_impl<typename T::data_type, U>::type>;
+};
+
+template <RScalar T, RVector U>
+struct common_r_type_impl<T, U> {
+    using type = r_vec<typename common_r_type_impl<T, typename U::data_type>::type>;
+};
+
+template <RVector T, RVector U>
+struct common_r_type_impl<T, U> {
+    using type = r_vec<typename common_r_type_impl<typename T::data_type, typename U::data_type>::type>;
 };
 
 }

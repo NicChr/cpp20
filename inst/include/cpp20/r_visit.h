@@ -112,10 +112,10 @@ void view_elements(const r_vec<r_sexp>& x, Visitor&& vis) {
     r_size_t n = x.length();
     for (r_size_t i = 0; i < n; ++i) {
         view_sexp(x.view(i), [&]<typename T>(const T& elem) {
-            if constexpr (RVector<T> || RFactor<T>){
-                vis(i, elem);
-            } else {
+            if constexpr (is<T, r_sexp>){
                 abort("Don't know how to deal with object of type %s", internal::r_type_to_str(internal::CPP20_TYPEOF(elem)));
+            } else {
+                vis(i, elem);
             }
         });
     }
