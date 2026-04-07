@@ -5,7 +5,6 @@
 #include <cpp20/sugar/r_stats.h>
 #include <cpp20/sugar/r_hash.h>
 #include <cpp20/sugar/r_sort.h>
-#include <vector> // For C++ vectors
 #include <ankerl/unordered_dense.h> // Hash maps for group IDs + unique + match
 
 namespace cpp20 {
@@ -203,7 +202,7 @@ inline groups make_unordered_groups(const r_vec<T>& x) {
             // --- FAST TABLE PATH ---
             
             // Table maps (value - min_val) -> group_id
-            std::vector<int> table(range_span + 1, -1);
+            r_vec<r_int> table(range_span + 1, r_int(-1));
             int na_group_id = -1; // Special slot for NA
             
             auto* RESTRICT p_x = x.data();
