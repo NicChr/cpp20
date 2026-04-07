@@ -219,7 +219,7 @@ template <typename T>
 concept CppType = !(RScalar<T> || RObject<T>);
 
 template <typename T>
-concept CppScalar = std::is_scalar_v<T> && !is<T, SEXP>;
+concept CppScalar = std::is_scalar_v<T>;
 
 template <typename T>
 concept Scalar = CppScalar<T> || RScalar<T>;
