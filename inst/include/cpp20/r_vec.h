@@ -556,7 +556,7 @@ inline void r_copy_n(r_vec<T>& target, const r_vec<T>& source, r_size_t target_o
     } else {
       std::copy_n(p_source, n, p_target + target_offset);
     }
-  } else if constexpr (RObject<T>){
+  } else if constexpr (RStringType<T>){
     // Cast const SEXP* to SEXP* and write directly
     auto* p_target = const_cast<unwrap_t<T>*>(target.data());
     std::copy_n(source.data(), n, p_target + target_offset);
