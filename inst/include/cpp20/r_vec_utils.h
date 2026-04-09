@@ -95,7 +95,7 @@ template <RVal T>
 inline r_sexp new_vec_impl(r_size_t n) {
   if constexpr (RDateType<T>){
     r_sexp out = new_vec_impl<inherited_type_t<T>>(n);
-    Rf_setAttrib(out, symbol::class_sym, Rf_ScalarString(r_str("Date")));
+    Rf_setAttrib(out, symbol::class_sym, Rf_ScalarString(Rf_mkCharCE("Date", CE_UTF8)));
     return out;
   } else if constexpr (RPsxctType<T>){
     r_sexp out = new_vec_impl<inherited_type_t<T>>(n);
@@ -103,7 +103,7 @@ inline r_sexp new_vec_impl(r_size_t n) {
     SET_STRING_ELT(cls, 0, Rf_mkCharCE("POSIXct", CE_UTF8));
     SET_STRING_ELT(cls, 1, Rf_mkCharCE("POSIXt", CE_UTF8));
     Rf_setAttrib(out, symbol::class_sym, cls);
-    Rf_setAttrib(out, r_sym("tzone"), Rf_ScalarString(r_str("UTC")));
+    Rf_setAttrib(out, r_sym("tzone"), Rf_ScalarString(Rf_mkCharCE("UTC", CE_UTF8)));
     return out;
   } else {
     static_assert(
