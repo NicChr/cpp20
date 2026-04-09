@@ -305,16 +305,28 @@ inline void destroy_chunk(chunk* c) noexcept {
     delete c;
 }
 
-// RAII protect guard. Needed because add_chunk() can throw unwind_exception
-// from a failed Rf_allocVector. R_UnwindProtect restores R's protect stack
-// to its state at entry -- which still includes our Rf_protect(x) -- so the
-// C++ exception must run a destructor to balance it. A bare Rf_unprotect(1)
-// after the call would be skipped by stack unwinding and leak a protect.
-struct protect_guard {
-    explicit protect_guard(SEXP x) noexcept { Rf_protect(x); }
-    ~protect_guard()                        { Rf_unprotect(1); }
-    protect_guard(const protect_guard&)            = delete;
-    protect_guard& operator=(const protect_guard&) = delete;
+// A single cons cell kept alive via R_PreserveObject, used as a temporary
+// GC root in insert(). This avoids Rf_protect entirely -- the R protect
+// stack can be near its limit when insert() runs. A cons cell is smaller
+// than a VECSXP and SETCAR is one fewer indirection than SET_VECTOR_ELT.
+inline SEXP scratch_cell() {
+    static SEXP cell = [] {
+        SEXP s = Rf_cons(R_NilValue, R_NilValue);
+        R_PreserveObject(s);
+        return s;
+    }();
+    return cell;
+}
+
+// RAII guard: stashes x into the scratch cons cell so the GC can see it,
+// then clears it on scope exit (including exception unwinding).
+// SETCAR is a plain pointer write + write barrier -- no allocation,
+// no longjmp -- so it is safe to call in a destructor during unwinding.
+struct scratch_guard {
+    explicit scratch_guard(SEXP x) noexcept { SETCAR(scratch_cell(), x); }
+    ~scratch_guard()                noexcept { SETCAR(scratch_cell(), R_NilValue); }
+    scratch_guard(const scratch_guard&)            = delete;
+    scratch_guard& operator=(const scratch_guard&) = delete;
 };
 
 inline slot_ref insert(SEXP x) {
@@ -325,8 +337,9 @@ inline slot_ref insert(SEXP x) {
     chunk* c = free_list_head();
     if (c == nullptr) {
         // Every chunk is full (or none exist). Allocate a new one.
-        // Allocation may GC and may throw, so protect `x` via RAII.
-        protect_guard guard(x);
+        // Allocation may GC and may throw, so stash `x` in the scratch
+        // cons cell root. Avoids Rf_protect (protect stack may be near limit).
+        scratch_guard guard(x);
         c = add_chunk();
         // add_chunk pushed c onto free_list_head, so it's the new head.
     }
