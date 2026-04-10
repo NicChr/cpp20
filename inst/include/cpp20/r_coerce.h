@@ -133,11 +133,11 @@ inline std::remove_cvref_t<T> as(const U& x) {
     if constexpr (internal::RPtrWritableType<to_data_t> && internal::RPtrWritableType<from_data_t>){
       OMP_SIMD
       for (r_size_t i = 0; i < n; ++i){
-        out.set(i, x.view(i));
+        out.set(i, as<to_data_t>(x.view(i)));
       }
     } else {
       for (r_size_t i = 0; i < n; ++i){
-        out.set(i, x.view(i));
+        out.set(i, as<to_data_t>(x.view(i)));
       }
     }
     return out;
