@@ -17,6 +17,16 @@ struct r_factors {
     return r_vec<r_str_view>(attr::get_attr(value, symbol::levels_sym));
   }
 
+  r_vec<r_int> codes() const {
+    r_size_t n = value.length();
+    r_vec<r_int> out(n);
+    OMP_SIMD
+    for (r_size_t i = 0; i < n; ++i){
+      out.set(i, value.get(i));
+    }
+    return out;
+  }
+
   private:
 
   template <RStringType T>
