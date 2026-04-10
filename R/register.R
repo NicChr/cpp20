@@ -222,22 +222,12 @@ wrap_call <- function(name, return_type, args, is_template, template_params) {
     return(wrap_call_template(name, return_type, args, template_params))
   }
 
-  checks <- ""
-  if (length(args$name) > 0) {
-    checks_list <- glue::glue_data(
-      args,
-      "check_r_cpp_mapping<{type}>({name});"
-    )
-    checks <- paste0(checks_list, collapse = "\n\t")
-    checks <- paste0(checks, "\n")
-  }
-
-  call <- glue::glue('{name}({list_params})', list_params = glue_collapse_data(args, "cpp20::as<{type}>({name})"))
+  call <- glue::glue('{name}({list_params})', list_params = glue_collapse_data(args, "as<{type}>({name})"))
 
   if (type_is_void(return_type)){
-    unclass(glue::glue("{checks}  {call};\n  return R_NilValue;", .trim = FALSE))
+    unclass(glue::glue("{call};\n  return R_NilValue;", .trim = FALSE))
   } else {
-    unclass(glue::glue("{checks}  return cpp_to_sexp({call});"))
+    unclass(glue::glue("return cpp_to_sexp({call});"))
   }
 }
 
@@ -269,31 +259,18 @@ wrap_call_template <- function(name, return_type, args, template_params) {
   lambda_params <- glue::glue_collapse(glue::glue("SEXP {args$name}_internal"), ", ")
 
   # Conversion logic
-  conversions <- glue::glue("cpp20::as<{args$type}>({args$name}_internal)")
+  conversions <- glue::glue("as<{args$type}>({args$name}_internal)")
   call_args_str <- paste(conversions, collapse = ", ")
 
   call_str <- paste0(name, "(", call_args_str, ")")
 
   outer_args <- glue::glue_collapse(args$name, ", ")
 
-  non_template_args <- vctrs::vec_slice(args, arg_to_template == -1L)
-
-  non_template_checks <- ""
-
-  if (nrow(non_template_args) > 0) {
-    checks_list <- glue::glue_data(
-      non_template_args,
-      "check_r_cpp_mapping<{type}>({name});"
-    )
-    non_template_checks <- paste0(checks_list, collapse = "\n\t")
-    non_template_checks <- paste0(non_template_checks, "\n")
-  }
-
   is_void <- type_is_void(return_type)
 
   if (is_void) {
     result <- glue::glue('
-    {non_template_checks}return cpp20::internal::dispatch_template_impl<{num_template_params}, {num_args}, std::array<int, {num_args}>{map_str}>(
+    return internal::dispatch_template_impl<{num_template_params}, {num_args}, std::array<int, {num_args}>{map_str}>(
         []<{template_args_def}>({lambda_params}) -> decltype({call_str}, R_NilValue) {{
             {call_str};
             return R_NilValue;
@@ -305,7 +282,7 @@ wrap_call_template <- function(name, return_type, args, template_params) {
     full_expr <- glue::glue("cpp_to_sexp({call_str})")
 
     result <- glue::glue('
-    {non_template_checks}return dispatch_template_impl<{num_template_params}, {num_args}, std::array<int, {num_args}>{map_str}>(
+    return dispatch_template_impl<{num_template_params}, {num_args}, std::array<int, {num_args}>{map_str}>(
         []<{template_args_def}>({lambda_params}) -> decltype({full_expr}) {{
             return {full_expr};
         }},
@@ -489,7 +466,6 @@ cpp_register <- function(path = ".", quiet = !is_interactive(), extension = c(".
 
       using namespace cpp20;
       using internal::cpp_to_sexp;
-      using internal::check_r_cpp_mapping;
       using internal::dispatch_template_impl;
 
       {cpp_functions_definitions}

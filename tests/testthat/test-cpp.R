@@ -4,10 +4,10 @@ test_that("Correct registration of cpp fns to R", {
   cpp_set_threads(1L)
   expect_equal(cpp_get_threads(), 1)
 
-  expect_error(cpp_set_threads(1.5), regexp = "Expected input type: C\\/C\\+\\+ integer")
+  cpp_set_threads(1.7)
+  expect_equal(cpp_get_threads(), 1)
 
   expect_null(test_null())
-
 })
 
 test_that("Type deduction on template disptch", {
@@ -91,8 +91,7 @@ test_that("Simple registration tests", {
   expect_error(test_scalar(1, "2"))
   expect_error(test_scalar(1, 2))
   expect_identical(test_scalar(1L, 2L), 3L)
-  expect_error(test_scalar(1, 2L))
-
+  expect_identical(test_scalar(1, 2L), 3L)
 
   expect_equal(scalar1(10), 10)
   expect_equal(scalar2(10), 10)

@@ -5,7 +5,7 @@
 // The dispatch is mainly driven by a modified version of R's TYPEOF
 // This is done by providing a map of C++20 types to SEXP tag-types
 //
-// For non-templated functions, inputs are verified via check_r_cpp_mapping()
+// For non-templated functions, inputs are simply coerced to the specified type
 // For templated functions, templated arguments are verified by first applying the SEXP/C++ mapping and 
 // then checking that the constraints of the template are satisfied.
 // Where there are one-to-many mappings, vector and scalars are both used to check if either of them can satisfy the constraints
@@ -124,19 +124,19 @@ template <CppScalarCastableToRVal T>
 inline constexpr uint16_t r_cpp_boundary_map_v<T> = r_cpp_boundary_map_v<as_r_val_t<T>>;
 
 
-template <typename T>
-inline void check_r_cpp_mapping(SEXP x){
-    using data_t = std::remove_cvref_t<T>;
-    if constexpr (is_sexp<data_t>) return;
-    if (r_cpp_boundary_map_v<data_t> != CPP20_TYPEOF(x)){
-        abort("Expected input type: %s", type_str<data_t>());
-    }
-}
+// template <typename T>
+// inline void check_r_cpp_mapping(SEXP x){
+//     using data_t = std::remove_cvref_t<T>;
+//     if constexpr (is_sexp<data_t>) return;
+//     if (r_cpp_boundary_map_v<data_t> != CPP20_TYPEOF(x)){
+//         abort("Expected input type: %s", type_str<data_t>());
+//     }
+// }
 
 
 // ArgToTemplateMap maps argument positions to template parameter indices
 // e.g., {0, 0, 1} means args 0 and 1 share template param T, arg 2 uses U.
-// -1 means the argument is not templated (fixed type, already checked via check_r_cpp_mapping)
+// -1 means the argument is not templated (fixed type)
 // This function finds the first argument that "drives" template param TemplateParamIdx
 template <size_t TemplateParamIdx, size_t NumArgs, auto ArgToTemplateMap>
 constexpr size_t first_arg_for_template() {

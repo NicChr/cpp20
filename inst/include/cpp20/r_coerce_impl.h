@@ -361,7 +361,7 @@ inline T as_r(U const& x) {
     T out = internal::as_impl<r_t, U>::cast(x);
     if (is_na(out) && !is_na(x)) [[unlikely]] {
       abort(
-        "Implicit NA coercion detected from %s to %s, please ensure data can be coerced without loss of information", 
+        "Implicit NA coercion detected from %s to %s, please ensure data can be coerced without complete loss of information", 
         internal::type_str<U>(), internal::type_str<T>()
       );
     }
