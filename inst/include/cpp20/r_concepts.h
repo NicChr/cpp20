@@ -303,53 +303,62 @@ inline consteval bool can_definitely_be_int64(){
 // This is essentially a map of defined non-RVal to RVal conversion operators
 // Allowing any of these to be cast to an RVal via static_cast<>
 template <typename T>
-struct r_val_mapping_impl {};
+struct r_scalar_mapping {};
 
-template <RVal T>
-struct r_val_mapping_impl<T> { using type = T; };
+template <RScalar T>
+struct r_scalar_mapping<T> { using type = T; };
 
-template<> struct r_val_mapping_impl<bool>                      { using type = r_lgl; };
-template<> struct r_val_mapping_impl<const char*>               { using type = r_str; };
-template<> struct r_val_mapping_impl<std::complex<double>>      { using type = r_cplx; };
-template<> struct r_val_mapping_impl<unsigned char>             { using type = r_raw; };
-template<> struct r_val_mapping_impl<SEXP>                      { using type = r_sexp; };
+template<> struct r_scalar_mapping<bool>                      { using type = r_lgl; };
+template<> struct r_scalar_mapping<const char*>               { using type = r_str; };
+template<> struct r_scalar_mapping<std::complex<double>>      { using type = r_cplx; };
+template<> struct r_scalar_mapping<unsigned char>             { using type = r_raw; };
 
 template <CppMathType T>
-struct r_val_mapping_impl<T> {
+struct r_scalar_mapping<T> {
     using type = std::conditional_t<
-    can_definitely_be_int<T>(), 
+    can_definitely_be_int<T>(),
     r_int,
     std::conditional_t<
-        can_definitely_be_int64<T>(), 
+        can_definitely_be_int64<T>(),
         r_int64,
         r_dbl
     >
 >;
 };
 
+template <typename T>
+struct r_val_mapping : r_scalar_mapping<T> {};
+
+template<> struct r_val_mapping<r_sexp>                      { using type = r_sexp; };
+template<> struct r_val_mapping<SEXP>                      { using type = r_sexp; };
 // R vectors & other containers
 template <RVector T>
-struct r_val_mapping_impl<T> { using type = r_sexp; };
+struct r_val_mapping<T> { using type = r_sexp; };
 template <RMetaVector T>
-struct r_val_mapping_impl<T> { using type = r_sexp; };
+struct r_val_mapping<T> { using type = r_sexp; };
 template <RDataFrame T>
-struct r_val_mapping_impl<T> { using type = r_sexp; };
+struct r_val_mapping<T> { using type = r_sexp; };
 
 }
-
+// C++ Scalar -> R Scalar
+template <typename T>
+using as_r_scalar_t = typename internal::r_scalar_mapping<std::remove_cvref_t<T>>::type;
 // Type -> RVal type
 template <typename T>
-using as_r_val_t = typename internal::r_val_mapping_impl<std::remove_cvref_t<T>>::type;
+using as_r_val_t = typename internal::r_val_mapping<std::remove_cvref_t<T>>::type;
+
+
+// Can type be constructed/static_cast to RScalar type?
+template <typename T>
+concept CastableToRScalar = requires {
+    typename as_r_scalar_t<T>;
+};
 
 // Can type be constructed/static_cast to RVal type?
 template <typename T>
 concept CastableToRVal = requires {
     typename as_r_val_t<T>;
 };
-
-// C/C++ scalar castable to RVal?
-template <typename T>
-concept CppScalarCastableToRVal = CppScalar<T> && CastableToRVal<T>;
 
 namespace internal {
 

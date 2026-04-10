@@ -117,7 +117,8 @@ inline r_vec<r_int> order(const r_vec<T>& x, bool preserve_ties = true) {
         
         // Find min/max and check for NAs
         auto min_val = rng.get(0), max_val = rng.get(1);
-        r_int64 delta = internal::as_r<r_int64>(max_val) - internal::as_r<r_int64>(min_val);
+        r_int64 delta = is_na(max_val) || is_na(min_val) ? na<r_int64>() : 
+        r_int64(static_cast<int64_t>(unwrap(max_val))) - r_int64(static_cast<int64_t>(unwrap(min_val)));
         bool all_nas = is_na(delta);
         
         // All NAs - just return sequential indices

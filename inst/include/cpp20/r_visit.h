@@ -104,6 +104,26 @@ switch (internal::CPP20_TYPEOF(x)) {
 }
 }
 
+template <class F>
+decltype(auto) view_sexp(SEXP x, F&& f) {
+switch (internal::CPP20_TYPEOF(x)) {
+    case LGLSXP:                        return f(r_vec<r_lgl>(x, internal::view_tag{}));
+    case INTSXP:                        return f(r_vec<r_int>(x, internal::view_tag{}));
+    case internal::CPP20_INT64SXP:      return f(r_vec<r_int64>(x, internal::view_tag{}));
+    case REALSXP:                       return f(r_vec<r_dbl>(x, internal::view_tag{}));
+    case STRSXP:                        return f(r_vec<r_str>(x, internal::view_tag{}));
+    case VECSXP:                        return f(r_vec<r_sexp>(x, internal::view_tag{}));
+    case CPLXSXP:                       return f(r_vec<r_cplx>(x, internal::view_tag{}));
+    case RAWSXP:                        return f(r_vec<r_raw>(x, internal::view_tag{}));
+    case internal::CPP20_REALDATESXP:   return f(r_vec<r_date>(x, internal::view_tag{}));
+    case internal::CPP20_REALPSXTSXP:   return f(r_vec<r_psxct>(x, internal::view_tag{}));
+    case internal::CPP20_FCTSXP:        return f(r_factors(x, internal::view_tag{}));
+    case SYMSXP:                        return f(r_sym(x, internal::view_tag{}));
+    // case CPP20_DFSXP:                return f(r_df(x));
+    default:                            return f(r_sexp(x, internal::view_tag{}));
+}
+}
+
 namespace internal {
 
 // visits all elements, visitor receives (r_size_t i, r_vec<T> elem)

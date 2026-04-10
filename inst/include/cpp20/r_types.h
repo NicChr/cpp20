@@ -59,26 +59,20 @@ inline constexpr auto as_r_val(T const& x) {
   } 
 }
 
-
-// Currently unused
-// template<typename T>
-// inline constexpr auto as_r_scalar(T const& x) {
-//   if constexpr (RVector<T>){
-//     if (x.length() != 1){
-//       abort("Vector must be length-1 to be coerced to a scalar");
-//     }
-//     auto out = x.get(0);
-    
-//     // Only happens if x is a list
-//     if (!RScalar<decltype(out)>){
-//       abort("`x` cannot be coerced to a scalar, first list-element is not a scalar");
-//     }
-//     return out;
-//   }
-//   else {
-//     return as_r_val(x);
-//   } 
-// }
+template <typename T>
+inline constexpr auto as_r_scalar(T const& x) { 
+  if constexpr (RScalar<T>){
+    return x;
+  } else if constexpr (CastableToRScalar<T>){
+    return as_r_scalar_t<T>(x);
+  } else {
+    static_assert(
+      always_false<T>,
+      "Unsupported type for `as_r_scalar`"
+    );
+    return r_null;
+  } 
+}
 
 }
 

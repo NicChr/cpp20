@@ -188,17 +188,6 @@ struct r_vec {
         m_ptr[index] = unwrap(val);
       }
   }
-  // Set element (no bounds-check)
-  template <typename V>
-  void set(r_size_t index, const V& val) {
-    if constexpr (RStringType<T>){
-      SET_STRING_ELT(sexp, index, cpp20::internal::as_r<T>(val));
-    } else if constexpr (RObject<T>){
-      SET_VECTOR_ELT(sexp, index, cpp20::internal::as_r<T>(val));
-    } else {
-      m_ptr[index] = unwrap(cpp20::internal::as_r<T>(val));
-    }
-  }
 
   // IMPORTANT - indices are 1-indexed
   // This has the benefit of allowing empty locations (0) and negative indexing
@@ -237,17 +226,17 @@ struct r_vec {
       if (n_threads > 1){
         OMP_PARALLEL_FOR_SIMD(n_threads)
         for (r_size_t i = 0; i < n; ++i){
-          out.set(i, cpp20::is_na(view(i)));
+          out.set(i, r_lgl(cpp20::is_na(view(i))));
         }
       } else {
         OMP_SIMD
         for (r_size_t i = 0; i < n; ++i){
-          out.set(i, cpp20::is_na(view(i)));
+          out.set(i, r_lgl(cpp20::is_na(view(i))));
         }
       }
     } else {
       for (r_size_t i = 0; i < n; ++i){
-        out.set(i, cpp20::is_na(view(i)));
+        out.set(i, r_lgl(cpp20::is_na(view(i))));
       }
     }
 

@@ -6,7 +6,7 @@
 #include <cpp20/r_sexp.h>
 #include <cpp20/r_types.h>
 #include <cpp20/sugar/r_named_arg.h>
-#include <cpp20/r_coerce_impl.h>
+#include <cpp20/r_coerce.h>
 
 namespace cpp20 {
 
@@ -29,10 +29,10 @@ inline r_sexp make_pairlist(Args... args) {
 
     (([&]() {
       if constexpr (NamedArg<Args>) {
-        SETCAR(current, internal::as_r<r_sexp>(args.value));
+        SETCAR(current, as<r_sexp>(args.value));
         SET_TAG(current, r_sym(args.name));
       } else {
-        SETCAR(current, internal::as_r<r_sexp>(args));
+        SETCAR(current, as<r_sexp>(args));
       }
       current = CDR(current);
     }()), ...);

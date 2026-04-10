@@ -11,6 +11,32 @@
 
 namespace cpp20 {
 
+namespace internal {
+
+// CHARSXP is always converted to STRSXP here, see `r_types.h` for info
+// to sexp is fairly simple but coercion from a sexp is more complicated
+// implementation for that is found in r_coerce.h
+template <typename T>
+inline r_sexp as_sexp(T const& x){
+  if constexpr (RVector<T>){
+    return x.sexp;
+  } else if constexpr (RObject<T>){
+    return r_sexp(static_cast<SEXP>(x));
+  } else if constexpr (RVal<T>){
+    return r_sexp(new_scalar_vec(x));
+  } else if constexpr (CastableToRVal<T>) {
+    return r_sexp(new_scalar_vec(as_r_val(x)));
+  } else {
+    return new_scalar_vec(as_r_val(x)); 
+  }
+}
+template<>
+inline r_sexp as_sexp<r_sym>(r_sym const& x){
+  return r_sexp(x.value, internal::view_tag{});
+}
+
+}
+
 // Powerful and flexible coercion function that can handle many types and convert to R-specific C++ types and R vectors
 
 template <typename T, typename U>
@@ -37,13 +63,13 @@ inline std::remove_cvref_t<T> as(const U& x) {
       return static_cast<SEXP>(as<r_sexp>(x));
     }
   } else if constexpr (is<to_t, r_sexp>){ // To r_sexp (to SEXP is handled above)
-    return internal::as_r<r_sexp>(x);
+    return internal::as_sexp(x);
 
   } else if constexpr (RFactor<to_t>){ // To factor
     return r_factors(x);
 
   } else if constexpr (is_sexp<from_t> && !is_sexp<to_t>){ // From SEXP to non-SEXP, use visit_sexp to disambiguate the type
-    return visit_sexp(x, [](const auto& xvec) -> to_t {
+    return view_sexp(x, [](const auto& xvec) -> to_t {
       if constexpr (is<decltype(xvec), r_sexp>){ // Couldn't disambiguate if r_sexp is the return type
         abort("Don't know how to visit this r_sexp");
       } else {
@@ -100,7 +126,7 @@ inline std::remove_cvref_t<T> as(const U& x) {
       return as<to_t>(out);
     }
 
-  } else if constexpr (RVal<to_t> && RVector<from_t>){ // From vector to scalar
+  } else if constexpr (RScalar<to_t> && RVector<from_t>){ // From vector to scalar
     if (x.length() != 1){
       abort("Vector must be length-1 to be coerced to requested scalar type");
     }
@@ -108,7 +134,7 @@ inline std::remove_cvref_t<T> as(const U& x) {
 
   } else if constexpr (RVector<to_t> && RVal<from_t>){ // From scalar to vector
     using data_t = typename to_t::data_type;
-    return r_vec<data_t>(1, internal::as_r<data_t>(x));
+    return r_vec<data_t>(1, as<data_t>(x));
 
   } else if constexpr (RVector<to_t> && RVector<from_t>){ // From one vector to another
     using to_data_t = typename to_t::data_type;
@@ -141,14 +167,14 @@ inline std::remove_cvref_t<T> as(const U& x) {
       }
     }
     return out;
-  } else if constexpr (RVal<to_t> && !RVector<from_t> && !any<from_t, r_factors, r_df>) {
-    return internal::as_r<to_t>(x);
+  } else if constexpr (RScalar<to_t> && RScalar<from_t>) {
+    return internal::as_scalar_impl<to_t>(x);
     // From C++ scalar that is RVal constructible
-  } else if constexpr (CastableToRVal<from_t> && RVal<to_t>){
-    return as<to_t>(as_r_val(x));
+  } else if constexpr (CastableToRScalar<from_t> && RScalar<to_t>){
+    return as<to_t>(as_r_scalar(x));
     // To C++ scalar that is RVal constructible
-  } else if constexpr (CastableToRVal<to_t>){
-    return static_cast<to_t>(as<as_r_val_t<to_t>>(x));
+  } else if constexpr (CastableToRScalar<to_t>){
+    return static_cast<to_t>(as<as_r_scalar_t<to_t>>(x));
   } else {
     static_assert(always_false<to_t>, "Unsupported type for `as`");
   }
@@ -157,15 +183,15 @@ inline std::remove_cvref_t<T> as(const U& x) {
 // template <RScalar T, RScalar U>
 // requires (!is<T, U>)
 // inline std::remove_cvref_t<T> as(const U& x) {
-//   return internal::as_r<T>(x);
+//   return internal::as_scalar_impl<T>(x);
 // }
 
 
-// // as_r<> can handle -> r_sexp 
+// // as_scalar_impl<> can handle -> r_sexp 
 // template <typename T, typename U>
 // requires (is<T, r_sexp> && !is<U, r_sexp>)
 // inline r_sexp as(const U& x) {
-//   return internal::as_r<r_sexp>(x);
+//   return internal::as_scalar_impl<r_sexp>(x);
 // }
 
 // template <RVector T, RVector U>

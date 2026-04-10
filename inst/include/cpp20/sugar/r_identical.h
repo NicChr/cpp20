@@ -17,8 +17,8 @@ template <typename T>
 inline bool identical_impl(const T& a, const T& b) {
     if constexpr (RVal<T>){
         return unwrap(a) == unwrap(b);
-    } else if constexpr (CppScalarCastableToRVal<T>){
-        using r_t = as_r_val_t<T>;
+    } else if constexpr (CastableToRScalar<T>){
+        using r_t = as_r_scalar_t<T>;
         return identical_impl<r_t>(r_t(a), r_t(b));
     } else {
         return a == b;
