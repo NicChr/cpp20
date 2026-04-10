@@ -93,6 +93,27 @@ extern "C" SEXP _cpp20_cpp_lengths2(SEXP x) {
   return cpp_to_sexp(cpp_lengths2(as<const r_vec<r_sexp>&>(x)));
   END_CPP20
 }
+// readme.h
+r_int double_to_int(r_dbl x);
+extern "C" SEXP _cpp20_double_to_int(SEXP x) {
+  BEGIN_CPP20
+  return cpp_to_sexp(double_to_int(as<r_dbl>(x)));
+  END_CPP20
+}
+// readme.h
+r_vec<r_int> to_int_vec(r_vec<r_dbl> x);
+extern "C" SEXP _cpp20_to_int_vec(SEXP x) {
+  BEGIN_CPP20
+  return cpp_to_sexp(to_int_vec(as<r_vec<r_dbl>>(x)));
+  END_CPP20
+}
+// readme.h
+r_vec<r_sexp> coercions();
+extern "C" SEXP _cpp20_coercions() {
+  BEGIN_CPP20
+  return cpp_to_sexp(coercions());
+  END_CPP20
+}
 // test.cpp
 void cpp_set_threads(int n);
 extern "C" SEXP _cpp20_cpp_set_threads(SEXP n) {
@@ -865,12 +886,14 @@ static const R_CallMethodDef CallEntries[] = {
     {"_cpp20_as_r_size_t",                  (DL_FUNC) &_cpp20_as_r_size_t,                  1},
     {"_cpp20_bench_protect_copy",           (DL_FUNC) &_cpp20_bench_protect_copy,           1},
     {"_cpp20_bench_protect_insert_release", (DL_FUNC) &_cpp20_bench_protect_insert_release, 1},
+    {"_cpp20_coercions",                    (DL_FUNC) &_cpp20_coercions,                    0},
     {"_cpp20_cpp20_typeof",                 (DL_FUNC) &_cpp20_cpp20_typeof,                 1},
     {"_cpp20_cpp_get_threads",              (DL_FUNC) &_cpp20_cpp_get_threads,              0},
     {"_cpp20_cpp_length",                   (DL_FUNC) &_cpp20_cpp_length,                   1},
     {"_cpp20_cpp_lengths",                  (DL_FUNC) &_cpp20_cpp_lengths,                  1},
     {"_cpp20_cpp_lengths2",                 (DL_FUNC) &_cpp20_cpp_lengths2,                 1},
     {"_cpp20_cpp_set_threads",              (DL_FUNC) &_cpp20_cpp_set_threads,              1},
+    {"_cpp20_double_to_int",                (DL_FUNC) &_cpp20_double_to_int,                1},
     {"_cpp20_factor_codes",                 (DL_FUNC) &_cpp20_factor_codes,                 1},
     {"_cpp20_new_factor",                   (DL_FUNC) &_cpp20_new_factor,                   1},
     {"_cpp20_scalar1",                      (DL_FUNC) &_cpp20_scalar1,                      1},
@@ -949,6 +972,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"_cpp20_test_tz",                      (DL_FUNC) &_cpp20_test_tz,                      1},
     {"_cpp20_test_unique",                  (DL_FUNC) &_cpp20_test_unique,                  1},
     {"_cpp20_test_var",                     (DL_FUNC) &_cpp20_test_var,                     2},
+    {"_cpp20_to_int_vec",                   (DL_FUNC) &_cpp20_to_int_vec,                   1},
     {"_cpp20_vector1",                      (DL_FUNC) &_cpp20_vector1,                      1},
     {"_cpp20_vector2",                      (DL_FUNC) &_cpp20_vector2,                      1},
     {NULL, NULL, 0}

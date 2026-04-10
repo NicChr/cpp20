@@ -10,3 +10,6 @@
 ^codecov\.yml$
 ^\.vscode$
 ^.*\.gch$
+^doc$
+^docs$
+^Meta$

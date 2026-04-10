@@ -40,6 +40,18 @@ cpp_lengths2 <- function(x) {
   .Call(`_cpp20_cpp_lengths2`, x)
 }
 
+double_to_int <- function(x) {
+  .Call(`_cpp20_double_to_int`, x)
+}
+
+to_int_vec <- function(x) {
+  .Call(`_cpp20_to_int_vec`, x)
+}
+
+coercions <- function() {
+  .Call(`_cpp20_coercions`)
+}
+
 cpp_set_threads <- function(n) {
   invisible(.Call(`_cpp20_cpp_set_threads`, n))
 }

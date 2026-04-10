@@ -300,3 +300,5 @@ docs/
 
 .vscode
 .quarto
+/doc/
+/Meta/

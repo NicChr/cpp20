@@ -82,3 +82,27 @@ r_vec<r_int> cpp_lengths2(const r_vec<r_sexp>& x){
       }
     return out;
 }
+
+// Coerces NA correctly
+[[cpp20::register]]
+r_int double_to_int(r_dbl x){
+  return as<r_int>(x);
+}
+
+[[cpp20::register]]
+r_vec<r_int> to_int_vec(r_vec<r_dbl> x){
+  return as<r_vec<r_int>>(x);
+}
+
+[[cpp20::register]]
+r_vec<r_sexp> coercions(){
+  r_dbl a(4.2);
+  r_vec<r_dbl> b = make_vec<r_dbl>(2.5); // Vector containing 2.5
+  
+  return make_vec<r_sexp>(
+    as<r_vec<r_int>>(a),
+    as<r_int>(a),
+    as<r_int>(b),
+    as<r_dbl>(b)
+  );
+}
