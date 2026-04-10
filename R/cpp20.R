@@ -20,6 +20,26 @@ add_half <- function(x) {
   .Call(`_cpp20_add_half`, x)
 }
 
+symbol_to_string <- function(x) {
+  .Call(`_cpp20_symbol_to_string`, x)
+}
+
+new_factor <- function(x) {
+  .Call(`_cpp20_new_factor`, x)
+}
+
+factor_codes <- function(x) {
+  .Call(`_cpp20_factor_codes`, x)
+}
+
+cpp_lengths <- function(x) {
+  .Call(`_cpp20_cpp_lengths`, x)
+}
+
+cpp_lengths2 <- function(x) {
+  .Call(`_cpp20_cpp_lengths2`, x)
+}
+
 cpp_set_threads <- function(n) {
   invisible(.Call(`_cpp20_cpp_set_threads`, n))
 }
