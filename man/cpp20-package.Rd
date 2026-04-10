@@ -11,6 +11,7 @@ A header-only API designed for advanced R data manipulation within C++. cpp20 em
 \seealso{
 Useful links:
 \itemize{
+  \item \url{https://nicchr.github.io/cpp20/}
   \item Report bugs at \url{https://github.com/NicChr/cpp20/issues}
 }
 
