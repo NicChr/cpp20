@@ -1,0 +1,350 @@
+# Automatic Protection
+
+I first want to thank cpp11, its authors and contributors for the
+inspiration and for producing the excellent cpp11 package, without which
+I would not have written this package. This vignette explains cpp20’s
+automatic protection design and benchmarks its overhead against cpp11.
+
+### Design
+
+Like cpp11, cpp20 offers automatic protection for all cpp20 types
+enabling users of the API to not need to think about protection of every
+R object.
+
+Inspired heavily by cpp11’s brilliant double-linked protection pool,
+cpp20 has a similar double-linked design, but instead of a single pair
+list, cpp20 implements a double-linked chain of VECSXP (vector list)
+chunks with a reference counting system.
+
+This offers much less overhead in inserting and releasing and
+practically free copying due to the reference counting design. Because
+we utilise VECSXP chunks, adding nodes is cheap (via
+`SET_VECTOR_ELT()`). When an `r_sexp` is copied, we increment the
+reference count associated with that node and only release the node once
+the reference count is 0, which means all `r_sexp` objects pointing to
+that `SEXP` have been destroyed.
+
+The vector list chunks initialise at size 2^10 and double in size every
+time a chunk is filled, to a maximum size of 2^14. While these sizes
+seem to strike a nice balance, they are somewhat arbitrary and likely
+not optimal, so there is likely room for improvement.
+
+### Protection benchmark: cpp11 vs cpp20
+
+All functions have been compiled with C++20, GCC 14.2.0 with -02
+optimisations.
+
+**Insert/release benchmark**
+
+``` cpp
+#include <cpp11.hpp>
+using namespace cpp11;
+#include <chrono>
+
+[[cpp11::register]]
+double bench_protect_insert_release_cpp11(int n) {
+    SEXP dummy = Rf_ScalarInteger(42);
+    R_PreserveObject(dummy);
+    auto start = std::chrono::high_resolution_clock::now();
+    for (int i = 0; i < n; ++i) {
+        sexp x(dummy);  // insert into pool
+    }                      // destructor → release from pool
+    auto end = std::chrono::high_resolution_clock::now();
+    R_ReleaseObject(dummy);
+    double ns = std::chrono::duration<double, std::nano>(end - start).count();
+    return ns / n;  // nanoseconds per insert+release cycle
+}
+```
+
+``` cpp
+#include <cpp11.hpp>
+using namespace cpp11;
+#include <chrono>
+
+[[cpp20::register]]
+double bench_protect_insert_release_cpp20(int n) {
+    SEXP dummy = Rf_ScalarInteger(42);
+    R_PreserveObject(dummy);
+    auto start = std::chrono::high_resolution_clock::now();
+    for (int i = 0; i < n; ++i) {
+        r_sexp x(dummy);  // insert into pool
+    }                      // destructor → release from pool
+    auto end = std::chrono::high_resolution_clock::now();
+    R_ReleaseObject(dummy);
+    double ns = std::chrono::duration<double, std::nano>(end - start).count();
+    return ns / n;  // nanoseconds per insert+release cycle
+}
+```
+
+**Results in nanoseconds per insert & release**
+
+``` r
+library(bench)
+
+replicate(10^4, bench_protect_insert_release_cpp11(10000)) |> mean()
+[1] 29.11816
+
+replicate(10^4, bench_protect_insert_release_cpp20(10000)) |> mean()
+[1] 6.35814
+```
+
+On my machine, cpp11 performs an insert & release every 29 nanoseconds.
+cpp20 performs significantly better, with 6 nanoseconds per insert &
+release.
+
+**Copy benchmark**
+
+``` cpp
+[[cpp11::register]]
+double bench_protect_copy_cpp11(int n) {
+  SEXP dummy = Rf_ScalarInteger(42);
+  sexp dummy2 = sexp(dummy);
+
+  auto start = std::chrono::high_resolution_clock::now();
+  for (int i = 0; i < n; ++i) {
+    sexp x = dummy2; // Copy
+  }
+  auto end = std::chrono::high_resolution_clock::now();
+
+  double ns = std::chrono::duration<double, std::nano>(end - start).count();
+  return ns / n;  // nanoseconds per copy
+}
+
+[[cpp20::register]]
+double bench_protect_copy_cpp20(int n) {
+    SEXP dummy = Rf_ScalarInteger(42);
+    r_sexp dummy2 = r_sexp(dummy);
+    auto start = std::chrono::high_resolution_clock::now();
+    for (int i = 0; i < n; ++i) {
+        r_sexp x = dummy2; // Copy
+    }
+    auto end = std::chrono::high_resolution_clock::now();
+    double ns = std::chrono::duration<double, std::nano>(end - start).count();
+    return ns / n;  // nanoseconds per copy
+}
+```
+
+**Results in nanoseconds per copy**
+
+``` r
+replicate(10^4, bench_protect_copy_cpp11(10000)) |> mean()
+[1] 27.59263
+replicate(10^4, bench_protect_copy_cpp20(10000)) |> mean()
+[1] 0.240208
+```
+
+In these benchmark results we can see a drastic difference, with cpp11
+at 27 ns/copy and cpp20 at 0.25 ns/copy.
+
+**Impact of protection overhead, a real example**
+
+Let’s look at a real example of how much protection overhead can have an
+impact on performance.
+
+**Example:** Counting the number of `NA` values in a character vector
+
+``` cpp
+// Pure R C API NA count - As fast as it can reasonably get
+[[cpp20::register]] // Registered via cpp20 for convenience
+int C_na_count(SEXP x){
+  r_size_t n = Rf_xlength(x);
+  int na_count = 0;
+  const SEXP *p_x = STRING_PTR_RO(x);
+  for (r_size_t i = 0; i < n; ++i){
+    SEXP str = p_x[i]; // No protection so no extra overhead
+    na_count += str == NA_STRING;
+  }
+  return na_count;
+}
+
+// cpp11 NA count
+[[cpp11::register]]
+int cpp11_na_count(strings x){
+  R_xlen_t n = x.size();
+
+  int na_count = 0;
+
+  for (R_xlen_t i = 0; i < n; ++i){
+    r_string str = x[i]; // r_string protects the underlying CHARSXP
+    na_count += is_na(str);
+  }
+  return na_count;
+}
+
+// cpp20 NA count
+[[cpp20::register]]
+int cpp20_na_count(r_vec<r_str> x){
+  r_size_t n = x.length();
+  int na_count = 0;
+  for (r_size_t i = 0; i < n; ++i){
+    r_str str = x.get(i); // r_str protects the underlying CHARSXP
+    na_count += is_na(str);
+  }
+  return na_count;
+}
+```
+
+``` r
+x <- sample(letters, 10^5, TRUE)
+x[sample.int(length(x), 10^3)] <- NA
+```
+
+**R C API results** - Extremely fast \<30 microseconds
+
+``` r
+mark(C_na_count(x))
+# A tibble: 1 × 13
+  expression         min  median `itr/sec` mem_alloc `gc/sec` n_itr  n_gc total_time result memory     time       gc      
+  <bch:expr>    <bch:tm> <bch:t>     <dbl> <bch:byt>    <dbl> <int> <dbl>   <bch:tm> <list> <list>     <list>     <list>  
+1 C_na_count(x)   24.3µs  26.6µs    35597.        0B        0 10000     0      281ms <int>  <Rprofmem> <bench_tm> <tibble>
+```
+
+**cpp11 results** - 5 milliseconds
+
+``` r
+mark(cpp11_na_count(x))
+# A tibble: 1 × 13
+  expression          min median `itr/sec` mem_alloc `gc/sec` n_itr  n_gc total_time result memory     time       gc      
+  <bch:expr>       <bch:> <bch:>     <dbl> <bch:byt>    <dbl> <int> <dbl>   <bch:tm> <list> <list>     <list>     <list>  
+1 cpp11_na_count(… 4.65ms    5ms      193.        0B     23.8    73     9      379ms <int>  <Rprofmem> <bench_tm> <tibble>
+```
+
+**cpp20 results** - 730 microseconds
+
+``` r
+mark(cpp20_na_count(x))
+# A tibble: 1 × 13
+  expression          min median `itr/sec` mem_alloc `gc/sec` n_itr  n_gc total_time result memory     time       gc      
+  <bch:expr>        <bch> <bch:>     <dbl> <bch:byt>    <dbl> <int> <dbl>   <bch:tm> <list> <list>     <list>     <list>  
+1 cpp20_na_count(x) 683µs  728µs     1175.        0B        0   588     0      500ms <int>  <Rprofmem> <bench_tm> <tibble>
+```
+
+Counting values is a simple operation and because of its simplicity, the
+overhead associated with protection will dominate the benchmark. We can
+see that when removing the protection overhead and using the R C API
+directly, we get a baseline result of 30 microseconds. Think of that as
+the best possible result for this operation. The same operation with
+cpp11 results in a function execution time of 5 milliseconds, 180x
+slower than the R C API. Considerably better (but still relatively
+slower), `cpp20_na_count()` results in a function execution time of 730
+microseconds, 27x slower than the R C API. This is much better though it
+still goes to show that for certain operations, one may want to consider
+other approaches where performance is critical.
+
+### cpp20 views: A solution to the protection overhead problem
+
+As we saw in the previous section, certain performance-heavy functions
+can be slowed down by cpp20 protection overhead. Luckily cpp20 offers
+some tools to avoid this if it becomes a real issue.
+
+**r_str_view**
+
+In the previous section, we extracted a temporary `r_str`, checked if it
+is `NA`, and then incremented the `NA` count if so. We didn’t end up
+using the `r_str` element beyond just reading its value which means we
+could have improved performance by using `r_str_view`, a non-owning
+version of `r_str`.
+
+``` cpp
+[[cpp20::register]]
+int cpp20_fast_na_count(r_vec<r_str_view> x){
+  r_size_t n = x.length();
+  int na_count = 0;
+  for (r_size_t i = 0; i < n; ++i){
+    r_str_view str = x.get(i); // `r_str_view` does NOT re-protect the underlying CHARSXP
+    na_count += is_na(str);
+  }
+  return na_count;
+}
+```
+
+``` r
+mark(cpp20_fast_na_count(x))
+# A tibble: 1 × 13
+  expression          min median `itr/sec` mem_alloc `gc/sec` n_itr  n_gc total_time result memory     time       gc      
+  <bch:expr>       <bch:> <bch:>     <dbl> <bch:byt>    <dbl> <int> <dbl>   <bch:tm> <list> <list>     <list>     <list>  
+1 cpp20_fast_na_c… 67.2µs 70.6µs    13434.        0B        0  6708     0      499ms <int>  <Rprofmem> <bench_tm> <tibble>
+```
+
+Looking at the benchmark results, we have effectively eliminated the
+protection overhead and the median execution time is much closer to that
+of the R C API.
+
+**view()**
+
+We could have also used `view()`, a non-owning version of
+[`get()`](https://rdrr.io/r/base/get.html) that extracts elements but in
+a non-owning context.
+
+``` cpp
+[[cpp20::register]]
+int cpp20_fast_na_count_v2(r_vec<r_str> x){
+  r_size_t n = x.length();
+  int na_count = 0;
+  for (r_size_t i = 0; i < n; ++i){
+  // view() is safe as long as you neither assign the result
+  // to a variable nor return it from the function
+    na_count += is_na(x.view(i)); 
+  }
+  return na_count;
+}
+```
+
+``` r
+mark(cpp20_fast_na_count_v2(x))
+# A tibble: 1 × 13
+  expression          min median `itr/sec` mem_alloc `gc/sec` n_itr  n_gc total_time result memory     time       gc      
+  <bch:expr>       <bch:> <bch:>     <dbl> <bch:byt>    <dbl> <int> <dbl>   <bch:tm> <list> <list>     <list>     <list>  
+1 cpp20_fast_na_c… 67.2µs 70.6µs    13221.    8.05KB        0  6602     0      499ms <int>  <Rprofmem> <bench_tm> <tibble>
+```
+
+The results are similar to that of `cpp20_fast_na_count()`.
+
+**Using views safely**
+
+views can be used to eliminate the small overhead associated with
+automatic protection of objects wrapping SEXP, but they must be used
+carefully. As demonstrated above, `r_str_view` is one such class which
+is a lightweight wrapper around a `SEXP` and never protects the
+underlying `SEXP`. Its lifetime must be shorter than the object it is
+pointing to.
+
+**DO**:
+
+``` cpp
+void good(r_str x){
+  r_str_view str = x;
+  if (str.cpp_str() == "true"){
+    print("true");
+  } else {
+    print("false");
+  }
+}
+```
+
+The above example is safe because `str` is not returned by `good()` AND
+does not outlive `x`.
+
+**DON’T**:
+
+``` cpp
+r_str_view bar(){
+  r_str new_str("I will be destroyed at the end of `bar()`");
+  r_str_view bad_str = new_str; // A view of new_str
+  return bad_str; // Points to underlying CHARSXP but nothing protecting it
+}
+```
+
+The above is a classic example of what **not** to do with string views,
+which is to have the view outlive the owner. In this case `bad_str` is
+returned at the end of `bar()` at which point `new_str` goes out of
+scope and gets destroyed. This means nothing is protecting the
+underlying `CHARSXP` that `new_str` was protecting and once that
+`CHARSXP` is garbage-collected by R, `bad_str` will become a
+dangling-pointer, leading to use-after-free bugs (undefined behaviour,
+crashes, corrupted data, etc).
+
+To conclude, `views` can be a useful tool for performance-critical
+functions with the downside being that one must pay more attention to
+view object lifetimes to ensure they do not outlive the SEXP they are
+pointing to.
