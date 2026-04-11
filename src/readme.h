@@ -106,3 +106,55 @@ r_vec<r_sexp> coercions(){
     as<r_dbl>(b)
   );
 }
+
+[[cpp20::register]]
+int cpp20_na_count(r_vec<r_str> x){
+  r_size_t n = x.length();
+
+  int na_count = 0;
+
+  for (r_size_t i = 0; i < n; ++i){
+    r_str str = x.get(i); // `r_str` protects the underlying CHARSXP
+    na_count += is_na(str);
+  }
+  return na_count;
+}
+
+[[cpp20::register]]
+int C_na_count(SEXP x){
+  r_size_t n = Rf_xlength(x);
+
+  int na_count = 0;
+
+  const SEXP *p_x = STRING_PTR_RO(x);
+  for (r_size_t i = 0; i < n; ++i){
+    SEXP str = p_x[i]; // No protection so no extra overhead
+    na_count += str == NA_STRING;
+  }
+  return na_count;
+}
+
+[[cpp20::register]]
+int cpp20_fast_na_count(r_vec<r_str_view> x){
+  r_size_t n = x.length();
+
+  int na_count = 0;
+
+  for (r_size_t i = 0; i < n; ++i){
+    r_str_view str = x.get(i); // `r_str_view` does not protect underlying CHARSXP - make sure it doesn't outlive the object it is pointing to
+    na_count += is_na(str);
+  }
+  return na_count;
+}
+
+[[cpp20::register]]
+int cpp20_fast_na_count_v2(r_vec<r_str> x){
+  r_size_t n = x.length();
+
+  int na_count = 0;
+
+  for (r_size_t i = 0; i < n; ++i){
+    na_count += is_na(x.view(i)); // view() should always be safe as long as you don't assign the result to a variable or return the result
+  }
+  return na_count;
+}

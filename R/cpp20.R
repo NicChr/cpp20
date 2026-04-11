@@ -52,6 +52,22 @@ coercions <- function() {
   .Call(`_cpp20_coercions`)
 }
 
+cpp20_na_count <- function(x) {
+  .Call(`_cpp20_cpp20_na_count`, x)
+}
+
+C_na_count <- function(x) {
+  .Call(`_cpp20_C_na_count`, x)
+}
+
+cpp20_fast_na_count <- function(x) {
+  .Call(`_cpp20_cpp20_fast_na_count`, x)
+}
+
+cpp20_fast_na_count_v2 <- function(x) {
+  .Call(`_cpp20_cpp20_fast_na_count_v2`, x)
+}
+
 cpp_set_threads <- function(n) {
   invisible(.Call(`_cpp20_cpp_set_threads`, n))
 }
@@ -320,12 +336,12 @@ test_na_types <- function() {
   .Call(`_cpp20_test_na_types`)
 }
 
-bench_protect_insert_release <- function(n_iters) {
-  .Call(`_cpp20_bench_protect_insert_release`, n_iters)
+bench_protect_insert_release_cpp20 <- function(n) {
+  .Call(`_cpp20_bench_protect_insert_release_cpp20`, n)
 }
 
-bench_protect_copy <- function(n_iters) {
-  .Call(`_cpp20_bench_protect_copy`, n_iters)
+bench_protect_copy_cpp20 <- function(n) {
+  .Call(`_cpp20_bench_protect_copy_cpp20`, n)
 }
 
 test_order <- function(x, preserve_ties) {
