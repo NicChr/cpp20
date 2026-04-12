@@ -16,7 +16,7 @@ use_cpp20 <- function (){
   utils::getFromNamespace("check_uses_roxygen", "usethis")("use_cpp20()")
   utils::getFromNamespace("check_has_package_doc", "usethis")("use_cpp20()")
   utils::getFromNamespace("use_src", "usethis")()
-  usethis:::use_dependency("cpp20", "LinkingTo")
+  utils::getFromNamespace("use_dependency", "usethis")("cpp20", "LinkingTo")
   generate_code_template()
   desc <- desc::desc(package = utils::getFromNamespace("project_name", "usethis")())
   desc$set(SystemRequirements = "C++20")
