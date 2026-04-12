@@ -27,6 +27,7 @@ Suggests:
     pkgload,
     purrr,
     readr,
+    rlang,
     rmarkdown,
     rstudioapi,
     stringr,
