@@ -14,14 +14,25 @@ License: MIT + file LICENSE
 BugReports: https://github.com/NicChr/cpp20/issues
 Depends:
     R (>= 4.5.0)
-Suggests: 
+Suggests:
     bench,
     bit64,
+    brio,
+    callr,
+    cli,
+    decor,
+    desc,
+    glue,
     knitr,
     pkgload,
+    purrr,
+    readr,
     rmarkdown,
     rstudioapi,
-    testthat (>= 3.0.0)
+    stringr,
+    testthat (>= 3.0.0),
+    vctrs,
+    withr
 Config/testthat/edition: 3
 Config/Needs/cpp20/cpp_register:
     brio,
