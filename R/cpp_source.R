@@ -173,5 +173,5 @@ cpp_eval <- function(code, env = parent.frame(), clean = TRUE, quiet = TRUE,
     ), collapse = "\n"),
     env = env, clean = clean, quiet = quiet, cxx_std = cxx_std
   )
-  f()
+  get("f", envir = env)()
 }
