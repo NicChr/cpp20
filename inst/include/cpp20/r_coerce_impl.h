@@ -10,6 +10,9 @@
 #include <limits>
 #include <charconv> // For to_chars
 #include <cstring> // For strcmp
+#include <cstdlib> // For strtod
+#include <cerrno>  // For errno
+#include <clocale> // For setlocale
 
 namespace cpp20 {
 
@@ -46,15 +49,25 @@ inline constexpr bool can_be_int64(T const& x){
   }
 }
 
-template <typename T, typename U>
-inline bool is_implicit_na_coercion(const T& before, const U& after){
-  return !is_na(before) && is_na(after);
-}
-
 inline bool parse(std::string_view s, double& out) {
+#if defined(__cpp_lib_to_chars_floating_point) || \
+    (!defined(_LIBCPP_VERSION) && defined(__GLIBCXX__))
     auto [ptr, ec] = std::from_chars(s.data(), s.data() + s.size(), out);
-    bool parsed = ec == std::errc{} && ptr == s.data() + s.size();
-    return parsed;
+    return ec == std::errc{} && ptr == s.data() + s.size();
+#else
+    // libc++ < 17 does not implement std::from_chars for floating-point types.
+    // Use strtod with the "C" locale to match from_chars locale-independence.
+    const char* saved = std::setlocale(LC_NUMERIC, nullptr);
+    std::string saved_locale(saved ? saved : "C");
+    std::setlocale(LC_NUMERIC, "C");
+    errno = 0;
+    const char* begin = s.data();
+    char* end = nullptr;
+    out = std::strtod(begin, &end);
+    bool ok = end == begin + s.size() && errno != ERANGE;
+    std::setlocale(LC_NUMERIC, saved_locale.c_str());
+    return ok;
+#endif
 }
 
 // Coerce functions that account for NA
