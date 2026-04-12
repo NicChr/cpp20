@@ -2,7 +2,7 @@
 generate_code_template <- function(){
   stop_unless_installed("usethis")
   proj_path <- usethis::proj_get()
-  getFromNamespace("use_src", "usethis")()
+  utils::getFromNamespace("use_src", "usethis")()
   cpp_path <- file.path(proj_path, "code.cpp")
   brio::write_lines(c(
     "#include <cpp20.hpp>",
