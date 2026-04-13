@@ -31,7 +31,6 @@ use_cpp20 <- function (){
   utils::getFromNamespace("check_has_package_doc", "usethis")("use_cpp20()")
   utils::getFromNamespace("use_src", "usethis")()
   utils::getFromNamespace("use_dependency", "usethis")("cpp20", "LinkingTo")
-  generate_code_template()
   desc <- desc::desc()
   desc$set(SystemRequirements = "C++20")
   desc$write()
@@ -51,5 +50,15 @@ use_cpp20 <- function (){
   lines <- add_makevars_omp_flag(lines, "PKG_CXXFLAGS")
   lines <- add_makevars_omp_flag(lines, "PKG_LIBS")
   brio::write_lines(lines, makevars_path)
+
+  # Generate code examples
+  generate_cpp_regular_example()
+  generate_cpp_template_example()
+
+  cli::cli_inform(c(
+    "Please run {.run cpp20::document()} to finish setup",
+    "For continuous development please use {.run cpp20::load_all()} and {.run cpp20::document()}"
+  ))
+
   invisible()
 }
