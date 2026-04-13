@@ -86,13 +86,12 @@ generate_include_paths <- function(packages){
 #'
 #' library(cpp20)
 #'
+#' # Examples take too long to run and throw an R CMD check note
+#'\dontrun{
+#' cpp_eval("r_int(0)")
 #' cpp_source(code = '
-#'   #include <cpp20_light.hpp>
+#'   #include <cpp20.hpp>
 #'   using namespace cpp20;
-#'
-#'   // We included cpp20_light.hpp so
-#'   // example runs faster and does not trigger R CMD check note
-#'   // Include cpp20.hpp for all features in usual development
 #'
 #'   [[cpp20::register]]
 #'   r_dbl add(r_dbl x, r_dbl y){
@@ -101,6 +100,7 @@ generate_include_paths <- function(packages){
 #' ', debug = TRUE)
 #' add(1, 2)
 #' add(2, NA)
+#' }
 #'
 #' @rdname cpp_source
 #' @export
