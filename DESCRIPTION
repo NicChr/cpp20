@@ -6,11 +6,13 @@ Authors@R:
            comment = c(ORCID = "0000-0002-9743-7342"))
 Maintainer: Nick Christofides <nick.christofides.r@gmail.com>
 Description: A header-only API designed for advanced R data manipulation
-    within C++. cpp20 emphasises safety, modern C++ syntax and
-    high-performance computing through SIMD vectorisation and
-    parallelisation. Leveraging C++20 concepts specific to R, it enables
-    seamless template programming with a highly efficient API.
+    within C++. This package emphasises type-safety, modern C++ syntax and
+    high-performance computing through Single-Instruction-Multiple-Data
+    vectorization and parallelisation. Leveraging C++20 concepts specific
+    to R, it enables seamless template programming with a highly efficient
+    API.
 License: MIT + file LICENSE
+URL: https://nicchr.github.io/cpp20/
 BugReports: https://github.com/NicChr/cpp20/issues
 Depends:
     R (>= 4.5.0)
@@ -38,21 +40,12 @@ Suggests:
     usethis,
     vctrs,
     withr
+VignetteBuilder: 
+    knitr
+Config/Needs/cpp20/cpp_register: brio, cli, decor, desc, glue, purrr,
+    readr, stringr, vctrs, withr
 Config/testthat/edition: 3
-Config/Needs/cpp20/cpp_register:
-    brio,
-    cli,
-    decor, 
-    desc,
-    glue, 
-    purrr,
-    readr,
-    stringr,
-    vctrs,
-    withr
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.3.3
 SystemRequirements: C++20
-VignetteBuilder: knitr
-URL: https://nicchr.github.io/cpp20/
