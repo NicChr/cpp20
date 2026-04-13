@@ -1,6 +1,8 @@
 # A wrapper around `devtools::load_all()` specifically for cpp20
 
-A wrapper around `devtools::load_all()` specifically for cpp20
+A wrapper around
+[`devtools::load_all()`](https://devtools.r-lib.org/reference/load_all.html)
+specifically for cpp20
 
 ## Usage
 
