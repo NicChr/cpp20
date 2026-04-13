@@ -23,13 +23,19 @@ add_makevars_omp_flag <- function(lines, var) {
 #'
 #' @export
 use_cpp20 <- function (){
-  stop_unless_installed(c("rlang", "usethis", "desc", "purrr", "brio", "cli"))
+  stop_unless_installed(c("rlang", "usethis", "desc", "purrr", "brio", "cli", "rstudioapi"))
   proj_path <- utils::getFromNamespace("proj_path", "usethis")
   utils::getFromNamespace("check_is_package", "usethis")("use_cpp20()")
   rlang::check_installed("cpp20")
   utils::getFromNamespace("check_uses_roxygen", "usethis")("use_cpp20()")
   utils::getFromNamespace("check_has_package_doc", "usethis")("use_cpp20()")
   suppressMessages(utils::getFromNamespace("use_src", "usethis")())
+  # Re-open package doc so editor shows the @useDynLib tag added by use_src()
+  pkg_name <- utils::getFromNamespace("project_name", "usethis")()
+  pkg_doc <- proj_path("R", paste0(pkg_name, "-package.R"))
+  if (file.exists(pkg_doc) && rstudioapi::hasFun("navigateToFile")) {
+    rstudioapi::navigateToFile(pkg_doc)
+  }
   suppressMessages(utils::getFromNamespace("use_dependency", "usethis")("cpp20", "LinkingTo"))
   cli::cli_bullets(c("v" = "Added cpp20 to LinkingTo field in DESCRIPTION."))
   desc <- desc::desc()
