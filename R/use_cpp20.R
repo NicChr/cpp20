@@ -23,22 +23,32 @@ add_makevars_omp_flag <- function(lines, var) {
 #'
 #' @export
 use_cpp20 <- function (){
-  stop_unless_installed(c("rlang", "usethis", "desc", "purrr"))
+  stop_unless_installed(c("rlang", "usethis", "desc", "purrr", "brio", "cli"))
   proj_path <- utils::getFromNamespace("proj_path", "usethis")
   utils::getFromNamespace("check_is_package", "usethis")("use_cpp20()")
   rlang::check_installed("cpp20")
   utils::getFromNamespace("check_uses_roxygen", "usethis")("use_cpp20()")
   utils::getFromNamespace("check_has_package_doc", "usethis")("use_cpp20()")
-  utils::getFromNamespace("use_src", "usethis")()
-  utils::getFromNamespace("use_dependency", "usethis")("cpp20", "LinkingTo")
+  suppressMessages(utils::getFromNamespace("use_src", "usethis")())
+  suppressMessages(utils::getFromNamespace("use_dependency", "usethis")("cpp20", "LinkingTo"))
+  cli::cli_bullets(c("v" = "Added cpp20 to LinkingTo field in DESCRIPTION."))
   desc <- desc::desc()
+  cli::cli_bullets(c("v" = "Added C++20 to SystemRequirements field in DESCRIPTION."))
   desc$set(SystemRequirements = "C++20")
   desc$write()
-  cat(
-    paste0("useDynLib(", utils::getFromNamespace("project_name", "usethis")(), ", .registration = TRUE)\n"),
-    file = proj_path("NAMESPACE"),
-    append = TRUE
-  )
+
+  ns_path <- proj_path("NAMESPACE")
+  pkg_name <- utils::getFromNamespace("project_name", "usethis")()
+  ns_entry <- paste0("useDynLib(", pkg_name, ", .registration = TRUE)")
+  if (file.exists(ns_path)) {
+    ns_lines <- brio::read_lines(ns_path)
+  } else {
+    ns_lines <- character()
+  }
+  if (!any(grepl(paste0("useDynLib(", pkg_name), ns_lines, fixed = TRUE))) {
+    brio::write_lines(c(ns_lines, ns_entry), ns_path)
+  }
+  cli::cli_bullets(c("v" = "Added {ns_entry} to NAMESPACE."))
 
   # Add OPENMP flags to Makevars
   makevars_path <- proj_path("src", "Makevars")
@@ -51,11 +61,15 @@ use_cpp20 <- function (){
   lines <- add_makevars_omp_flag(lines, "PKG_LIBS")
   brio::write_lines(lines, makevars_path)
 
+  cli::cli_bullets(c("v" = "Added OMP Makevars flags."))
+
   # Generate code examples
   generate_cpp_regular_example()
   generate_cpp_template_example()
 
-  cli::cli_inform(c(
+  cli::cli_bullets(c("v" = "Generated code examples in src/code.cpp and src/code.h"))
+
+  cli::cli_bullets(c(
     "Please run {.run cpp20::document()} to finish setup",
     "For continuous development please use {.run cpp20::load_all()} and {.run cpp20::document()}"
   ))
