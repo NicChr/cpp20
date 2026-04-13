@@ -31,7 +31,9 @@ document <- function (pkg = ".", roclets = NULL, quiet = FALSE){
     withr::local_output_sink(output)
   }
   withr::local_envvar(devtools::r_env_vars())
-  roxygen2::roxygenise(pkg$path, roclets)
+  roxygen2::roxygenise(pkg$path, roclets, load_code = function(path) {
+    load_all(path, quiet = quiet, helpers = FALSE, attach_testthat = FALSE)$env
+  })
   pkgload::dev_topic_index_reset(pkg$package)
   invisible()
 }
