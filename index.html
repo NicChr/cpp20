@@ -87,8 +87,12 @@
 <h3 id="interopability-with-the-r-c-api">Interopability with the R C API<a class="anchor" aria-label="anchor" href="#interopability-with-the-r-c-api"></a>
 </h3>
 <p>Using cpp20 and the R C API is generally discouraged.</p>
-<p>If R throws an error via <code>Rf_error()</code> a ‘longjmp’ will occur, meaning C++ destructors won’t run and memory that should have been released will not be released. If you really want to use the R C API and cpp20, you must make sure that either the code is exception safe (unlikely), or that R C API functions are called via cpp20’s <code>safe[]</code>. ### views</p>
-<p>To avoid the overhead associated with automatic protection entirely, one can use view types like e.g. <code>r_str_view</code>, a non-owning class for R strings. Vector member function <code>view()</code> also returns non-owning view-only vector elements. For more info on views see <a href="https://nicchr.github.io/cpp20/articles/protection.html">Automatic Protection</a></p>
+<p>If R throws an error via <code>Rf_error()</code> a ‘longjmp’ will occur, meaning C++ destructors won’t run and memory that should have been released will not be released. If you really want to use the R C API and cpp20, you must make sure that either the code is exception safe (unlikely), or that R C API functions are called via cpp20’s <code>safe[]</code>.</p>
+</div>
+<div class="section level3">
+<h3 id="views">views<a class="anchor" aria-label="anchor" href="#views"></a>
+</h3>
+<p>To avoid the overhead associated with automatic protection entirely, one can use view types like e.g. <code>r_str_view</code>, a non-owning class for R strings. For more info on views see <a href="https://nicchr.github.io/cpp20/articles/protection.html">Automatic Protection</a></p>
 </div>
 <div class="section level3">
 <h3 id="no-copy-on-write-or-copy-on-modify">No copy-on-write or copy-on-modify<a class="anchor" aria-label="anchor" href="#no-copy-on-write-or-copy-on-modify"></a>
