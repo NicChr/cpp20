@@ -11,6 +11,7 @@ cpp_source(
   env = parent.frame(),
   clean = TRUE,
   quiet = TRUE,
+  debug = FALSE,
   cxx_std = Sys.getenv("CXX_STD", "CXX20"),
   dir = tempfile()
 )
@@ -20,6 +21,7 @@ cpp_eval(
   env = parent.frame(),
   clean = TRUE,
   quiet = TRUE,
+  debug = FALSE,
   cxx_std = Sys.getenv("CXX_STD", "CXX20")
 )
 }
@@ -34,6 +36,9 @@ cpp_eval(
 
 \item{quiet}{Should compiler output be suppressed? Default is \code{TRUE}.}
 
+\item{debug}{Should C++ code be compiled in a debug build?
+Default is \code{FALSE}.}
+
 \item{cxx_std}{C++ standard to use. Should be >= C++20.}
 
 \item{dir}{Directory to store the source files.
@@ -41,32 +46,42 @@ The default is a temporary directory via \code{tempfile()} which is removed when
 \code{clean = TRUE}.}
 }
 \value{
-\code{cpp_source()} invisibly registers
+\code{cpp_source()} invisibly compiles the C++ code and registers
 the \verb{[[cpp20::register]]} tagged functions to R. \cr
 \code{cpp_eval()} returns the result of the evaluated C++ expression.
 }
 \description{
 cpp11-style helpers to compile cpp20 code outside of a cpp20-linked package
-\code{cpp_source()} compiles and loads a single C++ for use in R,
-either from an expression or a cpp file. \code{cpp_eval()} evaluates a single C++
-expressions and returns the result. \code{void} return is not supported in \code{cpp_eval()}.
+context.
+
+\code{cpp_source()} compiles and loads a single C++ file for use in R,
+either from an expression or a cpp file.
+This may include multiple C++ functions.
+
+\code{cpp_eval()} evaluates a single C++ expression and returns the result.
+For example \code{cpp_eval('get_threads()')} will run the C++ function
+\code{cpp20::get_threads()} and return the number of OMP threads currently set
+for use.
+\code{void} return is not supported in \code{cpp_eval()}.
 }
 \examples{
 
 library(cpp20)
 
-# Expression returning the integer 0
-cpp_eval("r_int(0)")
-
 cpp_source(code = '
-  #include <cpp20.hpp>
+  #include <cpp20_light.hpp>
   using namespace cpp20;
 
+  // We included cpp20_light.hpp so
+  // example runs faster and does not trigger R CMD check note
+  // Include cpp20.hpp for all features in usual development
+
   [[cpp20::register]]
-  r_vec<r_str> unique_strs(r_vec<r_str> x){
-    return unique(x);
+  r_dbl add(r_dbl x, r_dbl y){
+    return x + y;
   }
-')
-x <- sample(letters, 10^3, TRUE)
-unique_strs(x)
+', debug = TRUE)
+add(1, 2)
+add(2, NA)
+
 }
