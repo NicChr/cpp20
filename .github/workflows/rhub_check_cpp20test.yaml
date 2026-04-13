@@ -1,5 +1,4 @@
-name: Check cpp20test
-run-name: "${{ github.event.inputs.id }}: ${{ github.event.inputs.name || format('Manually run by {0}', github.triggering_actor) }}"
+name: Rhub Check cpp20test
 
 on:
   workflow_dispatch:
@@ -8,12 +7,6 @@ on:
         description: 'A comma separated list of R-hub platforms to use.'
         type: string
         default: 'linux,windows,macos'
-      name:
-        description: 'Run name. You can leave this empty now.'
-        type: string
-      id:
-        description: 'Unique ID. You can leave this empty now.'
-        type: string
 
 jobs:
 
