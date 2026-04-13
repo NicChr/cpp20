@@ -16,10 +16,11 @@ namespace internal {
 // This is necessary for registering C++ functions between the C++/R boundary
 // To do this we create a run-time type ID (using `TYPEPOF()`) and add 
 // custom values for objects we want to differentiate from their storage type
-// For example, dates are internally REALSXP but we need a unique ID for dates
-// Since dates can be either integer or numeric storage, we create 2 unique tags, INTDATESXP and REALDATESXP
+// For example, (double-storage) dates are REALSXP but here we create a new id CPP20_REALDATESXP
 
-// Custom SEXP tags, differentiating integer64, dates (int/double), date-times (int64/double) and factors
+// Integer dates and integer64 date-times were earlier fully supported but the added template bloat was deemed not worth it for the niche use-case
+
+// Custom SEXP tags, differentiating integer64, dates, date-times and factors
 inline constexpr SEXPTYPE CPP20_INT64SXP = 64;
 inline constexpr SEXPTYPE CPP20_REALDATESXP = 200;
 inline constexpr SEXPTYPE CPP20_REALPSXTSXP = 201;
@@ -118,23 +119,24 @@ template<> inline constexpr uint16_t r_typeof_impl<r_vec<r_str_view>> =     STRS
 template<> inline constexpr uint16_t r_typeof_impl<r_vec<r_str>> =          STRSXP;
 template<> inline constexpr uint16_t r_typeof_impl<r_vec<r_cplx>> =         CPLXSXP;
 template<> inline constexpr uint16_t r_typeof_impl<r_vec<r_raw>> =          RAWSXP;
-template <RListVector T> inline constexpr uint16_t r_typeof_impl<T> =        VECSXP;
+template <RListVector T> inline constexpr uint16_t r_typeof_impl<T> =       VECSXP;
 template<> inline constexpr uint16_t r_typeof_impl<r_str_view> =            CHARSXP;
 template<> inline constexpr uint16_t r_typeof_impl<r_str> =                 CHARSXP;
 template<> inline constexpr uint16_t r_typeof_impl<r_sym> =                 SYMSXP;
-template<> inline constexpr uint16_t r_typeof_impl<r_vec<r_int64>> =             REALSXP;
-template<> inline constexpr uint16_t r_typeof_impl<r_vec<r_date>> =            REALSXP;
-template<> inline constexpr uint16_t r_typeof_impl<r_vec<r_psxct>> =           REALSXP;
+template<> inline constexpr uint16_t r_typeof_impl<r_vec<r_int64>> =        REALSXP;
+template<> inline constexpr uint16_t r_typeof_impl<r_vec<r_date>> =         REALSXP;
+template<> inline constexpr uint16_t r_typeof_impl<r_vec<r_psxct>> =        REALSXP;
+template<> inline constexpr uint16_t r_typeof_impl<r_factors> =             INTSXP;
 
 
 // The above mappings represent the plain TYPEOF values of cpp20 objects, this enables r_vec<T> to check the primitive type id during construction
 // without rejecting objects such as `r_factors`
 // The below represents the actual cpp20 type id mapping
-template <typename T> constexpr uint16_t r_typeof =              r_typeof_impl<T>;
-template<> inline constexpr uint16_t r_typeof<r_vec<r_int64>> =        CPP20_INT64SXP;
-template<> inline constexpr uint16_t r_typeof<r_vec<r_date>> =            CPP20_REALDATESXP;
-template<> inline constexpr uint16_t r_typeof<r_vec<r_psxct>> =           CPP20_REALPSXTSXP;
-template<> inline constexpr uint16_t r_typeof<r_factors> =             CPP20_FCTSXP;
+template <typename T> constexpr uint16_t r_typeof =                         r_typeof_impl<T>;
+template<> inline constexpr uint16_t r_typeof<r_vec<r_int64>> =             CPP20_INT64SXP;
+template<> inline constexpr uint16_t r_typeof<r_vec<r_date>> =              CPP20_REALDATESXP;
+template<> inline constexpr uint16_t r_typeof<r_vec<r_psxct>> =             CPP20_REALPSXTSXP;
+template<> inline constexpr uint16_t r_typeof<r_factors> =                  CPP20_FCTSXP;
 
 // Low-level type ID check, primarily used in constructing classed cpp20 objects from SEXP
 template <typename T>

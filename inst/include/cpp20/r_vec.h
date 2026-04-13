@@ -169,8 +169,7 @@ struct r_vec {
   }
 
   // View element (like `get()` but elements must be short-lived)
-  // Element must not live after parent vector has been destroyed
-  // It is designed to be a simple view into the vector  and avoid re-protection overhead associated with r_str and r_sexp
+  // Element must not outlive the parent vector
   T view(r_size_t index) const {
     if constexpr (std::is_constructible_v<data_type, unwrap_t<data_type>, internal::view_tag>) {
       return T(m_ptr[index], internal::view_tag{});

@@ -74,7 +74,6 @@ struct r_sexp {
   operator SEXP() const noexcept { return value; }
   constexpr SEXP data() const noexcept { return value; }
 
-  // Optimized constructor
   // convert SEXP -> r_sexp directly without extra protection
   explicit r_sexp(SEXP s, internal::view_tag) noexcept : value(s), ctl_(nullptr) {}
 
@@ -93,6 +92,8 @@ struct r_sexp {
 
 // R C NULL constant
 inline const r_sexp r_null = r_sexp();
+// // Lazy loaded version
+// inline const r_sexp& r_null() { static const r_sexp s; return s; }
 
 }
 
