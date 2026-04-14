@@ -4,7 +4,10 @@
 
 I first want to thank the authors and contributors of the fantastic
 [cpp11](https://cpp11.r-lib.org/) R package, without which I would not
-have been inspired to write this package.
+have been inspired to write this package. I’d also like to thank the
+authors and contributors of [Rcpp](https://github.com/RcppCore/Rcpp) for
+developing this ecosystem that has laid much of the groundwork for C++
+and R integration.
 
 cpp20 is a high-performance header-only library providing a rich C++20
 API for advanced R data manipulation. Leveraging C++20 Concepts, custom
