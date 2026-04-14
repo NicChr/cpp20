@@ -6,7 +6,7 @@
 \alias{cpp20-package}
 \title{cpp20: A C++20 API for Interacting with R}
 \description{
-A header-only API designed for advanced R data manipulation within C++. This package emphasises type-safety, modern C++ syntax and high-performance computing through Single-Instruction-Multiple-Data vectorization and parallelisation. Leveraging C++20 concepts specific to R, it enables seamless template programming with a highly efficient API.
+A header-only API designed for advanced R data manipulation within C++. This package emphasises type-safety, modern C++ syntax and high-performance computing through Single-Instruction-Multiple-Data and parallelisation. Leveraging C++20 concepts specific to R, it enables seamless template programming with a highly efficient API.
 }
 \seealso{
 Useful links:
