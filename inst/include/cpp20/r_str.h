@@ -5,6 +5,7 @@
 #include <cpp20/r_concepts.h>
 #include <cpp20/r_sexp.h>
 #include <cpp20/r_sexp_types.h>
+#include <cpp20/r_lazy.h>
 
 namespace cpp20 {
 
@@ -60,7 +61,7 @@ struct r_str_view {
   using value_type = SEXP;
 
   // Constructors
-  r_str_view() : value{R_BlankString} {}
+  r_str_view() : value{static_cast<SEXP>(internal::lazy_str_impl<"">())} {}
   explicit r_str_view(SEXP x) : value{x} {
     internal::check_valid_construction<r_str_view>(value);
   }
@@ -88,6 +89,11 @@ inline r_str::r_str(r_str_view x) : value(static_cast<SEXP>(x)) {}
 // Blank string ''
 inline const r_str_view blank_r_string = r_str_view();
 inline const r_str_view na_str = r_str_view(NA_STRING);
+
+template <internal::name T>
+inline r_str cached_str() {
+    return r_str(internal::lazy_str_impl<T>());
+}
 
 }
 

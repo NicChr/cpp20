@@ -21,7 +21,6 @@
 #define ANKERL_UNORDERED_DENSE_DISABLE_PMR
 #endif
 
-#include <R_ext/Boolean.h>
 #include <Rinternals.h>
 #include <iosfwd> // Forward declarations for strings
 
@@ -88,29 +87,8 @@ namespace cpp20 {
 using r_size_t = R_xlen_t;
 
 namespace internal {
-
-// If we find out eager initialisation of R symbols is a problem, we can use the constants below
-// // Generic Lazy Loader for R Constants
-// // Ptr: A pointer to the global R variable (e.g., &R_NilValue)
-// template <typename T, T* Ptr>
-// struct lazy_r_constant {
-//     // Implicit conversion to SEXP (or whatever T is)
-//     operator T() const noexcept {
-//         return *Ptr;
-//     }
-    
-//     // Allow comparison directly
-//     bool operator==(T other) const noexcept { return *Ptr == other; }
-//     bool operator!=(T other) const noexcept { return *Ptr != other; }
-// };
-
-// // lazy constants (to be defined later)
-// inline constexpr lazy_r_constant<SEXP, &R_BlankString> blank_string_constant{};
-// inline constexpr lazy_r_constant<SEXP, &R_MissingArg> missing_arg_constant{};
-
 inline constexpr long long int CPP20_OMP_THRESHOLD = 100000;
 inline int CPP20_N_THREADS = 1;
-
 }
 
 } // end of cpp20 namespace

@@ -185,9 +185,9 @@ inline r_str_view as_r_string(T const& x){
     if (is_na(x)){
       return na<r_str_view>();
     } else if (x.is_true()){
-      return c_str_to_r_str_view("TRUE");
+      return cached_str<"TRUE">();
     } else {
-      return c_str_to_r_str_view("FALSE");
+      return cached_str<"FALSE">();
     }
   } else if constexpr (RIntegerType<T>){
     if (is_na(x)){

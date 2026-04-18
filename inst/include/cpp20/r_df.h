@@ -58,7 +58,7 @@ inline r_vec<r_sexp> new_df_impl(const r_vec<r_sexp>& cols, bool recycle, int nr
     out.set_names(names); 
 
     r_vec<r_int> row_names = create_row_names(nrows);
-    attr::set_attr(out, symbol::class_sym, r_vec<r_str_view>(1, r_str_view(r_str("data.frame"))));
+    attr::set_attr(out, symbol::class_sym, r_vec<r_str_view>(1, r_str_view(cached_str<"data.frame">())));
     attr::set_attr(out, symbol::row_names_sym, row_names);
     return out;
 }
@@ -82,7 +82,7 @@ inline r_vec<r_sexp> new_df_impl(int nrows){
     r_vec<r_sexp> out{};
     r_vec<r_int> row_names = create_row_names(nrows);
     out.set_names(r_vec<r_str_view>());
-    attr::set_attr(out, symbol::class_sym, r_vec<r_str_view>(1, r_str_view(r_str("data.frame"))));
+    attr::set_attr(out, symbol::class_sym, r_vec<r_str_view>(1, r_str_view(cached_str<"data.frame">())));
     attr::set_attr(out, symbol::row_names_sym, row_names);
     return out;
 }

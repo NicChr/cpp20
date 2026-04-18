@@ -95,15 +95,15 @@ template <RVal T>
 inline r_sexp new_vec_impl(r_size_t n) {
   if constexpr (RDateType<T>){
     r_sexp out = new_vec_impl<inherited_type_t<T>>(n);
-    Rf_setAttrib(out, symbol::class_sym, Rf_ScalarString(Rf_mkCharCE("Date", CE_UTF8)));
+    Rf_setAttrib(out, symbol::class_sym, Rf_ScalarString(cached_str<"Date">()));
     return out;
   } else if constexpr (RPsxctType<T>){
     r_sexp out = new_vec_impl<inherited_type_t<T>>(n);
     r_sexp cls = new_vec(STRSXP, 2);
-    SET_STRING_ELT(cls, 0, Rf_mkCharCE("POSIXct", CE_UTF8));
-    SET_STRING_ELT(cls, 1, Rf_mkCharCE("POSIXt", CE_UTF8));
+    SET_STRING_ELT(cls, 0, cached_str<"POSIXct">());
+    SET_STRING_ELT(cls, 1, cached_str<"POSIXt">());
     Rf_setAttrib(out, symbol::class_sym, cls);
-    Rf_setAttrib(out, lazy_sym<"tzone">(), Rf_ScalarString(Rf_mkCharCE("UTC", CE_UTF8)));
+    Rf_setAttrib(out, cached_sym<"tzone">(), Rf_ScalarString(cached_str<"UTC">()));
     return out;
   } else {
     static_assert(
@@ -129,7 +129,7 @@ inline r_sexp new_vec_impl<r_dbl>(r_size_t n){
 template <>
 inline r_sexp new_vec_impl<r_int64>(r_size_t n){
   r_sexp out = r_sexp(internal::new_vec(REALSXP, n));
-  Rf_setAttrib(out, symbol::class_sym, Rf_ScalarString(r_str("integer64")));
+  Rf_setAttrib(out, symbol::class_sym, Rf_ScalarString(cached_str<"integer64">()));
   return out;
 }
 template <>
@@ -158,15 +158,15 @@ inline r_sexp new_scalar_vec(T const& default_value) {
 
   if constexpr (RDateType<T>){
     r_sexp out = new_scalar_vec<inherited_type_t<T>>(static_cast<inherited_type_t<T>>(default_value));
-    Rf_setAttrib(out, symbol::class_sym, Rf_ScalarString(r_str("Date")));
+    Rf_setAttrib(out, symbol::class_sym, Rf_ScalarString(cached_str<"Date">()));
     return out;
   } else if constexpr (RPsxctType<T>){
     r_sexp out = new_scalar_vec<inherited_type_t<T>>(static_cast<inherited_type_t<T>>(default_value));
     r_sexp cls = new_vec(STRSXP, 2);
-    SET_STRING_ELT(cls, 0, Rf_mkCharCE("POSIXct", CE_UTF8));
-    SET_STRING_ELT(cls, 1, Rf_mkCharCE("POSIXt", CE_UTF8));
+    SET_STRING_ELT(cls, 0, cached_str<"POSIXct">());
+    SET_STRING_ELT(cls, 1, cached_str<"POSIXt">());
     Rf_setAttrib(out, symbol::class_sym, cls);
-    Rf_setAttrib(out, lazy_sym<"tzone">(), Rf_ScalarString(r_str("UTC")));
+    Rf_setAttrib(out, cached_sym<"tzone">(), Rf_ScalarString(cached_str<"UTC">()));
     return out;
   } else {
     static_assert(
