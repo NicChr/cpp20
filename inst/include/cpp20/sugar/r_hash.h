@@ -120,13 +120,16 @@ struct r_hash_impl<r_sym> {
 // // Forward declarations before r_hash_impl<r_sexp>
 inline uint64_t hash_factor(const r_factors& x);
 
-template <RVector T>
-inline uint64_t hash_vec(const T& x);
-
 inline uint64_t hash_sym(const r_sym& x);
 
 template <RVal T>
 struct r_hash_impl<r_vec<T>>;
+
+// Defined before r_hash_impl<r_sexp> so the call site at hash_vec(vec) sees the definition
+template <RVector T>
+inline uint64_t hash_vec(const T& x) {
+    return r_hash_impl<T>{}(x);
+}
 
 // Specialization for elements of lists
 template<>
@@ -190,11 +193,6 @@ struct r_hash_impl<r_factors> {
 // Defined after r_vec<T> and r_factors are complete
 inline uint64_t hash_factor(const r_factors& x) {
     return r_hash_impl<r_vec<r_int>>{}(x.value);
-}
-
-template <RVector T>
-inline uint64_t hash_vec(const T& x) {
-    return r_hash_impl<T>{}(x);
 }
 
 inline uint64_t hash_sym(const r_sym& x) {
