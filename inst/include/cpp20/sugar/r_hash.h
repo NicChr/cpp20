@@ -135,7 +135,7 @@ inline uint64_t r_hash_impl(const r_sexp& x) noexcept {
     });
 };
 
-template <RVal T>
+template <typename T>
 struct r_hash {
     using is_avalanching = void;
     using base_t = unwrap_t<T>;
@@ -150,7 +150,7 @@ struct r_hash {
 
 // Hash equality
 
-template <RVal T>
+template <typename T>
 struct r_hash_eq {
     using is_transparent = void;
     using base_t = unwrap_t<T>;
