@@ -121,7 +121,7 @@ struct r_hash_impl<r_sym> {
 inline uint64_t hash_factor(const r_factors& x);
 
 template <RVector T>
-uint64_t hash_vec(const T& x);
+inline uint64_t hash_vec(const T& x);
 
 inline uint64_t hash_sym(const r_sym& x);
 
@@ -193,7 +193,7 @@ inline uint64_t hash_factor(const r_factors& x) {
 }
 
 template <RVector T>
-uint64_t hash_vec(const T& x) {
+inline uint64_t hash_vec(const T& x) {
     return r_hash_impl<T>{}(x);
 }
 
