@@ -45,6 +45,11 @@ r_int cpp_get_threads(){
 }
 
 [[cpp20::register]]
+r_int cpp_get_max_threads(){
+  return r_int(OMP_MAX_THREADS);
+}
+
+[[cpp20::register]]
 r_str cpp20_typeof(SEXP x){
   return r_str(internal::r_type_to_str(internal::CPP20_TYPEOF(x)));
 }

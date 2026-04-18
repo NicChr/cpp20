@@ -76,6 +76,10 @@ cpp_get_threads <- function() {
   .Call(`_cpp20test_cpp_get_threads`)
 }
 
+cpp_get_max_threads <- function() {
+  .Call(`_cpp20test_cpp_get_max_threads`)
+}
+
 cpp20_typeof <- function(x) {
   .Call(`_cpp20test_cpp20_typeof`, x)
 }

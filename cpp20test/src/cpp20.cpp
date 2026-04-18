@@ -158,6 +158,13 @@ extern "C" SEXP _cpp20test_cpp_get_threads() {
   END_CPP20
 }
 // test.cpp
+r_int cpp_get_max_threads();
+extern "C" SEXP _cpp20test_cpp_get_max_threads() {
+  BEGIN_CPP20
+  return cpp_to_sexp(::cpp_get_max_threads());
+  END_CPP20
+}
+// test.cpp
 r_str cpp20_typeof(SEXP x);
 extern "C" SEXP _cpp20test_cpp20_typeof(SEXP x) {
   BEGIN_CPP20
@@ -942,6 +949,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"_cpp20test_cpp20_fast_na_count_v2",             (DL_FUNC) &_cpp20test_cpp20_fast_na_count_v2,             1},
     {"_cpp20test_cpp20_na_count",                     (DL_FUNC) &_cpp20test_cpp20_na_count,                     1},
     {"_cpp20test_cpp20_typeof",                       (DL_FUNC) &_cpp20test_cpp20_typeof,                       1},
+    {"_cpp20test_cpp_get_max_threads",                (DL_FUNC) &_cpp20test_cpp_get_max_threads,                0},
     {"_cpp20test_cpp_get_threads",                    (DL_FUNC) &_cpp20test_cpp_get_threads,                    0},
     {"_cpp20test_cpp_length",                         (DL_FUNC) &_cpp20test_cpp_length,                         1},
     {"_cpp20test_cpp_lengths",                        (DL_FUNC) &_cpp20test_cpp_lengths,                        1},

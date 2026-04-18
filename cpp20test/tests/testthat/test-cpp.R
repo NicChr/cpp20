@@ -1,7 +1,8 @@
 test_that("Correct registration of cpp fns to R", {
-  cpp_set_threads(2L)
-  expect_equal(cpp_get_threads(), 2)
-  cpp_set_threads(1L)
+
+  cpp_set_threads(2)
+  expect_equal(cpp_get_threads(), min(2, cpp_get_max_threads()))
+  cpp_set_threads(1)
   expect_equal(cpp_get_threads(), 1)
 
   cpp_set_threads(1.7)
