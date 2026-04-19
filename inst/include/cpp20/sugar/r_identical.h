@@ -64,54 +64,24 @@ inline bool identical_impl(const T& a, const T& b) {
         if (a_attrs.length() != b_attrs.length()) return false;
         if (!identical_impl(a_attrs.names(), b_attrs.names())) return false;
         
-            // Only do the rest of the attr checks if pointers do not match
-            if (unwrap(a_attrs) != unwrap(b_attrs)){
-                    r_vec<r_str_view> names1 = a_attrs.names();
-                    r_vec<r_str_view> names2 = b_attrs.names();
-                    if (!identical_impl(names1, names2)) return false;
+        // Only do the rest of the attr checks if pointers do not match
+        if (unwrap(a_attrs) != unwrap(b_attrs)){
+            r_vec<r_str_view> names1 = a_attrs.names();
+            r_vec<r_str_view> names2 = b_attrs.names();
+            if (!identical_impl(names1, names2)) return false;
 
-                    for (r_size_t i = 0; i < a_attrs.length(); ++i){
-                        if (!identical_impl(a_attrs.view(i), b_attrs.view(i))) return false;
-                    }
-            }   
-        // Not sure why this produces recursion crash when it can handle lists..
-        // if (!identical_impl(a_attrs, b_attrs)){
-        //     return false;
-        // }
+            for (r_size_t i = 0; i < a_attrs.length(); ++i){
+                if (!identical_impl(a_attrs.view(i), b_attrs.view(i))) return false;
+            }
+        }
     }
 
     r_size_t n = a.length();
-
-    if constexpr (is<T, r_vec<r_sexp>>){
-        
-        // Visit each list element
-        for (r_size_t i = 0; i < n; ++i){
-
-        bool ident = view_sexp(a.view(i), [&b, i](const auto& vec1) -> bool {
-            using vec1_t = std::remove_cvref_t<decltype(vec1)>;
-    
-            // If we can't map SEXP to a known type then just use R's version
-            if constexpr (is<vec1_t, r_sexp>){
-                return R_compute_identical(vec1, b.view(i), 16);
-            } else {
-                // Important: to reduce usage of nested view_sexp, we use the fact that
-                // types were checked earlier (via TYPEOF), therefore b[[i]] can be constructed the same way as a[[i]]
-                // as they share the same type
-                auto vec2 = vec1_t(b.view(i), view_tag{});
-                return identical_impl(vec1, vec2);  
-            }
-            });
-            if (!ident){
-                return false;
-            }
+    for (r_size_t i = 0; i < n; ++i){
+        if (!identical_impl(a.view(i), b.view(i))){
+            return false;
         }
-    } else {
-        for (r_size_t i = 0; i < n; ++i){
-            if (!identical_impl(a.view(i), b.view(i))){
-                return false;
-            }
-        } 
-    }
+    } 
     return true;
 }
 
