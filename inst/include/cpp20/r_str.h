@@ -34,7 +34,7 @@ struct r_str {
   // Explicit r_str_view -> r_str
   explicit r_str(r_str_view x);
 
-  const char *c_str() const {
+  const char *c_str() const noexcept {
     return CHAR(value);
   }
 
@@ -43,7 +43,7 @@ struct r_str {
   }
   
   // Explicit conversions
-  explicit operator const char*() const { return c_str(); }
+  explicit operator const char*() const noexcept { return c_str(); }
   explicit operator std::string_view() const { return cpp_str(); }
 };
 
