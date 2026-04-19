@@ -78,12 +78,8 @@ inline std::remove_cvref_t<T> as(const U& x) {
     });
 
   } else if constexpr (is<r_sym, to_t>){ // To symbol
-    if constexpr (is<from_t, const char*>){
+    if constexpr (std::is_constructible_v<r_sym, from_t>){
       return r_sym(x);
-    } else if constexpr (RStringType<from_t>){
-      return r_sym(x.c_str());
-    } else if constexpr (is_sexp<from_t>){
-      return r_sym(static_cast<SEXP>(x));
     } else {
       r_str_view str = as<r_str_view>(x);
       return r_sym(str.c_str());
