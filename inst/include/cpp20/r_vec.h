@@ -554,27 +554,6 @@ inline void r_copy_n(r_vec<T>& target, const r_vec<T>& source, r_size_t target_o
   }
 }
 
-// template <RVal T>
-// r_vec<T> r_vec<T>::remove(r_size_t index) const {
-//   std::vector<int> out(3);
-//   out.erase(
-//   if (index 
-// }
-
-// Compact seq generator as ALTREP, same as `seq_len()`
-// ALTREP is currently unsupported due to the overhead in checking altrep
-// inline r_vec<r_int> compact_seq_len(r_size_t n){
-//   if (n < 0){
-//     abort("`n` must be >= 0");
-//   }
-//   if (n == 0){
-//     return r_vec<r_int>();
-//   }
-//   r_sexp colon_fn = fn::find_pkg_fun(":", "base", false);
-//   r_sexp out = fn::eval_fn(colon_fn, env::base_env, 1, n);
-//   return r_vec<r_int>(out);
-// }
-
 }
 
 #endif
