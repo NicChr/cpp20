@@ -35,10 +35,11 @@ inline r_sym cached_sym() {
 
 namespace symbol {
 
-inline const r_sym class_sym = r_sym(R_ClassSymbol);
-inline const r_sym names_sym = r_sym(R_NamesSymbol);
-inline const r_sym row_names_sym = r_sym(R_RowNamesSymbol);
-inline const r_sym levels_sym = r_sym(R_LevelsSymbol);
+inline const r_sym class_sym = cached_sym<"class">();
+inline const r_sym names_sym = cached_sym<"names">();
+inline const r_sym row_names_sym = cached_sym<"row.names">();
+inline const r_sym levels_sym = cached_sym<"levels">();
+
 inline r_sym tag(SEXP x){
     return r_sym(TAG(x));
 }
