@@ -32,11 +32,18 @@ inline bool identical_impl<r_sym>(const r_sym& a, const r_sym& b) {
 
 template<>
 inline bool identical_impl<r_dbl>(const r_dbl& a, const r_dbl& b) {
+    const double x = unwrap(a);
+    const double y = unwrap(b);
+
+    bool eq = x == y;
+
+    if (eq) return true;
+
     // If both (NA or NaN)
-    if (is_na(a) && is_na(b)){
-        return is_na_real(unwrap(a)) == is_na_real(unwrap(b));
+    if (is_na(a) & is_na(b)){
+        return is_na_real(x) == is_na_real(y);
     } else {
-        return unwrap(a) == unwrap(b);
+        return eq;
     }
 }
 
@@ -63,7 +70,7 @@ inline bool identical_impl(const T& a, const T& b) {
 
         if (a_attrs.length() != b_attrs.length()) return false;
         if (!identical_impl(a_attrs.names(), b_attrs.names())) return false;
-        
+
         // Only do the rest of the attr checks if pointers do not match
         if (unwrap(a_attrs) != unwrap(b_attrs)){
             r_vec<r_str_view> names1 = a_attrs.names();
