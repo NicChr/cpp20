@@ -40,7 +40,7 @@ inline bool identical_impl<r_dbl>(const r_dbl& a, const r_dbl& b) {
     if (eq) return true;
 
     // If both (NA or NaN)
-    if (is_na(a) & is_na(b)){
+    if (is_na(a) && is_na(b)){
         return is_na_real(x) == is_na_real(y);
     } else {
         return eq;
