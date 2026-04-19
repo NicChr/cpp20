@@ -78,11 +78,10 @@ inline std::remove_cvref_t<T> as(const U& x) {
     });
 
   } else if constexpr (is<r_sym, to_t>){ // To symbol
-    if constexpr (std::is_constructible_v<r_sym, from_t>){
+    if constexpr (is<from_t, const char*> || RStringType<from_t>){
       return r_sym(x);
     } else {
-      r_str_view str = as<r_str_view>(x);
-      return r_sym(str.c_str());
+      return r_sym(as<r_str_view>(x));
     }
     
   } else if constexpr (is<r_sym, from_t>){ // From symbol - just convert to r_str_view first and then coerce
