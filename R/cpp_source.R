@@ -143,6 +143,7 @@ cpp_source <- function(file, code = NULL, env = parent.frame(),
   cpp_functions_definitions <- generate_cpp_functions(funs, package = package)
   cpp_path <- file.path(dirname(new_file_path), "cpp20.cpp")
   brio::write_lines(c("#include <cpp20/r_dispatch.h>",
+                      glue::glue('#include "{new_file_name}"'),
                       "using namespace cpp20;",
                       "using internal::cpp_to_sexp;",
                       "using internal::dispatch_template_impl;",
@@ -157,10 +158,9 @@ cpp_source <- function(file, code = NULL, env = parent.frame(),
                                       use_package = TRUE)
   makevars_content <- generate_makevars(includes, cxx_std, debug)
   brio::write_lines(makevars_content, file.path(new_dir, "Makevars"))
-  source_files <- normalizePath(c(new_file_path, cpp_path),
-                                winslash = "/")
-  res <- callr::rcmd("SHLIB", source_files, user_profile = TRUE,
-                     show = !quiet, wd = new_dir)
+  shared_lib_name <- paste0(tools::file_path_sans_ext(new_file_name), .Platform$dynlib.ext)
+  res <- callr::rcmd("SHLIB", c(cpp_path, "-o", shared_lib_name),
+                     user_profile = TRUE, show = !quiet, wd = new_dir)
   if (res$status != 0) {
     error_messages <- res$stderr
     error_messages <- gsub(tools::file_path_sans_ext(new_file_path),
