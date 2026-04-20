@@ -935,6 +935,14 @@ extern "C" SEXP _cpp20test_test_replace(SEXP x, SEXP y, SEXP z) {
   );
   END_CPP20
 }
+// test_valgrind.cpp
+void test_valgrind();
+extern "C" SEXP _cpp20test_test_valgrind() {
+  BEGIN_CPP20
+  ::test_valgrind();
+  return R_NilValue;
+  END_CPP20
+}
 
 extern "C" {
 static const R_CallMethodDef CallEntries[] = {
@@ -1035,6 +1043,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"_cpp20test_test_template_null",                 (DL_FUNC) &_cpp20test_test_template_null,                 1},
     {"_cpp20test_test_tz",                            (DL_FUNC) &_cpp20test_test_tz,                            1},
     {"_cpp20test_test_unique",                        (DL_FUNC) &_cpp20test_test_unique,                        1},
+    {"_cpp20test_test_valgrind",                      (DL_FUNC) &_cpp20test_test_valgrind,                      0},
     {"_cpp20test_test_var",                           (DL_FUNC) &_cpp20test_test_var,                           2},
     {"_cpp20test_to_int_vec",                         (DL_FUNC) &_cpp20test_to_int_vec,                         1},
     {"_cpp20test_vector1",                            (DL_FUNC) &_cpp20test_vector1,                            1},

@@ -403,3 +403,7 @@ test_find <- function(x, y) {
 test_replace <- function(x, y, z) {
   .Call(`_cpp20test_test_replace`, x, y, z)
 }
+
+test_valgrind <- function() {
+  invisible(.Call(`_cpp20test_test_valgrind`))
+}
