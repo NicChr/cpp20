@@ -29,16 +29,16 @@ struct r_sexp {
   // Refcounted protection token. nullptr means "view mode" (no protection).
   // Copy construction bumps `ctl_->refs` instead of allocating a new cons cell,
   // so passing r_sexp around by value is essentially free
-  detail::refcount::protect_cell* ctl_ = nullptr;
+  internal::refcount::protect_cell* ctl_ = nullptr;
 
   public:
 
   r_sexp() = default;
-  explicit r_sexp(SEXP data) : value(data), ctl_(detail::refcount::insert(data)) {}
+  explicit r_sexp(SEXP data) : value(data), ctl_(internal::refcount::insert(data)) {}
 
   // Copy = refcount bump (no R API involvement)
   r_sexp(const r_sexp& rhs) noexcept : value(rhs.value), ctl_(rhs.ctl_) {
-    detail::refcount::incref(ctl_);
+    internal::refcount::incref(ctl_);
   }
 
   // Move = steal the token, leaving rhs empty
@@ -49,8 +49,8 @@ struct r_sexp {
 
   r_sexp& operator=(const r_sexp& rhs) noexcept {
     if (this != &rhs) {
-        detail::refcount::incref(rhs.ctl_); // bump new first, release old after
-        detail::refcount::decref(ctl_);
+        internal::refcount::incref(rhs.ctl_); // bump new first, release old after
+        internal::refcount::decref(ctl_);
         value = rhs.value;
         ctl_ = rhs.ctl_;
     }
@@ -59,7 +59,7 @@ struct r_sexp {
 
   r_sexp& operator=(r_sexp&& rhs) noexcept {
     if (this != &rhs) {
-      detail::refcount::decref(ctl_);
+      internal::refcount::decref(ctl_);
       value = rhs.value;
       ctl_ = rhs.ctl_;
       rhs.value = R_NilValue;
@@ -68,7 +68,7 @@ struct r_sexp {
     return *this;
   }
 
-  ~r_sexp() { detail::refcount::decref(ctl_); }
+  ~r_sexp() { internal::refcount::decref(ctl_); }
 
   // Implicit conversion to SEXP
   operator SEXP() const noexcept { return value; }

@@ -11,6 +11,9 @@
 
 namespace cpp20 {
 
+
+namespace internal {
+
 // A minimal unwind exception
 class unwind_exception : public std::exception {
 public:
@@ -83,9 +86,6 @@ struct protect {
     }
 };
 
-constexpr protect safe = {};
-
-inline void check_user_interrupt() { safe[R_CheckUserInterrupt](); }
 
 // Forwarding non-trivially-copyable C++ objects through a C vararg function
 // (e.g. Rf_errorcall / Rf_warningcall) is undefined behaviour. These helpers
@@ -95,23 +95,28 @@ template <typename... Args>
 inline constexpr bool all_vararg_safe_v =
     (std::is_trivially_copyable_v<std::decay_t<Args>> && ...);
 
+}
+
+constexpr internal::protect safe = {};
+
+inline void check_user_interrupt() { safe[R_CheckUserInterrupt](); }
 template <typename... Args>
 [[noreturn]] inline void abort (const char* msg, Args&&... args) {
-    static_assert(all_vararg_safe_v<Args...>,
+    static_assert(internal::all_vararg_safe_v<Args...>,
         "abort() forwards args into a C vararg function; all args must be "
         "trivially copyable (use .c_str() for std::string)");
-    unwind_protect([&] { Rf_errorcall(R_NilValue, msg, std::forward<Args>(args)...); });
+    internal::unwind_protect([&] { Rf_errorcall(R_NilValue, msg, std::forward<Args>(args)...); });
     throw std::exception(); // satisfy compiler [[noreturn]]
 }
 
 [[noreturn]] inline void abort(const char* msg) {
-    unwind_protect([&] { Rf_errorcall(R_NilValue, "%s", msg); });
+    internal::unwind_protect([&] { Rf_errorcall(R_NilValue, "%s", msg); });
     throw std::exception();
 }
 
 template <typename... Args>
 inline void warn(const char* msg, Args&&... args) {
-    static_assert(all_vararg_safe_v<Args...>,
+    static_assert(internal::all_vararg_safe_v<Args...>,
         "warn() forwards args into a C vararg function; all args must be "
         "trivially copyable (use .c_str() for std::string)");
     safe[Rf_warningcall](R_NilValue, msg, std::forward<Args>(args)...);
@@ -123,6 +128,9 @@ inline void warn(const char* msg) {
 
 template <typename... Args>
 inline void print(const char* msg, Args&&... args) {
+    static_assert(internal::all_vararg_safe_v<Args...>,
+        "print() forwards args into a C vararg function; all args must be "
+        "trivially copyable (use .c_str() for std::string)");
     Rprintf(msg, std::forward<Args>(args)...);
 }
 
@@ -130,7 +138,8 @@ inline void print(const char* msg) {
     Rprintf("%s", msg);
 }
 
-namespace detail {
+
+namespace internal {
 namespace vec_store {
 
 // ---------------------------------------------------------------------------
@@ -466,7 +475,7 @@ inline void decref(protect_cell* p) noexcept {
 }
 
 } // namespace refcount
-} // namespace detail
+} // namespace internal
 
 } // namespace cpp20
 

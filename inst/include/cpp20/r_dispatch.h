@@ -29,7 +29,7 @@
 
 #define END_CPP20                                               \
   }                                                             \
-  catch (cpp20::unwind_exception & e) {                         \
+  catch (cpp20::internal::unwind_exception & e) {                         \
     err = e.token;                                              \
   }                                                             \
   catch (std::exception & e) {                                  \
