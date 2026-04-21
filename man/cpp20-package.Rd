@@ -6,7 +6,7 @@
 \alias{cpp20-package}
 \title{cpp20: A 'C++20' API for R}
 \description{
-A header-only API designed for advanced R data manipulation within C++. This package emphasises type-safety, modern C++ syntax and high-performance computing through Single-Instruction-Multiple-Data and parallelisation. Leveraging C++20 concepts specific to R, it enables seamless template programming with a highly efficient API.
+A header-only 'C++20' API for manipulating R data structures from 'C++'. Provides 'C++20' concepts specific to R, custom scalar and vector classes with built-in NA handling, automatic object protection, 'SIMD' (single-instruction-multiple-data), parallelisation, and a streamlined system for registering 'C++' functions, including templates, to R. Full API reference and documentation are available at \url{https://nicchr.github.io/cpp20}.
 }
 \seealso{
 Useful links:
