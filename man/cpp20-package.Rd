@@ -4,7 +4,7 @@
 \name{cpp20-package}
 \alias{cpp20}
 \alias{cpp20-package}
-\title{cpp20: A C++20 API for Interacting with R}
+\title{cpp20: A 'C++20' API for R}
 \description{
 A header-only API designed for advanced R data manipulation within C++. This package emphasises type-safety, modern C++ syntax and high-performance computing through Single-Instruction-Multiple-Data and parallelisation. Leveraging C++20 concepts specific to R, it enables seamless template programming with a highly efficient API.
 }
@@ -17,7 +17,7 @@ Useful links:
 
 }
 \author{
-\strong{Maintainer}: Nick Christofides \email{nick.christofides.r@gmail.com} (\href{https://orcid.org/0000-0002-9743-7342}{ORCID})
+\strong{Maintainer}: Nick Christofides \email{nick.christofides.r@gmail.com} (\href{https://orcid.org/0000-0002-9743-7342}{ORCID}) [copyright holder]
 
 }
 \keyword{internal}

@@ -1,8 +1,8 @@
 Package: cpp20
-Title: A C++20 API for Interacting with R
+Title: A 'C++20' API for R
 Version: 0.1.0
-Authors@R: 
-    person("Nick", "Christofides", , "nick.christofides.r@gmail.com", role = c("aut", "cre"),
+Authors@R:
+    person("Nick", "Christofides", , "nick.christofides.r@gmail.com", role = c("aut", "cre", "cph"),
            comment = c(ORCID = "0000-0002-9743-7342"))
 Maintainer: Nick Christofides <nick.christofides.r@gmail.com>
 Description: A header-only API designed for advanced R data manipulation
