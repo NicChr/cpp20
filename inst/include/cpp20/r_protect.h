@@ -37,7 +37,7 @@ auto unwind_protect(Fun&& code) -> decltype(code()) {
     SEXP token = unwind_token();
 
     std::jmp_buf jmpbuf;
-    if (setjmp(jmpbuf)) {
+    if (setjmp(jmpbuf)) [[unlikely]] {
         throw unwind_exception(token);
     }
 
@@ -54,7 +54,7 @@ auto unwind_protect(Fun&& code) -> decltype(code()) {
             },
             &code,
             [](void* jmpbuf_ptr, Rboolean jump) {
-                if (jump == TRUE) longjmp(*static_cast<std::jmp_buf*>(jmpbuf_ptr), 1);
+                if (jump == TRUE) [[unlikely]] longjmp(*static_cast<std::jmp_buf*>(jmpbuf_ptr), 1);
             },
             &jmpbuf, token);
         SETCAR(token, R_NilValue);
@@ -67,7 +67,7 @@ auto unwind_protect(Fun&& code) -> decltype(code()) {
             },
             &code,
             [](void* jmpbuf_ptr, Rboolean jump) {
-                if (jump == TRUE) longjmp(*static_cast<std::jmp_buf*>(jmpbuf_ptr), 1);
+                if (jump == TRUE) [[unlikely]] longjmp(*static_cast<std::jmp_buf*>(jmpbuf_ptr), 1);
             },
             &jmpbuf, token);
         SETCAR(token, R_NilValue);
@@ -320,7 +320,7 @@ inline slot_ref insert(SEXP x) {
     }
 
     chunk* c = free_list_head();
-    if (c == nullptr) {
+    if (c == nullptr) [[unlikely]] {
         // Every chunk is full (or none exist). Allocate a new one.
         // Allocation may GC, so PROTECT x. This cold path runs only when
         // the pool needs a new chunk — effectively never after warmup.
@@ -333,7 +333,7 @@ inline slot_ref insert(SEXP x) {
     SET_VECTOR_ELT(c->vec, slot, x);
 
     // If this chunk just became full, unlink it from the free list.
-    if (c->free_count == 0) {
+    if (c->free_count == 0) [[unlikely]] {
         free_list_head() = c->free_next;
         if (c->free_next != nullptr) {
             c->free_next->free_prev = nullptr;
@@ -356,7 +356,7 @@ inline void release(slot_ref ref) noexcept {
     c->free_stack[c->free_count++] = ref.slot;
 
     // If the chunk was full, it wasn't on the free list -- put it back.
-    if (was_full) {
+    if (was_full) [[unlikely]] {
         c->free_prev = nullptr;
         c->free_next = free_list_head();
         if (c->free_next != nullptr) {
@@ -370,7 +370,7 @@ inline void release(slot_ref ref) noexcept {
     // workload that protects exactly one object at a time and releases it
     // immediately would allocate-then-free a chunk on every cycle.
     if (c->free_count == c->capacity && head_chunk() != nullptr &&
-        head_chunk()->next != nullptr) {
+        head_chunk()->next != nullptr) [[unlikely]] {
         destroy_chunk(c);
     }
 }
