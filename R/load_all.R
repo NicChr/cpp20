@@ -4,6 +4,10 @@
 #' @param debug Should package be built without optimisations?
 #' Default is `FALSE` which builds with optimisations.
 #' @param ... Further arguments passed on to `pkgload::load_all()`
+#'
+#' @returns
+#' Invisibly registers cpp20 tagged functions and compiles C++ code.
+#'
 #' @export
 load_all <- function (path = ".", debug = FALSE, ...){
   stop_unless_installed(c("pkgload", "rstudioapi"))

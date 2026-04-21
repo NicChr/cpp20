@@ -14,6 +14,9 @@ Default is \code{FALSE} which builds with optimisations.}
 
 \item{...}{Further arguments passed on to \code{pkgload::load_all()}}
 }
+\value{
+Invisibly registers cpp20 tagged functions and compiles C++ code.
+}
 \description{
 A wrapper around \code{devtools::load_all()} specifically for cpp20
 }
