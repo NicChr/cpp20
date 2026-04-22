@@ -1052,6 +1052,7 @@ static const R_CallMethodDef CallEntries[] = {
 };
 }
 
+
 void foo(DllInfo* dll);
 void bar(DllInfo* dll);
 
