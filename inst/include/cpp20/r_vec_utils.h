@@ -3,6 +3,7 @@
 
 #include <cpp20/r_types.h>
 #include <cpp20/r_sym.h>
+#include <cstring>
 
 namespace cpp20 {
 
@@ -88,6 +89,49 @@ inline unsigned char* vector_ptr<r_raw>(SEXP x) {
 template<>
 inline const unsigned char* vector_ptr<const r_raw>(SEXP x) {
   return RAW_RO(x);
+}
+
+// ALTREP-safe accessors
+template <RPtrWritableType T>
+inline unwrap_t<T> elt(SEXP x, r_size_t i) {
+  if constexpr (RTimeType<T>){
+    return static_cast<unwrap_t<T>>(elt<inherited_type_t<T>>(x, i));
+  } else {
+    static_assert(
+      always_false<T>,
+      "Unsupported type for elt"
+    );
+    return {};
+  }
+}
+
+template<>
+inline int elt<r_lgl>(SEXP x, r_size_t i) {
+  return LOGICAL_ELT(x, i);
+}
+template<>
+inline int elt<r_int>(SEXP x, r_size_t i) {
+  return INTEGER_ELT(x, i);
+}
+template<>
+inline double elt<r_dbl>(SEXP x, r_size_t i) {
+  return REAL_ELT(x, i);
+}
+template<>
+inline int64_t elt<r_int64>(SEXP x, r_size_t i) {
+  double d = REAL_ELT(x, i);
+  int64_t v;
+  std::memcpy(&v, &d, sizeof(v));
+  return v;
+}
+template<>
+inline std::complex<double> elt<r_cplx>(SEXP x, r_size_t i) {
+  Rcomplex c = COMPLEX_ELT(x, i);
+  return {c.r, c.i};
+}
+template<>
+inline unsigned char elt<r_raw>(SEXP x, r_size_t i) {
+  return RAW_ELT(x, i);
 }
 
 // Internal vec constructor
