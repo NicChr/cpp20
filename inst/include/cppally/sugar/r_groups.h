@@ -41,7 +41,7 @@ struct groups {
 
     if (sorted){
         // Initialise just in-case there are groups with no group IDs (e.g. unused factor levels)
-        // out.fill(0, n_groups, 0);
+        out.fill(na<r_int>());
         const int* RESTRICT p_ids = ids.data();
         int* RESTRICT p_out = out.data();
 
