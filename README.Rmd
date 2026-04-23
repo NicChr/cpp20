@@ -80,7 +80,7 @@ All indexing is 0-based including subsetting vectors.
 On the C++ side, 64-bit integers are fully supported, including vectors. To return 64-bit integers to R we need the bit64 package to be loaded. cppally delegates the handling of 64-bit integer vectors to bit64 by marking them with the "integer64" class.
 
 ```cpp
-[[cpp::register]]
+[[cppally::register]]
 r_int64 as_int64(r_int x){
 	return as<r_int64>(x);
 }
@@ -89,7 +89,7 @@ r_int64 as_int64(r_int x){
 Please note that other 64-bit signed integer types like `int64_t`, `R_xlen_t`, or cppally's identical `r_size_t` will convert to 64-bit integer vectors when returned to R.
 
 ```cpp
-[[cpp::register]]
+[[cppally::register]]
 r_size_t as_r_size_t(r_int x){
 	return as<r_size_t>(x);
 }

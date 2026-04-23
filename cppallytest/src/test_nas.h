@@ -4,7 +4,7 @@
 using namespace cppally;
 
 template <RVector T>
-[[cpp::register]]
+[[cppally::register]]
 r_vec<r_sexp> test_nas(T const& x){
    return make_vec<r_sexp>(
     arg("is_na") = x.is_na(), 
@@ -14,7 +14,7 @@ r_vec<r_sexp> test_nas(T const& x){
 );
 }
 
-[[cpp::register]]
+[[cppally::register]]
 inline r_vec<r_sexp> test_na_types(){
    return make_vec<r_sexp>(
     na<r_lgl>(), 

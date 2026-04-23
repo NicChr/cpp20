@@ -41,9 +41,9 @@
 #endif
 // clang-format on
 
-// The R parser will search for the string "[[cpp::register]]"
+// The R parser will search for the string "[[cppally::register]]"
 #ifdef __R_GENERATE_
-  #define CPPALLY_REGISTER [[cpp::register]]
+  #define CPPALLY_REGISTER [[cppally::register]]
 #else
   #define CPPALLY_REGISTER 
 #endif

@@ -5,50 +5,50 @@ using namespace cppally;
 
 // What type is deduced by dispatch?
 template <typename T>
-[[cpp::register]]
+[[cppally::register]]
 T scalar_init(T ptype){
 	return T();
 }
 
-[[cpp::register]]
+[[cppally::register]]
 r_int64 as_int64(r_int x){
 	return as<r_int64>(x);
 }
 
-[[cpp::register]]
+[[cppally::register]]
 r_size_t as_r_size_t(r_int x){
 	return as<r_size_t>(x);
 }
 
 template <RVector T>
-[[cpp::register]]
+[[cppally::register]]
 int cpp_length(T vec){
 	return vec.length();
 }
 
-[[cpp::register]]
+[[cppally::register]]
 r_dbl add_half(r_dbl x){
   return x + 0.5;
 }
 
-[[cpp::register]]
+[[cppally::register]]
 r_str symbol_to_string(r_sym x){
 	return as<r_str>(x);
 }
 
-[[cpp::register]]
+[[cppally::register]]
 r_factors new_factor(r_vec<r_str> x){
 	return r_factors(x);
 }
 
 static_assert(!RVector<r_factors>);
 
-[[cpp::register]]
+[[cppally::register]]
 r_vec<r_int> factor_codes(r_factors x){
 	return x.codes();
 }
 
-[[cpp::register]]
+[[cppally::register]]
 r_vec<r_int> cpp_lengths(const r_vec<r_sexp>& x){
   r_size_t n = x.length();
   r_vec<r_int> out(n); // Initialise lengths vector
@@ -63,7 +63,7 @@ r_vec<r_int> cpp_lengths(const r_vec<r_sexp>& x){
   return out;
 }
 
-[[cpp::register]]
+[[cppally::register]]
 r_vec<r_int> cpp_lengths2(const r_vec<r_sexp>& x){
     r_size_t n = x.length();
     r_vec<r_int> out(n); // Initialise lengths vector
@@ -84,17 +84,17 @@ r_vec<r_int> cpp_lengths2(const r_vec<r_sexp>& x){
 }
 
 // Coerces NA correctly
-[[cpp::register]]
+[[cppally::register]]
 r_int double_to_int(r_dbl x){
   return as<r_int>(x);
 }
 
-[[cpp::register]]
+[[cppally::register]]
 r_vec<r_int> to_int_vec(r_vec<r_dbl> x){
   return as<r_vec<r_int>>(x);
 }
 
-[[cpp::register]]
+[[cppally::register]]
 r_vec<r_sexp> coercions(){
   r_dbl a(4.2);
   r_vec<r_dbl> b = make_vec<r_dbl>(2.5); // Vector containing 2.5
@@ -107,7 +107,7 @@ r_vec<r_sexp> coercions(){
   );
 }
 
-[[cpp::register]]
+[[cppally::register]]
 int cpp_na_count(r_vec<r_str> x){
   r_size_t n = x.length();
 
@@ -120,7 +120,7 @@ int cpp_na_count(r_vec<r_str> x){
   return na_count;
 }
 
-[[cpp::register]]
+[[cppally::register]]
 int C_na_count(SEXP x){
   r_size_t n = Rf_xlength(x);
 
@@ -134,7 +134,7 @@ int C_na_count(SEXP x){
   return na_count;
 }
 
-[[cpp::register]]
+[[cppally::register]]
 int cpp_fast_na_count(r_vec<r_str_view> x){
   r_size_t n = x.length();
 
@@ -147,7 +147,7 @@ int cpp_fast_na_count(r_vec<r_str_view> x){
   return na_count;
 }
 
-[[cpp::register]]
+[[cppally::register]]
 int cpp_fast_na_count_v2(r_vec<r_str> x){
   r_size_t n = x.length();
 

@@ -23,5 +23,5 @@ The paths to the generated R and C++ source files.
 }
 \description{
 Register C++ functions to be callable from R. C++ functions decorated with
-\verb{[[cpp::register]]} will be registered (including template functions).
+\verb{[[cppally::register]]} will be registered (including template functions).
 }

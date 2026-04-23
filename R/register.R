@@ -190,7 +190,7 @@ check_init_signatures <- function(funs) {
     )
     cli::cli_abort(
       c(
-        "[[cpp::init]] functions must return void and take a single DllInfo* arg named 'dll'",
+        "[[cppally::init]] functions must return void and take a single DllInfo* arg named 'dll'",
         {msgs}
       )
     )
@@ -391,8 +391,8 @@ get_cpp_register_needs <- function() {
 
 check_valid_attributes <- function(decorations, file = decorations$file) {
 
-  bad_decor <- startsWith(decorations$decoration, "cpp::") &
-    (!decorations$decoration %in% c("cpp::register", "cpp::init", "cpp::linking_to"))
+  bad_decor <- startsWith(decorations$decoration, "cppally::") &
+    (!decorations$decoration %in% c("cppally::register", "cppally::init", "cppally::linking_to"))
 
   if(any(bad_decor)) {
     lines <- decorations$line[bad_decor]
@@ -400,7 +400,7 @@ check_valid_attributes <- function(decorations, file = decorations$file) {
     bad_lines <- glue::glue_collapse(glue::glue("- Invalid attribute `{names}` on
                  line {lines} in file '{file}'."), "\n")
 
-    msg <- glue::glue("cppally attributes must be one of `cpp::register`, `cpp::init` or `cpp::linking_to`:
+    msg <- glue::glue("cppally attributes must be one of `cppally::register`, `cppally::init` or `cppally::linking_to`:
       {bad_lines}
       ")
     stop(msg, call. = FALSE)
@@ -413,7 +413,7 @@ check_valid_attributes <- function(decorations, file = decorations$file) {
 #'
 #' @description
 #' Register C++ functions to be callable from R. C++ functions decorated with
-#' `[[cpp::register]]` will be registered (including template functions).
+#' `[[cppally::register]]` will be registered (including template functions).
 #'
 #'
 #' @param path Path to package root directory.
@@ -461,13 +461,13 @@ cpp_register <- function(path = ".", quiet = !is_interactive(), extension = c(".
 
   check_valid_attributes(all_decorations)
 
-  funs <- get_registered_functions(all_decorations, "cpp::register", quiet)
+  funs <- get_registered_functions(all_decorations, "cppally::register", quiet)
 
   package <- current_package(path)
 
   cpp_functions_definitions <- generate_cpp_functions(funs, package)
 
-  init <- generate_init_functions(get_registered_functions(all_decorations, "cpp::init", quiet))
+  init <- generate_init_functions(get_registered_functions(all_decorations, "cppally::init", quiet))
 
   r_functions <- generate_r_functions(funs, package, use_package = FALSE)
 
@@ -501,7 +501,7 @@ cpp_register <- function(path = ".", quiet = !is_interactive(), extension = c(".
   user_includes <- paste0(user_includes, collapse = "\n")
 
   # Adjust in the case of 0-registered fns but
-  # 1 or more cpp::init declarations
+  # 1 or more cppally::init declarations
   user_includes <- paste0("", user_includes)
   extra_includes <- paste0("", extra_includes)
   cpp_functions_definitions <- paste0("", cpp_functions_definitions)

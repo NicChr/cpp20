@@ -2,7 +2,7 @@
 using namespace cppally;
 #include <chrono>
 
-[[cpp::register]]
+[[cppally::register]]
 double bench_protect_insert_release_cppally(int n) {
     SEXP dummy = Rf_ScalarInteger(42);
     R_PreserveObject(dummy);
@@ -19,7 +19,7 @@ double bench_protect_insert_release_cppally(int n) {
 }
 
 
-[[cpp::register]]
+[[cppally::register]]
 double bench_protect_copy_cppally(int n) {
     SEXP dummy = Rf_ScalarInteger(42);
     r_sexp dummy2 = r_sexp(dummy);

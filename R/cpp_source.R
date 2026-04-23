@@ -84,7 +84,7 @@ generate_include_paths <- function(packages){
 #'
 #' @returns
 #' `cpp_source()` invisibly compiles the C++ code and registers
-#' the `[[cpp::register]]` tagged functions to R. \cr
+#' the `[[cppally::register]]` tagged functions to R. \cr
 #' `cpp_eval()` returns the result of the evaluated C++ expression.
 #'
 #' @examples
@@ -97,7 +97,7 @@ generate_include_paths <- function(packages){
 #'   #include <cppally.hpp>
 #'   using namespace cppally;
 #'
-#'   [[cpp::register]]
+#'   [[cppally::register]]
 #'   r_dbl add(r_dbl x, r_dbl y){
 #'     return x + y;
 #'   }
@@ -115,7 +115,7 @@ generate_include_paths <- function(packages){
 #'   #include <cppally.hpp>
 #'   using namespace cppally;
 #'
-#'   [[cpp::register]]
+#'   [[cppally::register]]
 #'   r_int last_altrep_unaware(r_vec<r_int> x){
 #'     r_int out;
 #'     r_size_t n = x.length();
@@ -133,7 +133,7 @@ generate_include_paths <- function(packages){
 #'   #include <cppally.hpp>
 #'   using namespace cppally;
 #'
-#'   [[cpp::register]]
+#'   [[cppally::register]]
 #'   r_int last_altrep_aware(r_vec<r_int> x){
 #'     r_int out;
 #'     r_size_t n = x.length();
@@ -191,7 +191,7 @@ cpp_source <- function(file, code = NULL, env = parent.frame(),
   orig_file_path <- file.path(orig_dir, new_file_name)
   suppressWarnings(all_decorations <- cpp_decorations(dir, is_attribute = TRUE))
   check_valid_attributes(all_decorations, file = orig_file_path)
-  funs <- get_registered_functions(all_decorations, "cpp::register", quiet = quiet)
+  funs <- get_registered_functions(all_decorations, "cppally::register", quiet = quiet)
   cpp_functions_definitions <- generate_cpp_functions(funs, package = package)
   cpp_path <- file.path(dirname(new_file_path), "cppally.cpp")
   brio::write_lines(c("#include <cppally/r_dispatch.h>",
@@ -240,7 +240,7 @@ cpp_eval <- function(code, env = parent.frame(), clean = TRUE,
       "#include <cppally.hpp>",
       "using namespace cppally;",
       "using internal::cpp_to_sexp;",
-      "[[cpp::register]]",
+      "[[cppally::register]]",
       paste0("SEXP f() { return cpp_to_sexp(", code, "); }")
     ), collapse = "\n"),
     env = env, clean = clean, quiet = quiet,

@@ -52,7 +52,7 @@ The default is a temporary directory via \code{tempfile()} which is removed when
 }
 \value{
 \code{cpp_source()} invisibly compiles the C++ code and registers
-the \verb{[[cpp::register]]} tagged functions to R. \cr
+the \verb{[[cppally::register]]} tagged functions to R. \cr
 \code{cpp_eval()} returns the result of the evaluated C++ expression.
 }
 \description{
@@ -79,7 +79,7 @@ cpp_source(code = '
   #include <cppally.hpp>
   using namespace cppally;
 
-  [[cpp::register]]
+  [[cppally::register]]
   r_dbl add(r_dbl x, r_dbl y){
     return x + y;
   }
@@ -97,7 +97,7 @@ cpp_source(
   #include <cppally.hpp>
   using namespace cppally;
 
-  [[cpp::register]]
+  [[cppally::register]]
   r_int last_altrep_unaware(r_vec<r_int> x){
     r_int out;
     r_size_t n = x.length();
@@ -115,7 +115,7 @@ cpp_source(
   #include <cppally.hpp>
   using namespace cppally;
 
-  [[cpp::register]]
+  [[cppally::register]]
   r_int last_altrep_aware(r_vec<r_int> x){
     r_int out;
     r_size_t n = x.length();

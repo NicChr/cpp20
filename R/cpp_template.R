@@ -15,7 +15,7 @@ generate_cpp_regular_example <- function(){
 // For more info on cppally see https://nicchr.github.io/cppally/index.html
     ",
     '
-[[cpp::register]]
+[[cppally::register]]
 r_dbl sum_doubles(r_vec<r_dbl> x){
   r_size_t n = x.length();
   r_dbl out(0);
@@ -47,7 +47,7 @@ generate_cpp_template_example <- function(){
     ",
     '
 template <RMathType T>
-[[cpp::register]]
+[[cppally::register]]
 r_dbl sum_any(r_vec<T> x){
   r_size_t n = x.length();
   r_dbl out(0);
