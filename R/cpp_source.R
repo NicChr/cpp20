@@ -232,6 +232,7 @@ cpp_source <- function(file, code = NULL, env = parent.frame(),
 #' @export
 cpp_eval <- function(code, env = parent.frame(), clean = TRUE,
                      quiet = TRUE, debug = FALSE,
+                     preserve_altrep = FALSE,
                      cxx_std = Sys.getenv("CXX_STD", "CXX20")){
   cpp_source(
     code = paste(c(
@@ -243,7 +244,8 @@ cpp_eval <- function(code, env = parent.frame(), clean = TRUE,
       paste0("SEXP f() { return cpp_to_sexp(", code, "); }")
     ), collapse = "\n"),
     env = env, clean = clean, quiet = quiet,
-    debug = debug, cxx_std = cxx_std
+    debug = debug, cxx_std = cxx_std,
+    preserve_altrep = preserve_altrep
   )
   get("f", envir = env)()
 }

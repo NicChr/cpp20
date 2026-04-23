@@ -23,6 +23,7 @@ cpp_eval(
   clean = TRUE,
   quiet = TRUE,
   debug = FALSE,
+  preserve_altrep = FALSE,
   cxx_std = Sys.getenv("CXX_STD", "CXX20")
 )
 }
