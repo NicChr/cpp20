@@ -1,14 +1,44 @@
-add_makevars_omp_flag <- function(lines, var) {
+add_makevars_flag <- function(var, value) {
+
+  proj_path <- utils::getFromNamespace("proj_path", "usethis")
+  makevars_path1 <- proj_path("src", "Makevars")
+  makevars_path2 <- proj_path("src", "Makevars.win")
+
+  if (file.exists(makevars_path1)) {
+    lines1 <- brio::read_lines(makevars_path1)
+  } else {
+    lines1 <- character()
+  }
+
+  if (file.exists(makevars_path2)) {
+    lines2 <- brio::read_lines(makevars_path2)
+  } else {
+    lines2 <- character()
+  }
+
+
   pattern <- paste0("^\\s*", var, "\\s*[+:]?=")
-  idx <- grep(pattern, lines)
-  if (length(idx) > 0) {
-    if (!grepl("$(SHLIB_OPENMP_CXXFLAGS)", lines[idx[1]], fixed = TRUE)) {
-      lines[idx[1]] <- paste(lines[idx[1]], "$(SHLIB_OPENMP_CXXFLAGS)")
+  idx1 <- grep(pattern, lines1)
+  idx2 <- grep(pattern, lines2)
+
+  if (length(idx1) > 0) {
+    if (!grepl(value, lines1[idx1[1]], fixed = TRUE)) {
+      lines1[idx1[1]] <- paste(lines1[idx1[1]], value)
     }
   } else {
-    lines <- c(lines, paste(var, "=", "$(SHLIB_OPENMP_CXXFLAGS)"))
+    lines1 <- c(lines1, paste(var, "=", value))
   }
-  lines
+
+  if (length(idx2) > 0) {
+    if (!grepl(value, lines2[idx2[1]], fixed = TRUE)) {
+      lines2[idx2[1]] <- paste(lines2[idx2[1]], value)
+    }
+  } else {
+    lines2 <- c(lines2, paste(var, "=", value))
+  }
+
+  brio::write_lines(lines1, makevars_path1)
+  brio::write_lines(lines2, makevars_path2)
 }
 
 #' Helper for developing packages with cpp20
@@ -22,7 +52,7 @@ add_makevars_omp_flag <- function(lines, var) {
 #' developing a package with cpp20.
 #'
 #' @export
-use_cpp20 <- function (){
+use_cpp20 <- function(){
   stop_unless_installed(c("rlang", "usethis", "desc", "purrr", "brio", "cli", "rstudioapi"))
   proj_path <- utils::getFromNamespace("proj_path", "usethis")
   utils::getFromNamespace("check_is_package", "usethis")("use_cpp20()")
@@ -51,16 +81,8 @@ use_cpp20 <- function (){
   cli::cli_bullets(c("v" = "Added {ns_entry} to NAMESPACE."))
 
   # Add OPENMP flags to Makevars
-  makevars_path <- proj_path("src", "Makevars")
-  if (file.exists(makevars_path)) {
-    lines <- brio::read_lines(makevars_path)
-  } else {
-    lines <- character()
-  }
-  lines <- add_makevars_omp_flag(lines, "PKG_CXXFLAGS")
-  lines <- add_makevars_omp_flag(lines, "PKG_LIBS")
-  brio::write_lines(lines, makevars_path)
-
+  add_makevars_flag("PKG_CXXFLAGS", "$(SHLIB_OPENMP_CXXFLAGS)")
+  add_makevars_flag("PKG_LIBS", "$(SHLIB_OPENMP_CXXFLAGS)")
   cli::cli_bullets(c("v" = "Added OMP Makevars flags."))
 
   # Generate code examples
