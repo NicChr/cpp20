@@ -5,7 +5,7 @@
 <meta charset="utf-8">
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-<title>Automatic Protection • cpp20</title>
+<title>Automatic Protection • cppally</title>
 <script src="../deps/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 <link href="../deps/bootstrap-5.3.1/bootstrap.min.css" rel="stylesheet">
 <script src="../deps/bootstrap-5.3.1/bootstrap.bundle.min.js"></script><link href="../deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet">
@@ -18,7 +18,7 @@
 
     <nav class="navbar navbar-expand-lg fixed-top bg-light" data-bs-theme="light" aria-label="Site navigation"><div class="container">
 
-    <a class="navbar-brand me-2" href="../index.html">cpp20</a>
+    <a class="navbar-brand me-2" href="../index.html">cppally</a>
 
     <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.1.0</small>
 
@@ -29,7 +29,7 @@
 
     <div id="navbar" class="collapse navbar-collapse ms-3">
       <ul class="navbar-nav me-auto">
-<li class="nav-item"><a class="nav-link" href="../articles/cpp20.html">Get started</a></li>
+<li class="nav-item"><a class="nav-link" href="../articles/cppally.html">Get started</a></li>
 <li class="nav-item"><a class="nav-link" href="../reference/index.html">Reference</a></li>
 <li class="active nav-item dropdown">
   <button class="nav-link dropdown-toggle" type="button" id="dropdown-articles" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Articles</button>
@@ -70,11 +70,11 @@
 <h2 id="motivation-and-design">Motivation and design<a class="anchor" aria-label="anchor" href="#motivation-and-design"></a>
 </h2>
 <p>Heavily inspired by cpp11’s double-linked protection pool, this
-vignette explores cpp20’s automatic protection design and benchmarks its
-overhead against cpp11. Like cpp11, cpp20 offers automatic protection
-for all cpp20 types enabling users of the API to not need to think about
-protection of every R object.</p>
-<p>cpp20 uses a double-linked protection pool design like cpp11, but
+vignette explores cppally’s automatic protection design and benchmarks
+its overhead against cpp11. Like cpp11, cppally offers automatic
+protection for all cppally types enabling users of the API to not need
+to think about protection of every R object.</p>
+<p>cppally uses a double-linked protection pool design like cpp11, but
 instead of a single pair list, we implement a double-linked chain of
 VECSXP (vector list) chunks with a reference counting system. This
 offers much less overhead in inserting and releasing and practically
@@ -91,7 +91,7 @@ sizes seem to strike a nice balance, they are somewhat arbitrary and
 likely not optimal, so there is likely room for improvement.</p>
 </div>
 <div class="section level2">
-<h2 id="protection-benchmark-cpp11-vs-cpp20">Protection benchmark: cpp11 vs cpp20<a class="anchor" aria-label="anchor" href="#protection-benchmark-cpp11-vs-cpp20"></a>
+<h2 id="protection-benchmark-cpp11-vs-cppally">Protection benchmark: cpp11 vs cppally<a class="anchor" aria-label="anchor" href="#protection-benchmark-cpp11-vs-cppally"></a>
 </h2>
 <p>All functions have been compiled with C++20, GCC 14.2.0 with -02
 optimisations.</p>
@@ -113,12 +113,12 @@ optimisations.</p>
 <span id="cb1-15"><a href="#cb1-15" tabindex="-1"></a>  <span class="dt">double</span> ns <span class="op">=</span> <span class="bu">std::</span>chrono::duration<span class="op">&lt;</span><span class="dt">double</span><span class="op">,</span> <span class="bu">std::</span>nano<span class="op">&gt;(</span>end <span class="op">-</span> start<span class="op">).</span>count<span class="op">();</span></span>
 <span id="cb1-16"><a href="#cb1-16" tabindex="-1"></a>  <span class="cf">return</span> ns <span class="op">/</span> n<span class="op">;</span> <span class="co">// nanoseconds per insert+release cycle</span></span>
 <span id="cb1-17"><a href="#cb1-17" tabindex="-1"></a><span class="op">}</span></span></code></pre></div>
-<div class="sourceCode" id="cb2"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb2-1"><a href="#cb2-1" tabindex="-1"></a><span class="pp">#include </span><span class="im">&lt;cpp20.hpp&gt;</span></span>
-<span id="cb2-2"><a href="#cb2-2" tabindex="-1"></a><span class="kw">using</span> <span class="kw">namespace</span> cpp20<span class="op">;</span></span>
+<div class="sourceCode" id="cb2"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb2-1"><a href="#cb2-1" tabindex="-1"></a><span class="pp">#include </span><span class="im">&lt;cppally.hpp&gt;</span></span>
+<span id="cb2-2"><a href="#cb2-2" tabindex="-1"></a><span class="kw">using</span> <span class="kw">namespace</span> cppally<span class="op">;</span></span>
 <span id="cb2-3"><a href="#cb2-3" tabindex="-1"></a><span class="pp">#include </span><span class="im">&lt;chrono&gt;</span></span>
 <span id="cb2-4"><a href="#cb2-4" tabindex="-1"></a></span>
-<span id="cb2-5"><a href="#cb2-5" tabindex="-1"></a><span class="op">[[</span><span class="at">cpp20</span><span class="op">::</span><span class="at">register</span><span class="op">]]</span></span>
-<span id="cb2-6"><a href="#cb2-6" tabindex="-1"></a><span class="dt">double</span> bench_protect_insert_release_cpp20<span class="op">(</span><span class="dt">int</span> n<span class="op">)</span> <span class="op">{</span></span>
+<span id="cb2-5"><a href="#cb2-5" tabindex="-1"></a><span class="op">[[</span><span class="at">cpp</span><span class="op">::</span><span class="at">register</span><span class="op">]]</span></span>
+<span id="cb2-6"><a href="#cb2-6" tabindex="-1"></a><span class="dt">double</span> bench_protect_insert_release_cppally<span class="op">(</span><span class="dt">int</span> n<span class="op">)</span> <span class="op">{</span></span>
 <span id="cb2-7"><a href="#cb2-7" tabindex="-1"></a>  SEXP dummy <span class="op">=</span> Rf_ScalarInteger<span class="op">(</span><span class="dv">42</span><span class="op">);</span></span>
 <span id="cb2-8"><a href="#cb2-8" tabindex="-1"></a>  R_PreserveObject<span class="op">(</span>dummy<span class="op">);</span></span>
 <span id="cb2-9"><a href="#cb2-9" tabindex="-1"></a>  <span class="kw">auto</span> start <span class="op">=</span> <span class="bu">std::</span>chrono::high_resolution_clock::now<span class="op">();</span></span>
@@ -136,11 +136,11 @@ optimisations.</p>
 <span id="cb3-3"><a href="#cb3-3" tabindex="-1"></a><span class="fu">replicate</span>(<span class="dv">10</span><span class="sc">^</span><span class="dv">4</span>, <span class="fu">bench_protect_insert_release_cpp11</span>(<span class="dv">10000</span>)) <span class="sc">|&gt;</span> <span class="fu">mean</span>()</span>
 <span id="cb3-4"><a href="#cb3-4" tabindex="-1"></a>[<span class="dv">1</span>] <span class="fl">29.11816</span></span>
 <span id="cb3-5"><a href="#cb3-5" tabindex="-1"></a></span>
-<span id="cb3-6"><a href="#cb3-6" tabindex="-1"></a><span class="fu">replicate</span>(<span class="dv">10</span><span class="sc">^</span><span class="dv">4</span>, <span class="fu">bench_protect_insert_release_cpp20</span>(<span class="dv">10000</span>)) <span class="sc">|&gt;</span> <span class="fu">mean</span>()</span>
+<span id="cb3-6"><a href="#cb3-6" tabindex="-1"></a><span class="fu">replicate</span>(<span class="dv">10</span><span class="sc">^</span><span class="dv">4</span>, <span class="fu">bench_protect_insert_release_cppally</span>(<span class="dv">10000</span>)) <span class="sc">|&gt;</span> <span class="fu">mean</span>()</span>
 <span id="cb3-7"><a href="#cb3-7" tabindex="-1"></a>[<span class="dv">1</span>] <span class="fl">6.35814</span></span></code></pre></div>
 <p>On my machine, cpp11 performs an insert &amp; release every 29
-nanoseconds. cpp20 performs significantly better, with 6 nanoseconds per
-insert &amp; release.</p>
+nanoseconds. cppally performs significantly better, with 6 nanoseconds
+per insert &amp; release.</p>
 <p><strong>Copy benchmark</strong></p>
 <div class="sourceCode" id="cb4"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb4-1"><a href="#cb4-1" tabindex="-1"></a><span class="op">[[</span><span class="at">cpp11</span><span class="op">::</span><span class="at">register</span><span class="op">]]</span></span>
 <span id="cb4-2"><a href="#cb4-2" tabindex="-1"></a><span class="dt">double</span> bench_protect_copy_cpp11<span class="op">(</span><span class="dt">int</span> n<span class="op">)</span> <span class="op">{</span></span>
@@ -157,8 +157,8 @@ insert &amp; release.</p>
 <span id="cb4-13"><a href="#cb4-13" tabindex="-1"></a>  <span class="cf">return</span> ns <span class="op">/</span> n<span class="op">;</span>  <span class="co">// nanoseconds per copy</span></span>
 <span id="cb4-14"><a href="#cb4-14" tabindex="-1"></a><span class="op">}</span></span>
 <span id="cb4-15"><a href="#cb4-15" tabindex="-1"></a></span>
-<span id="cb4-16"><a href="#cb4-16" tabindex="-1"></a><span class="op">[[</span><span class="at">cpp20</span><span class="op">::</span><span class="at">register</span><span class="op">]]</span></span>
-<span id="cb4-17"><a href="#cb4-17" tabindex="-1"></a><span class="dt">double</span> bench_protect_copy_cpp20<span class="op">(</span><span class="dt">int</span> n<span class="op">)</span> <span class="op">{</span></span>
+<span id="cb4-16"><a href="#cb4-16" tabindex="-1"></a><span class="op">[[</span><span class="at">cpp</span><span class="op">::</span><span class="at">register</span><span class="op">]]</span></span>
+<span id="cb4-17"><a href="#cb4-17" tabindex="-1"></a><span class="dt">double</span> bench_protect_copy_cppally<span class="op">(</span><span class="dt">int</span> n<span class="op">)</span> <span class="op">{</span></span>
 <span id="cb4-18"><a href="#cb4-18" tabindex="-1"></a>  SEXP dummy <span class="op">=</span> Rf_ScalarInteger<span class="op">(</span><span class="dv">42</span><span class="op">);</span></span>
 <span id="cb4-19"><a href="#cb4-19" tabindex="-1"></a>  r_sexp dummy2 <span class="op">=</span> r_sexp<span class="op">(</span>dummy<span class="op">);</span></span>
 <span id="cb4-20"><a href="#cb4-20" tabindex="-1"></a>  <span class="kw">auto</span> start <span class="op">=</span> <span class="bu">std::</span>chrono::high_resolution_clock::now<span class="op">();</span></span>
@@ -172,10 +172,10 @@ insert &amp; release.</p>
 <p><strong>Results in nanoseconds per copy</strong></p>
 <div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" tabindex="-1"></a><span class="fu">replicate</span>(<span class="dv">10</span><span class="sc">^</span><span class="dv">4</span>, <span class="fu">bench_protect_copy_cpp11</span>(<span class="dv">10000</span>)) <span class="sc">|&gt;</span> <span class="fu">mean</span>()</span>
 <span id="cb5-2"><a href="#cb5-2" tabindex="-1"></a>[<span class="dv">1</span>] <span class="fl">27.59263</span></span>
-<span id="cb5-3"><a href="#cb5-3" tabindex="-1"></a><span class="fu">replicate</span>(<span class="dv">10</span><span class="sc">^</span><span class="dv">4</span>, <span class="fu">bench_protect_copy_cpp20</span>(<span class="dv">10000</span>)) <span class="sc">|&gt;</span> <span class="fu">mean</span>()</span>
+<span id="cb5-3"><a href="#cb5-3" tabindex="-1"></a><span class="fu">replicate</span>(<span class="dv">10</span><span class="sc">^</span><span class="dv">4</span>, <span class="fu">bench_protect_copy_cppally</span>(<span class="dv">10000</span>)) <span class="sc">|&gt;</span> <span class="fu">mean</span>()</span>
 <span id="cb5-4"><a href="#cb5-4" tabindex="-1"></a>[<span class="dv">1</span>] <span class="fl">0.240208</span></span></code></pre></div>
 <p>In these benchmark results we can see a drastic difference, with
-cpp11 at 27 ns/copy and cpp20 at 0.25 ns/copy.</p>
+cpp11 at 27 ns/copy and cppally at 0.25 ns/copy.</p>
 <p><strong>Impact of protection overhead, a real example</strong></p>
 <p>Let’s look at a real example of how much protection overhead can have
 an impact on performance.</p>
@@ -183,7 +183,7 @@ an impact on performance.</p>
 values in a character vector</p>
 <div class="sourceCode" id="cb6"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb6-1"><a href="#cb6-1" tabindex="-1"></a></span>
 <span id="cb6-2"><a href="#cb6-2" tabindex="-1"></a><span class="co">// Pure R C API NA count - As fast as it can reasonably get</span></span>
-<span id="cb6-3"><a href="#cb6-3" tabindex="-1"></a><span class="op">[[</span><span class="at">cpp20</span><span class="op">::</span><span class="at">register</span><span class="op">]]</span> <span class="co">// Registered via cpp20 for convenience</span></span>
+<span id="cb6-3"><a href="#cb6-3" tabindex="-1"></a><span class="op">[[</span><span class="at">cpp</span><span class="op">::</span><span class="at">register</span><span class="op">]]</span> <span class="co">// Registered via cppally for convenience</span></span>
 <span id="cb6-4"><a href="#cb6-4" tabindex="-1"></a><span class="dt">int</span> C_na_count<span class="op">(</span>SEXP x<span class="op">){</span></span>
 <span id="cb6-5"><a href="#cb6-5" tabindex="-1"></a> <span class="dt">r_size_t</span> n <span class="op">=</span> Rf_xlength<span class="op">(</span>x<span class="op">);</span></span>
 <span id="cb6-6"><a href="#cb6-6" tabindex="-1"></a> <span class="dt">int</span> na_count <span class="op">=</span> <span class="dv">0</span><span class="op">;</span></span>
@@ -209,9 +209,9 @@ values in a character vector</p>
 <span id="cb6-26"><a href="#cb6-26" tabindex="-1"></a>  <span class="cf">return</span> na_count<span class="op">;</span></span>
 <span id="cb6-27"><a href="#cb6-27" tabindex="-1"></a><span class="op">}</span></span>
 <span id="cb6-28"><a href="#cb6-28" tabindex="-1"></a></span>
-<span id="cb6-29"><a href="#cb6-29" tabindex="-1"></a><span class="co">// cpp20 NA count</span></span>
-<span id="cb6-30"><a href="#cb6-30" tabindex="-1"></a><span class="op">[[</span><span class="at">cpp20</span><span class="op">::</span><span class="at">register</span><span class="op">]]</span></span>
-<span id="cb6-31"><a href="#cb6-31" tabindex="-1"></a><span class="dt">int</span> cpp20_na_count<span class="op">(</span>r_vec<span class="op">&lt;</span>r_str<span class="op">&gt;</span> x<span class="op">){</span></span>
+<span id="cb6-29"><a href="#cb6-29" tabindex="-1"></a><span class="co">// cppally NA count</span></span>
+<span id="cb6-30"><a href="#cb6-30" tabindex="-1"></a><span class="op">[[</span><span class="at">cpp</span><span class="op">::</span><span class="at">register</span><span class="op">]]</span></span>
+<span id="cb6-31"><a href="#cb6-31" tabindex="-1"></a><span class="dt">int</span> cppally_na_count<span class="op">(</span>r_vec<span class="op">&lt;</span>r_str<span class="op">&gt;</span> x<span class="op">){</span></span>
 <span id="cb6-32"><a href="#cb6-32" tabindex="-1"></a> <span class="dt">r_size_t</span> n <span class="op">=</span> x<span class="op">.</span>length<span class="op">();</span></span>
 <span id="cb6-33"><a href="#cb6-33" tabindex="-1"></a> <span class="dt">int</span> na_count <span class="op">=</span> <span class="dv">0</span><span class="op">;</span></span>
 <span id="cb6-34"><a href="#cb6-34" tabindex="-1"></a> <span class="cf">for</span> <span class="op">(</span><span class="dt">r_size_t</span> i <span class="op">=</span> <span class="dv">0</span><span class="op">;</span> i <span class="op">&lt;</span> n<span class="op">;</span> <span class="op">++</span>i<span class="op">){</span></span>
@@ -236,12 +236,12 @@ microseconds</p>
 <span id="cb9-3"><a href="#cb9-3" tabindex="-1"></a>  expression          min median <span class="st">`</span><span class="at">itr/sec</span><span class="st">`</span> mem_alloc <span class="st">`</span><span class="at">gc/sec</span><span class="st">`</span> n_itr  n_gc total_time result memory     time       gc      </span>
 <span id="cb9-4"><a href="#cb9-4" tabindex="-1"></a>  <span class="sc">&lt;</span>bch<span class="sc">:</span>expr<span class="sc">&gt;</span>       <span class="er">&lt;</span>bch<span class="sc">:</span><span class="er">&gt;</span> <span class="er">&lt;</span>bch<span class="sc">:</span><span class="er">&gt;</span>     <span class="er">&lt;</span>dbl<span class="sc">&gt;</span> <span class="er">&lt;</span>bch<span class="sc">:</span>byt<span class="sc">&gt;</span>    <span class="er">&lt;</span>dbl<span class="sc">&gt;</span> <span class="er">&lt;</span>int<span class="sc">&gt;</span> <span class="er">&lt;</span>dbl<span class="sc">&gt;</span>   <span class="er">&lt;</span>bch<span class="sc">:</span>tm<span class="sc">&gt;</span> <span class="er">&lt;</span>list<span class="sc">&gt;</span> <span class="er">&lt;</span>list<span class="sc">&gt;</span>     <span class="er">&lt;</span>list<span class="sc">&gt;</span>     <span class="er">&lt;</span>list<span class="sc">&gt;</span>  </span>
 <span id="cb9-5"><a href="#cb9-5" tabindex="-1"></a><span class="dv">1</span> <span class="fu">cpp11_na_count</span>(… <span class="fl">4.65</span>ms    <span class="dv">5</span>ms      <span class="fl">193.</span>        <span class="dv">0</span>B     <span class="fl">23.8</span>    <span class="dv">73</span>     <span class="dv">9</span>      <span class="dv">379</span>ms <span class="sc">&lt;</span>int<span class="sc">&gt;</span>  <span class="er">&lt;</span>Rprofmem<span class="sc">&gt;</span> <span class="er">&lt;</span>bench_tm<span class="sc">&gt;</span> <span class="er">&lt;</span>tibble<span class="sc">&gt;</span></span></code></pre></div>
-<p><strong>cpp20 results</strong> - 730 microseconds</p>
-<div class="sourceCode" id="cb10"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" tabindex="-1"></a><span class="fu">mark</span>(<span class="fu">cpp20_na_count</span>(x))</span>
+<p><strong>cppally results</strong> - 730 microseconds</p>
+<div class="sourceCode" id="cb10"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" tabindex="-1"></a><span class="fu">mark</span>(<span class="fu">cppally_na_count</span>(x))</span>
 <span id="cb10-2"><a href="#cb10-2" tabindex="-1"></a><span class="co"># A tibble: 1 × 13</span></span>
 <span id="cb10-3"><a href="#cb10-3" tabindex="-1"></a>  expression          min median <span class="st">`</span><span class="at">itr/sec</span><span class="st">`</span> mem_alloc <span class="st">`</span><span class="at">gc/sec</span><span class="st">`</span> n_itr  n_gc total_time result memory     time       gc      </span>
 <span id="cb10-4"><a href="#cb10-4" tabindex="-1"></a>  <span class="sc">&lt;</span>bch<span class="sc">:</span>expr<span class="sc">&gt;</span>        <span class="er">&lt;</span>bch<span class="sc">&gt;</span> <span class="er">&lt;</span>bch<span class="sc">:</span><span class="er">&gt;</span>     <span class="er">&lt;</span>dbl<span class="sc">&gt;</span> <span class="er">&lt;</span>bch<span class="sc">:</span>byt<span class="sc">&gt;</span>    <span class="er">&lt;</span>dbl<span class="sc">&gt;</span> <span class="er">&lt;</span>int<span class="sc">&gt;</span> <span class="er">&lt;</span>dbl<span class="sc">&gt;</span>   <span class="er">&lt;</span>bch<span class="sc">:</span>tm<span class="sc">&gt;</span> <span class="er">&lt;</span>list<span class="sc">&gt;</span> <span class="er">&lt;</span>list<span class="sc">&gt;</span>     <span class="er">&lt;</span>list<span class="sc">&gt;</span>     <span class="er">&lt;</span>list<span class="sc">&gt;</span>  </span>
-<span id="cb10-5"><a href="#cb10-5" tabindex="-1"></a><span class="dv">1</span> <span class="fu">cpp20_na_count</span>(x) <span class="dv">683</span>µs  <span class="dv">728</span>µs     <span class="fl">1175.</span>        <span class="dv">0</span>B        <span class="dv">0</span>   <span class="dv">588</span>     <span class="dv">0</span>      <span class="dv">500</span>ms <span class="sc">&lt;</span>int<span class="sc">&gt;</span>  <span class="er">&lt;</span>Rprofmem<span class="sc">&gt;</span> <span class="er">&lt;</span>bench_tm<span class="sc">&gt;</span> <span class="er">&lt;</span>tibble<span class="sc">&gt;</span></span></code></pre></div>
+<span id="cb10-5"><a href="#cb10-5" tabindex="-1"></a><span class="dv">1</span> <span class="fu">cppally_na_count</span>(x) <span class="dv">683</span>µs  <span class="dv">728</span>µs     <span class="fl">1175.</span>        <span class="dv">0</span>B        <span class="dv">0</span>   <span class="dv">588</span>     <span class="dv">0</span>      <span class="dv">500</span>ms <span class="sc">&lt;</span>int<span class="sc">&gt;</span>  <span class="er">&lt;</span>Rprofmem<span class="sc">&gt;</span> <span class="er">&lt;</span>bench_tm<span class="sc">&gt;</span> <span class="er">&lt;</span>tibble<span class="sc">&gt;</span></span></code></pre></div>
 <p>Counting values is a simple operation and because of its simplicity,
 the overhead associated with protection will dominate the benchmark. We
 can see that when removing the protection overhead and using the R C API
@@ -249,17 +249,17 @@ directly, we get a baseline result of 30 microseconds. Think of that as
 the best possible result for this operation. The same operation with
 cpp11 results in a function execution time of 5 milliseconds, 180x
 slower than the R C API. Considerably better (but still relatively
-slower), <code>cpp20_na_count()</code> results in a function execution
+slower), <code>cppally_na_count()</code> results in a function execution
 time of 730 microseconds, 27x slower than the R C API. This is much
 better though it still goes to show that for certain operations, one may
 want to consider other approaches where performance is critical.</p>
 </div>
 <div class="section level2">
-<h2 id="cpp20-views-a-solution-to-the-protection-overhead-problem">cpp20 views: A solution to the protection overhead problem<a class="anchor" aria-label="anchor" href="#cpp20-views-a-solution-to-the-protection-overhead-problem"></a>
+<h2 id="cppally-views-a-solution-to-the-protection-overhead-problem">cppally views: A solution to the protection overhead problem<a class="anchor" aria-label="anchor" href="#cppally-views-a-solution-to-the-protection-overhead-problem"></a>
 </h2>
 <p>As we saw in the previous section, certain performance-heavy
-functions can be slowed down by cpp20 protection overhead. Luckily cpp20
-offers some tools to avoid this if it becomes a real issue.</p>
+functions can be slowed down by cppally protection overhead. Luckily
+cppally offers some tools to avoid this if it becomes a real issue.</p>
 <div class="section level3">
 <h3 id="r_str_view">r_str_view<a class="anchor" aria-label="anchor" href="#r_str_view"></a>
 </h3>
@@ -269,8 +269,8 @@ checked if it is <code>NA</code>, and then incremented the
 <code>r_str</code> element beyond just reading its value which means we
 could have improved performance by using <code>r_str_view</code>, a
 non-owning version of <code>r_str</code>.</p>
-<div class="sourceCode" id="cb11"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb11-1"><a href="#cb11-1" tabindex="-1"></a><span class="op">[[</span><span class="at">cpp20</span><span class="op">::</span><span class="at">register</span><span class="op">]]</span></span>
-<span id="cb11-2"><a href="#cb11-2" tabindex="-1"></a><span class="dt">int</span> cpp20_fast_na_count<span class="op">(</span>r_vec<span class="op">&lt;</span>r_str_view<span class="op">&gt;</span> x<span class="op">){</span></span>
+<div class="sourceCode" id="cb11"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb11-1"><a href="#cb11-1" tabindex="-1"></a><span class="op">[[</span><span class="at">cpp</span><span class="op">::</span><span class="at">register</span><span class="op">]]</span></span>
+<span id="cb11-2"><a href="#cb11-2" tabindex="-1"></a><span class="dt">int</span> cppally_fast_na_count<span class="op">(</span>r_vec<span class="op">&lt;</span>r_str_view<span class="op">&gt;</span> x<span class="op">){</span></span>
 <span id="cb11-3"><a href="#cb11-3" tabindex="-1"></a> <span class="dt">r_size_t</span> n <span class="op">=</span> x<span class="op">.</span>length<span class="op">();</span></span>
 <span id="cb11-4"><a href="#cb11-4" tabindex="-1"></a> <span class="dt">int</span> na_count <span class="op">=</span> <span class="dv">0</span><span class="op">;</span></span>
 <span id="cb11-5"><a href="#cb11-5" tabindex="-1"></a> <span class="cf">for</span> <span class="op">(</span><span class="dt">r_size_t</span> i <span class="op">=</span> <span class="dv">0</span><span class="op">;</span> i <span class="op">&lt;</span> n<span class="op">;</span> <span class="op">++</span>i<span class="op">){</span></span>
@@ -279,11 +279,11 @@ non-owning version of <code>r_str</code>.</p>
 <span id="cb11-8"><a href="#cb11-8" tabindex="-1"></a> <span class="op">}</span></span>
 <span id="cb11-9"><a href="#cb11-9" tabindex="-1"></a> <span class="cf">return</span> na_count<span class="op">;</span></span>
 <span id="cb11-10"><a href="#cb11-10" tabindex="-1"></a><span class="op">}</span></span></code></pre></div>
-<div class="sourceCode" id="cb12"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" tabindex="-1"></a><span class="fu">mark</span>(<span class="fu">cpp20_fast_na_count</span>(x))</span>
+<div class="sourceCode" id="cb12"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" tabindex="-1"></a><span class="fu">mark</span>(<span class="fu">cppally_fast_na_count</span>(x))</span>
 <span id="cb12-2"><a href="#cb12-2" tabindex="-1"></a><span class="co"># A tibble: 1 × 13</span></span>
 <span id="cb12-3"><a href="#cb12-3" tabindex="-1"></a>  expression          min median <span class="st">`</span><span class="at">itr/sec</span><span class="st">`</span> mem_alloc <span class="st">`</span><span class="at">gc/sec</span><span class="st">`</span> n_itr  n_gc total_time result memory     time       gc      </span>
 <span id="cb12-4"><a href="#cb12-4" tabindex="-1"></a>  <span class="sc">&lt;</span>bch<span class="sc">:</span>expr<span class="sc">&gt;</span>       <span class="er">&lt;</span>bch<span class="sc">:</span><span class="er">&gt;</span> <span class="er">&lt;</span>bch<span class="sc">:</span><span class="er">&gt;</span>     <span class="er">&lt;</span>dbl<span class="sc">&gt;</span> <span class="er">&lt;</span>bch<span class="sc">:</span>byt<span class="sc">&gt;</span>    <span class="er">&lt;</span>dbl<span class="sc">&gt;</span> <span class="er">&lt;</span>int<span class="sc">&gt;</span> <span class="er">&lt;</span>dbl<span class="sc">&gt;</span>   <span class="er">&lt;</span>bch<span class="sc">:</span>tm<span class="sc">&gt;</span> <span class="er">&lt;</span>list<span class="sc">&gt;</span> <span class="er">&lt;</span>list<span class="sc">&gt;</span>     <span class="er">&lt;</span>list<span class="sc">&gt;</span>     <span class="er">&lt;</span>list<span class="sc">&gt;</span>  </span>
-<span id="cb12-5"><a href="#cb12-5" tabindex="-1"></a><span class="dv">1</span> cpp20_fast_na_c… <span class="fl">67.2</span>µs <span class="fl">70.6</span>µs    <span class="fl">13434.</span>        <span class="dv">0</span>B        <span class="dv">0</span>  <span class="dv">6708</span>     <span class="dv">0</span>      <span class="dv">499</span>ms <span class="sc">&lt;</span>int<span class="sc">&gt;</span>  <span class="er">&lt;</span>Rprofmem<span class="sc">&gt;</span> <span class="er">&lt;</span>bench_tm<span class="sc">&gt;</span> <span class="er">&lt;</span>tibble<span class="sc">&gt;</span></span></code></pre></div>
+<span id="cb12-5"><a href="#cb12-5" tabindex="-1"></a><span class="dv">1</span> cppally_fast_na_c… <span class="fl">67.2</span>µs <span class="fl">70.6</span>µs    <span class="fl">13434.</span>        <span class="dv">0</span>B        <span class="dv">0</span>  <span class="dv">6708</span>     <span class="dv">0</span>      <span class="dv">499</span>ms <span class="sc">&lt;</span>int<span class="sc">&gt;</span>  <span class="er">&lt;</span>Rprofmem<span class="sc">&gt;</span> <span class="er">&lt;</span>bench_tm<span class="sc">&gt;</span> <span class="er">&lt;</span>tibble<span class="sc">&gt;</span></span></code></pre></div>
 <p>Looking at the benchmark results, we have effectively eliminated the
 protection overhead and the median execution time is much closer to that
 of the R C API.</p>
@@ -294,8 +294,8 @@ of the R C API.</p>
 <p>We could have also used <code>view()</code>, a non-owning version of
 <code><a href="https://rdrr.io/r/base/get.html" class="external-link">get()</a></code> that extracts elements but in a non-owning
 context.</p>
-<div class="sourceCode" id="cb13"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb13-1"><a href="#cb13-1" tabindex="-1"></a><span class="op">[[</span><span class="at">cpp20</span><span class="op">::</span><span class="at">register</span><span class="op">]]</span></span>
-<span id="cb13-2"><a href="#cb13-2" tabindex="-1"></a><span class="dt">int</span> cpp20_fast_na_count_v2<span class="op">(</span>r_vec<span class="op">&lt;</span>r_str<span class="op">&gt;</span> x<span class="op">){</span></span>
+<div class="sourceCode" id="cb13"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb13-1"><a href="#cb13-1" tabindex="-1"></a><span class="op">[[</span><span class="at">cpp</span><span class="op">::</span><span class="at">register</span><span class="op">]]</span></span>
+<span id="cb13-2"><a href="#cb13-2" tabindex="-1"></a><span class="dt">int</span> cppally_fast_na_count_v2<span class="op">(</span>r_vec<span class="op">&lt;</span>r_str<span class="op">&gt;</span> x<span class="op">){</span></span>
 <span id="cb13-3"><a href="#cb13-3" tabindex="-1"></a> <span class="dt">r_size_t</span> n <span class="op">=</span> x<span class="op">.</span>length<span class="op">();</span></span>
 <span id="cb13-4"><a href="#cb13-4" tabindex="-1"></a> <span class="dt">int</span> na_count <span class="op">=</span> <span class="dv">0</span><span class="op">;</span></span>
 <span id="cb13-5"><a href="#cb13-5" tabindex="-1"></a> <span class="cf">for</span> <span class="op">(</span><span class="dt">r_size_t</span> i <span class="op">=</span> <span class="dv">0</span><span class="op">;</span> i <span class="op">&lt;</span> n<span class="op">;</span> <span class="op">++</span>i<span class="op">){</span></span>
@@ -305,13 +305,13 @@ context.</p>
 <span id="cb13-9"><a href="#cb13-9" tabindex="-1"></a> <span class="op">}</span></span>
 <span id="cb13-10"><a href="#cb13-10" tabindex="-1"></a> <span class="cf">return</span> na_count<span class="op">;</span></span>
 <span id="cb13-11"><a href="#cb13-11" tabindex="-1"></a><span class="op">}</span></span></code></pre></div>
-<div class="sourceCode" id="cb14"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" tabindex="-1"></a><span class="fu">mark</span>(<span class="fu">cpp20_fast_na_count_v2</span>(x))</span>
+<div class="sourceCode" id="cb14"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" tabindex="-1"></a><span class="fu">mark</span>(<span class="fu">cppally_fast_na_count_v2</span>(x))</span>
 <span id="cb14-2"><a href="#cb14-2" tabindex="-1"></a><span class="co"># A tibble: 1 × 13</span></span>
 <span id="cb14-3"><a href="#cb14-3" tabindex="-1"></a>  expression          min median <span class="st">`</span><span class="at">itr/sec</span><span class="st">`</span> mem_alloc <span class="st">`</span><span class="at">gc/sec</span><span class="st">`</span> n_itr  n_gc total_time result memory     time       gc      </span>
 <span id="cb14-4"><a href="#cb14-4" tabindex="-1"></a>  <span class="sc">&lt;</span>bch<span class="sc">:</span>expr<span class="sc">&gt;</span>       <span class="er">&lt;</span>bch<span class="sc">:</span><span class="er">&gt;</span> <span class="er">&lt;</span>bch<span class="sc">:</span><span class="er">&gt;</span>     <span class="er">&lt;</span>dbl<span class="sc">&gt;</span> <span class="er">&lt;</span>bch<span class="sc">:</span>byt<span class="sc">&gt;</span>    <span class="er">&lt;</span>dbl<span class="sc">&gt;</span> <span class="er">&lt;</span>int<span class="sc">&gt;</span> <span class="er">&lt;</span>dbl<span class="sc">&gt;</span>   <span class="er">&lt;</span>bch<span class="sc">:</span>tm<span class="sc">&gt;</span> <span class="er">&lt;</span>list<span class="sc">&gt;</span> <span class="er">&lt;</span>list<span class="sc">&gt;</span>     <span class="er">&lt;</span>list<span class="sc">&gt;</span>     <span class="er">&lt;</span>list<span class="sc">&gt;</span>  </span>
-<span id="cb14-5"><a href="#cb14-5" tabindex="-1"></a><span class="dv">1</span> cpp20_fast_na_c… <span class="fl">67.2</span>µs <span class="fl">70.6</span>µs    <span class="fl">13221.</span>    <span class="fl">8.05</span>KB        <span class="dv">0</span>  <span class="dv">6602</span>     <span class="dv">0</span>      <span class="dv">499</span>ms <span class="sc">&lt;</span>int<span class="sc">&gt;</span>  <span class="er">&lt;</span>Rprofmem<span class="sc">&gt;</span> <span class="er">&lt;</span>bench_tm<span class="sc">&gt;</span> <span class="er">&lt;</span>tibble<span class="sc">&gt;</span></span></code></pre></div>
+<span id="cb14-5"><a href="#cb14-5" tabindex="-1"></a><span class="dv">1</span> cppally_fast_na_c… <span class="fl">67.2</span>µs <span class="fl">70.6</span>µs    <span class="fl">13221.</span>    <span class="fl">8.05</span>KB        <span class="dv">0</span>  <span class="dv">6602</span>     <span class="dv">0</span>      <span class="dv">499</span>ms <span class="sc">&lt;</span>int<span class="sc">&gt;</span>  <span class="er">&lt;</span>Rprofmem<span class="sc">&gt;</span> <span class="er">&lt;</span>bench_tm<span class="sc">&gt;</span> <span class="er">&lt;</span>tibble<span class="sc">&gt;</span></span></code></pre></div>
 <p>The results are similar to that of
-<code>cpp20_fast_na_count()</code>.</p>
+<code>cppally_fast_na_count()</code>.</p>
 </div>
 <div class="section level3">
 <h3 id="using-views-safely">Using views safely<a class="anchor" aria-label="anchor" href="#using-views-safely"></a>

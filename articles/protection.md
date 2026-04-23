@@ -3,12 +3,12 @@
 ## Motivation and design
 
 Heavily inspired by cpp11’s double-linked protection pool, this vignette
-explores cpp20’s automatic protection design and benchmarks its overhead
-against cpp11. Like cpp11, cpp20 offers automatic protection for all
-cpp20 types enabling users of the API to not need to think about
-protection of every R object.
+explores cppally’s automatic protection design and benchmarks its
+overhead against cpp11. Like cpp11, cppally offers automatic protection
+for all cppally types enabling users of the API to not need to think
+about protection of every R object.
 
-cpp20 uses a double-linked protection pool design like cpp11, but
+cppally uses a double-linked protection pool design like cpp11, but
 instead of a single pair list, we implement a double-linked chain of
 VECSXP (vector list) chunks with a reference counting system. This
 offers much less overhead in inserting and releasing and practically
@@ -23,7 +23,7 @@ time a chunk is filled, to a maximum size of 2^14. While these sizes
 seem to strike a nice balance, they are somewhat arbitrary and likely
 not optimal, so there is likely room for improvement.
 
-## Protection benchmark: cpp11 vs cpp20
+## Protection benchmark: cpp11 vs cppally
 
 All functions have been compiled with C++20, GCC 14.2.0 with -02
 optimisations.
@@ -51,12 +51,12 @@ double bench_protect_insert_release_cpp11(int n) {
 ```
 
 ``` cpp
-#include <cpp20.hpp>
-using namespace cpp20;
+#include <cppally.hpp>
+using namespace cppally;
 #include <chrono>
 
-[[cpp20::register]]
-double bench_protect_insert_release_cpp20(int n) {
+[[cpp::register]]
+double bench_protect_insert_release_cppally(int n) {
   SEXP dummy = Rf_ScalarInteger(42);
   R_PreserveObject(dummy);
   auto start = std::chrono::high_resolution_clock::now();
@@ -78,12 +78,12 @@ library(bench)
 replicate(10^4, bench_protect_insert_release_cpp11(10000)) |> mean()
 [1] 29.11816
 
-replicate(10^4, bench_protect_insert_release_cpp20(10000)) |> mean()
+replicate(10^4, bench_protect_insert_release_cppally(10000)) |> mean()
 [1] 6.35814
 ```
 
 On my machine, cpp11 performs an insert & release every 29 nanoseconds.
-cpp20 performs significantly better, with 6 nanoseconds per insert &
+cppally performs significantly better, with 6 nanoseconds per insert &
 release.
 
 **Copy benchmark**
@@ -104,8 +104,8 @@ double bench_protect_copy_cpp11(int n) {
   return ns / n;  // nanoseconds per copy
 }
 
-[[cpp20::register]]
-double bench_protect_copy_cpp20(int n) {
+[[cpp::register]]
+double bench_protect_copy_cppally(int n) {
   SEXP dummy = Rf_ScalarInteger(42);
   r_sexp dummy2 = r_sexp(dummy);
   auto start = std::chrono::high_resolution_clock::now();
@@ -123,12 +123,12 @@ double bench_protect_copy_cpp20(int n) {
 ``` r
 replicate(10^4, bench_protect_copy_cpp11(10000)) |> mean()
 [1] 27.59263
-replicate(10^4, bench_protect_copy_cpp20(10000)) |> mean()
+replicate(10^4, bench_protect_copy_cppally(10000)) |> mean()
 [1] 0.240208
 ```
 
 In these benchmark results we can see a drastic difference, with cpp11
-at 27 ns/copy and cpp20 at 0.25 ns/copy.
+at 27 ns/copy and cppally at 0.25 ns/copy.
 
 **Impact of protection overhead, a real example**
 
@@ -139,7 +139,7 @@ impact on performance.
 
 ``` cpp
 // Pure R C API NA count - As fast as it can reasonably get
-[[cpp20::register]] // Registered via cpp20 for convenience
+[[cpp::register]] // Registered via cppally for convenience
 int C_na_count(SEXP x){
  r_size_t n = Rf_xlength(x);
  int na_count = 0;
@@ -165,9 +165,9 @@ int cpp11_na_count(strings x){
   return na_count;
 }
 
-// cpp20 NA count
-[[cpp20::register]]
-int cpp20_na_count(r_vec<r_str> x){
+// cppally NA count
+[[cpp::register]]
+int cppally_na_count(r_vec<r_str> x){
  r_size_t n = x.length();
  int na_count = 0;
  for (r_size_t i = 0; i < n; ++i){
@@ -203,14 +203,14 @@ mark(cpp11_na_count(x))
 1 cpp11_na_count(… 4.65ms    5ms      193.        0B     23.8    73     9      379ms <int>  <Rprofmem> <bench_tm> <tibble>
 ```
 
-**cpp20 results** - 730 microseconds
+**cppally results** - 730 microseconds
 
 ``` r
-mark(cpp20_na_count(x))
+mark(cppally_na_count(x))
 # A tibble: 1 × 13
   expression          min median `itr/sec` mem_alloc `gc/sec` n_itr  n_gc total_time result memory     time       gc      
   <bch:expr>        <bch> <bch:>     <dbl> <bch:byt>    <dbl> <int> <dbl>   <bch:tm> <list> <list>     <list>     <list>  
-1 cpp20_na_count(x) 683µs  728µs     1175.        0B        0   588     0      500ms <int>  <Rprofmem> <bench_tm> <tibble>
+1 cppally_na_count(x) 683µs  728µs     1175.        0B        0   588     0      500ms <int>  <Rprofmem> <bench_tm> <tibble>
 ```
 
 Counting values is a simple operation and because of its simplicity, the
@@ -220,16 +220,16 @@ directly, we get a baseline result of 30 microseconds. Think of that as
 the best possible result for this operation. The same operation with
 cpp11 results in a function execution time of 5 milliseconds, 180x
 slower than the R C API. Considerably better (but still relatively
-slower), `cpp20_na_count()` results in a function execution time of 730
-microseconds, 27x slower than the R C API. This is much better though it
-still goes to show that for certain operations, one may want to consider
-other approaches where performance is critical.
+slower), `cppally_na_count()` results in a function execution time of
+730 microseconds, 27x slower than the R C API. This is much better
+though it still goes to show that for certain operations, one may want
+to consider other approaches where performance is critical.
 
-## cpp20 views: A solution to the protection overhead problem
+## cppally views: A solution to the protection overhead problem
 
 As we saw in the previous section, certain performance-heavy functions
-can be slowed down by cpp20 protection overhead. Luckily cpp20 offers
-some tools to avoid this if it becomes a real issue.
+can be slowed down by cppally protection overhead. Luckily cppally
+offers some tools to avoid this if it becomes a real issue.
 
 ### r_str_view
 
@@ -240,8 +240,8 @@ could have improved performance by using `r_str_view`, a non-owning
 version of `r_str`.
 
 ``` cpp
-[[cpp20::register]]
-int cpp20_fast_na_count(r_vec<r_str_view> x){
+[[cpp::register]]
+int cppally_fast_na_count(r_vec<r_str_view> x){
  r_size_t n = x.length();
  int na_count = 0;
  for (r_size_t i = 0; i < n; ++i){
@@ -253,11 +253,11 @@ int cpp20_fast_na_count(r_vec<r_str_view> x){
 ```
 
 ``` r
-mark(cpp20_fast_na_count(x))
+mark(cppally_fast_na_count(x))
 # A tibble: 1 × 13
   expression          min median `itr/sec` mem_alloc `gc/sec` n_itr  n_gc total_time result memory     time       gc      
   <bch:expr>       <bch:> <bch:>     <dbl> <bch:byt>    <dbl> <int> <dbl>   <bch:tm> <list> <list>     <list>     <list>  
-1 cpp20_fast_na_c… 67.2µs 70.6µs    13434.        0B        0  6708     0      499ms <int>  <Rprofmem> <bench_tm> <tibble>
+1 cppally_fast_na_c… 67.2µs 70.6µs    13434.        0B        0  6708     0      499ms <int>  <Rprofmem> <bench_tm> <tibble>
 ```
 
 Looking at the benchmark results, we have effectively eliminated the
@@ -271,8 +271,8 @@ We could have also used `view()`, a non-owning version of
 a non-owning context.
 
 ``` cpp
-[[cpp20::register]]
-int cpp20_fast_na_count_v2(r_vec<r_str> x){
+[[cpp::register]]
+int cppally_fast_na_count_v2(r_vec<r_str> x){
  r_size_t n = x.length();
  int na_count = 0;
  for (r_size_t i = 0; i < n; ++i){
@@ -285,14 +285,14 @@ int cpp20_fast_na_count_v2(r_vec<r_str> x){
 ```
 
 ``` r
-mark(cpp20_fast_na_count_v2(x))
+mark(cppally_fast_na_count_v2(x))
 # A tibble: 1 × 13
   expression          min median `itr/sec` mem_alloc `gc/sec` n_itr  n_gc total_time result memory     time       gc      
   <bch:expr>       <bch:> <bch:>     <dbl> <bch:byt>    <dbl> <int> <dbl>   <bch:tm> <list> <list>     <list>     <list>  
-1 cpp20_fast_na_c… 67.2µs 70.6µs    13221.    8.05KB        0  6602     0      499ms <int>  <Rprofmem> <bench_tm> <tibble>
+1 cppally_fast_na_c… 67.2µs 70.6µs    13221.    8.05KB        0  6602     0      499ms <int>  <Rprofmem> <bench_tm> <tibble>
 ```
 
-The results are similar to that of `cpp20_fast_na_count()`.
+The results are similar to that of `cppally_fast_na_count()`.
 
 ### Using views safely
 

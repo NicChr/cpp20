@@ -1,4 +1,4 @@
-# Adds the CPP20_PRESERVE_ALTREP flag to Makevars
+# Adds the CPPALLY_PRESERVE_ALTREP flag to Makevars
 
 Adds a flag to Makevars which enables lazy materialisation of ALTREP
 vectors.
@@ -11,4 +11,4 @@ use_preserve_altrep_flag()
 
 ## Value
 
-Invisibly adds the CPP20_PRESERVE_ALTREP flag to Makevars.
+Invisibly adds the CPPALLY_PRESERVE_ALTREP flag to Makevars.

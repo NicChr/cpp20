@@ -10,11 +10,11 @@
 Source:
 [`DESCRIPTION`](https://github.com/NicChr/cpp20/blob/main/DESCRIPTION)
 
-Christofides N (2026). *cpp20: A 'C++20' API for R*. R package version
+Christofides N (2026). *cppally: A 'C++20' API for R*. R package version
 0.1.0, <https://nicchr.github.io/cpp20/>.
 
     @Manual{,
-      title = {cpp20: A 'C++20' API for R},
+      title = {cppally: A 'C++20' API for R},
       author = {Nick Christofides},
       year = {2026},
       note = {R package version 0.1.0},

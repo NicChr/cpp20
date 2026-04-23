@@ -1,7 +1,7 @@
 # Generates wrappers for registered C++ functions
 
 Register C++ functions to be callable from R. C++ functions decorated
-with `[[cpp20::register]]` will be registered (including template
+with `[[cpp::register]]` will be registered (including template
 functions).
 
 ## Usage
@@ -26,7 +26,7 @@ cpp_register(
 
 - extension:
 
-  The file extension to use for the generated src/cpp20 file. Options
+  The file extension to use for the generated src/cppally file. Options
   are either '.cpp' (the default) or '.cc'.
 
 ## Value

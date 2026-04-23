@@ -1,6 +1,6 @@
 # Compile C++20 code
 
-cpp11-style helpers to compile cpp20 code outside of a cpp20-linked
+cpp11-style helpers to compile cppally code outside of a cppally-linked
 package context.
 
 `cpp_source()` compiles and loads a single C++ file for use in R, either
@@ -9,7 +9,7 @@ functions.
 
 `cpp_eval()` evaluates a single C++ expression and returns the result.
 For example `cpp_eval('get_threads()')` will run the C++ function
-`cpp20::get_threads()` and return the number of OMP threads currently
+`cppally::get_threads()` and return the number of OMP threads currently
 set for use. `void` return is not supported in `cpp_eval()`.
 
 ## Usage
@@ -81,22 +81,22 @@ cpp_eval(
 ## Value
 
 `cpp_source()` invisibly compiles the C++ code and registers the
-`[[cpp20::register]]` tagged functions to R.  
+`[[cpp::register]]` tagged functions to R.  
 `cpp_eval()` returns the result of the evaluated C++ expression.
 
 ## Examples
 
 ``` r
-library(cpp20)
+library(cppally)
 
 # \donttest{
 cpp_eval("r_int(0)")
 #> [1] 0
 cpp_source(code = '
-  #include <cpp20.hpp>
-  using namespace cpp20;
+  #include <cppally.hpp>
+  using namespace cppally;
 
-  [[cpp20::register]]
+  [[cpp::register]]
   r_dbl add(r_dbl x, r_dbl y){
     return x + y;
   }
@@ -108,15 +108,15 @@ add(2, NA)
 
 ### ALTREP ###
 
-# cpp20 also supports lazy ALTREP materialisation as an opt-in feature.
+# cppally also supports lazy ALTREP materialisation as an opt-in feature.
 # To opt-in, set `preserve_altrep = TRUE`
 
 cpp_source(
   code = '
-  #include <cpp20.hpp>
-  using namespace cpp20;
+  #include <cppally.hpp>
+  using namespace cppally;
 
-  [[cpp20::register]]
+  [[cpp::register]]
   r_int last_altrep_unaware(r_vec<r_int> x){
     r_int out;
     r_size_t n = x.length();
@@ -131,10 +131,10 @@ cpp_source(
 
 cpp_source(
   code = '
-  #include <cpp20.hpp>
-  using namespace cpp20;
+  #include <cppally.hpp>
+  using namespace cppally;
 
-  [[cpp20::register]]
+  [[cpp::register]]
   r_int last_altrep_aware(r_vec<r_int> x){
     r_int out;
     r_size_t n = x.length();
@@ -153,13 +153,13 @@ mark(last_altrep_aware(1:10^5)) # No materialisation
 #> # A tibble: 1 × 13
 #>   expression      min median `itr/sec` mem_alloc `gc/sec` n_itr  n_gc total_time
 #>   <bch:expr>   <bch:> <bch:>     <dbl> <bch:byt>    <dbl> <int> <dbl>   <bch:tm>
-#> 1 last_altrep… 1.48µs 1.56µs   473906.        0B        0 10000     0     21.1ms
+#> 1 last_altrep… 1.48µs 1.56µs   474789.        0B        0 10000     0     21.1ms
 #> # ℹ 4 more variables: result <list>, memory <list>, time <list>, gc <list>
 mark(last_altrep_unaware(1:10^5)) # Materialises full vector
 #> # A tibble: 1 × 13
 #>   expression      min median `itr/sec` mem_alloc `gc/sec` n_itr  n_gc total_time
-#>   <bch:expr>    <bch> <bch:>     <dbl> <bch:byt>    <dbl> <int> <dbl>   <bch:tm>
-#> 1 last_altrep_…  34µs 35.6µs    24445.     391KB     197.  3966    32      162ms
+#>   <bch:expr>   <bch:> <bch:>     <dbl> <bch:byt>    <dbl> <int> <dbl>   <bch:tm>
+#> 1 last_altrep… 33.8µs 34.8µs    20194.     391KB     157.  3724    29      184ms
 #> # ℹ 4 more variables: result <list>, memory <list>, time <list>, gc <list>
 
 # }

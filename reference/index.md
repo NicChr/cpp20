@@ -13,16 +13,16 @@
 
   A wrapper around
   [`devtools::document()`](https://devtools.r-lib.org/reference/document.html)
-  to support cpp20 package development
+  to support cppally package development
 
 - [`load_all()`](https://nicchr.github.io/cpp20/reference/load_all.md) :
 
   A wrapper around
   [`devtools::load_all()`](https://devtools.r-lib.org/reference/load_all.html)
-  specifically for cpp20
+  specifically for cppally
 
-- [`use_cpp20()`](https://nicchr.github.io/cpp20/reference/use_cpp20.md)
-  : Helper for developing packages with cpp20
+- [`use_cppally()`](https://nicchr.github.io/cpp20/reference/use_cppally.md)
+  : Helper for developing packages with cppally
 
 - [`use_preserve_altrep_flag()`](https://nicchr.github.io/cpp20/reference/use_preserve_altrep_flag.md)
-  : Adds the CPP20_PRESERVE_ALTREP flag to Makevars
+  : Adds the CPPALLY_PRESERVE_ALTREP flag to Makevars

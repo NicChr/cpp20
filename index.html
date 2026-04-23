@@ -5,7 +5,7 @@
 <meta charset="utf-8">
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-<title>A C++20 API for R • cpp20</title>
+<title>A C++20 API for R • cppally</title>
 <script src="deps/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 <link href="deps/bootstrap-5.3.1/bootstrap.min.css" rel="stylesheet">
 <script src="deps/bootstrap-5.3.1/bootstrap.bundle.min.js"></script><link href="deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet">
@@ -20,7 +20,7 @@
 
     <nav class="navbar navbar-expand-lg fixed-top bg-light" data-bs-theme="light" aria-label="Site navigation"><div class="container">
 
-    <a class="navbar-brand me-2" href="index.html">cpp20</a>
+    <a class="navbar-brand me-2" href="index.html">cppally</a>
 
     <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.1.0</small>
 
@@ -31,7 +31,7 @@
 
     <div id="navbar" class="collapse navbar-collapse ms-3">
       <ul class="navbar-nav me-auto">
-<li class="nav-item"><a class="nav-link" href="articles/cpp20.html">Get started</a></li>
+<li class="nav-item"><a class="nav-link" href="articles/cppally.html">Get started</a></li>
 <li class="nav-item"><a class="nav-link" href="reference/index.html">Reference</a></li>
 <li class="nav-item dropdown">
   <button class="nav-link dropdown-toggle" type="button" id="dropdown-articles" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Articles</button>
@@ -60,34 +60,34 @@
 <p>I first want to thank the authors and contributors of the fantastic <a href="https://cpp11.r-lib.org/" class="external-link">cpp11</a> R package, without which I would not have been inspired to write this package. I’d also like to thank the authors and contributors of <a href="https://github.com/RcppCore/Rcpp" class="external-link">Rcpp</a> for developing this ecosystem that has laid much of the groundwork for C++ and R integration.</p>
 </div>
 <div class="section level1">
-<div class="page-header"><h1 id="cpp20">cpp20<a class="anchor" aria-label="anchor" href="#cpp20"></a>
+<div class="page-header"><h1 id="cppally">cppally<a class="anchor" aria-label="anchor" href="#cppally"></a>
 </h1></div>
-<p>cpp20 is a high-performance header-only library providing a rich C++20 API for advanced R data manipulation. Leveraging C++20 Concepts, custom R-based classes, templated functions and Single-Instruction-Multiple-Data (SIMD) vectorisation, cpp20 enables type-safety, performance, flexible templates and readable code.</p>
-<p>For info on using cpp20 see <a href="https://nicchr.github.io/cpp20/articles/cpp20.html">Getting started with cpp20</a></p>
+<p>cppally is a high-performance header-only library providing a rich C++20 API for advanced R data manipulation. Leveraging C++20 Concepts, custom R-based classes, templated functions and Single-Instruction-Multiple-Data (SIMD) vectorisation, cppally enables type-safety, performance, flexible templates and readable code.</p>
+<p>For info on using cppally see <a href="https://nicchr.github.io/cpp20/articles/cpp20.html">Getting started with cppally</a></p>
 <div class="section level2">
 <h2 id="design-choices">Design choices<a class="anchor" aria-label="anchor" href="#design-choices"></a>
 </h2>
 <div class="section level3">
 <h3 id="templates">Templates<a class="anchor" aria-label="anchor" href="#templates"></a>
 </h3>
-<p>cpp20 makes heavy use of templates for powerful object-oriented programming. While this offers a flexible framework for writing generic functions, it comes at the cost of slower compile times and larger binary sizes.</p>
-<p>Users can write and optionally register their own templates (to R). There are two main limitations to be aware of - a C++ specific one and an R specific one. The C++ limitation is that templates generally must be written in header files if they are to be used across multiple compilation units. The R limitation has to do with automatic template argument deduction. There is a workaround discussed in the main vignette <a href="https://nicchr.github.io/cpp20/articles/cpp20.html">Getting started with cpp20</a></p>
+<p>cppally makes heavy use of templates for powerful object-oriented programming. While this offers a flexible framework for writing generic functions, it comes at the cost of slower compile times and larger binary sizes.</p>
+<p>Users can write and optionally register their own templates (to R). There are two main limitations to be aware of - a C++ specific one and an R specific one. The C++ limitation is that templates generally must be written in header files if they are to be used across multiple compilation units. The R limitation has to do with automatic template argument deduction. There is a workaround discussed in the main vignette <a href="https://nicchr.github.io/cpp20/articles/cpp20.html">Getting started with cppally</a></p>
 </div>
 <div class="section level3">
 <h3 id="scalar-r-types-and-custom-methods">Scalar R types and custom methods<a class="anchor" aria-label="anchor" href="#scalar-r-types-and-custom-methods"></a>
 </h3>
-<p>cpp20 offers R-based C++ scalar types that are <code>NA</code> aware. To achieve this multiple methods such as binary arithmetic operators have been written to ensure <code>NA</code> is propagated correctly. While every attempt has been made to make this as fast as possible, it adds some overhead and in some cases can prevent effective vectorisation (via e.g. SIMD instructions). If you find that this is slowing things down too much you can work with the underlying C/C++ types using <code>unwrap_t&lt;&gt;</code> and <code>unwrap()</code>.</p>
+<p>cppally offers R-based C++ scalar types that are <code>NA</code> aware. To achieve this multiple methods such as binary arithmetic operators have been written to ensure <code>NA</code> is propagated correctly. While every attempt has been made to make this as fast as possible, it adds some overhead and in some cases can prevent effective vectorisation (via e.g. SIMD instructions). If you find that this is slowing things down too much you can work with the underlying C/C++ types using <code>unwrap_t&lt;&gt;</code> and <code>unwrap()</code>.</p>
 </div>
 <div class="section level3">
 <h3 id="automatic-protection">Automatic protection<a class="anchor" aria-label="anchor" href="#automatic-protection"></a>
 </h3>
-<p>Like the excellent cpp11 package, cpp20 also handles automatic protection for R objects. For more info see <a href="https://nicchr.github.io/cpp20/articles/protection.html">Automatic Protection</a></p>
+<p>Like the excellent cpp11 package, cppally also handles automatic protection for R objects. For more info see <a href="https://nicchr.github.io/cpp20/articles/protection.html">Automatic Protection</a></p>
 </div>
 <div class="section level3">
 <h3 id="interopability-with-the-r-c-api">Interopability with the R C API<a class="anchor" aria-label="anchor" href="#interopability-with-the-r-c-api"></a>
 </h3>
-<p>Using cpp20 and the R C API is generally discouraged.</p>
-<p>If R throws an error via <code>Rf_error()</code> a ‘longjmp’ will occur, meaning C++ destructors won’t run and memory that should have been released will not be released. If you really want to use the R C API and cpp20, you must make sure that either the code is exception safe (unlikely), or that R C API functions are called via cpp20’s <code>safe[]</code>.</p>
+<p>Using cppally and the R C API is generally discouraged.</p>
+<p>If R throws an error via <code>Rf_error()</code> a ‘longjmp’ will occur, meaning C++ destructors won’t run and memory that should have been released will not be released. If you really want to use the R C API and cppally, you must make sure that either the code is exception safe (unlikely), or that R C API functions are called via cppally’s <code>safe[]</code>.</p>
 </div>
 <div class="section level3">
 <h3 id="views">views<a class="anchor" aria-label="anchor" href="#views"></a>
@@ -97,7 +97,7 @@
 <div class="section level3">
 <h3 id="no-copy-on-write-or-copy-on-modify">No copy-on-write or copy-on-modify<a class="anchor" aria-label="anchor" href="#no-copy-on-write-or-copy-on-modify"></a>
 </h3>
-<p>Deep copies are almost never triggered when modifying vectors, a design choice that contrasts cpp11’s copy-on-write approach. cpp20’s <code>r_vec&lt;T&gt;</code> member <code>set()</code> always modifies in-place. It is up to the user to ensure that a fresh vector is created before further manipulation or that it’s safe to modify the existing vector.</p>
+<p>Deep copies are almost never triggered when modifying vectors, a design choice that contrasts cpp11’s copy-on-write approach. cppally’s <code>r_vec&lt;T&gt;</code> member <code>set()</code> always modifies in-place. It is up to the user to ensure that a fresh vector is created before further manipulation or that it’s safe to modify the existing vector.</p>
 </div>
 <div class="section level3">
 <h3 id="lossy-coercion">Lossy coercion<a class="anchor" aria-label="anchor" href="#lossy-coercion"></a>
@@ -113,13 +113,13 @@
 <div class="section level3">
 <h3 id="id_64-bit-integers">64-bit integers<a class="anchor" aria-label="anchor" href="#id_64-bit-integers"></a>
 </h3>
-<p>On the C++ side, 64-bit integers are fully supported, including vectors. To return 64-bit integers to R we need the bit64 package to be loaded. cpp20 delegates the handling of 64-bit integer vectors to bit64 by marking them with the “integer64” class.</p>
-<div class="sourceCode" id="cb1"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb1-1"><a href="#cb1-1" tabindex="-1"></a><span class="op">[[</span><span class="at">cpp20</span><span class="op">::</span><span class="at">register</span><span class="op">]]</span></span>
+<p>On the C++ side, 64-bit integers are fully supported, including vectors. To return 64-bit integers to R we need the bit64 package to be loaded. cppally delegates the handling of 64-bit integer vectors to bit64 by marking them with the “integer64” class.</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb1-1"><a href="#cb1-1" tabindex="-1"></a><span class="op">[[</span><span class="at">cpp</span><span class="op">::</span><span class="at">register</span><span class="op">]]</span></span>
 <span id="cb1-2"><a href="#cb1-2" tabindex="-1"></a>r_int64 as_int64<span class="op">(</span>r_int x<span class="op">){</span></span>
 <span id="cb1-3"><a href="#cb1-3" tabindex="-1"></a>    <span class="cf">return</span> as<span class="op">&lt;</span>r_int64<span class="op">&gt;(</span>x<span class="op">);</span></span>
 <span id="cb1-4"><a href="#cb1-4" tabindex="-1"></a><span class="op">}</span></span></code></pre></div>
-<p>Please note that other 64-bit signed integer types like <code>int64_t</code>, <code>R_xlen_t</code>, or cpp20’s identical <code>r_size_t</code> will convert to 64-bit integer vectors when returned to R.</p>
-<div class="sourceCode" id="cb2"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb2-1"><a href="#cb2-1" tabindex="-1"></a><span class="op">[[</span><span class="at">cpp20</span><span class="op">::</span><span class="at">register</span><span class="op">]]</span></span>
+<p>Please note that other 64-bit signed integer types like <code>int64_t</code>, <code>R_xlen_t</code>, or cppally’s identical <code>r_size_t</code> will convert to 64-bit integer vectors when returned to R.</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb2-1"><a href="#cb2-1" tabindex="-1"></a><span class="op">[[</span><span class="at">cpp</span><span class="op">::</span><span class="at">register</span><span class="op">]]</span></span>
 <span id="cb2-2"><a href="#cb2-2" tabindex="-1"></a><span class="dt">r_size_t</span> <span class="dt">as_r_size_t</span><span class="op">(</span>r_int x<span class="op">){</span></span>
 <span id="cb2-3"><a href="#cb2-3" tabindex="-1"></a>    <span class="cf">return</span> as<span class="op">&lt;</span><span class="dt">r_size_t</span><span class="op">&gt;(</span>x<span class="op">);</span></span>
 <span id="cb2-4"><a href="#cb2-4" tabindex="-1"></a><span class="op">}</span></span></code></pre></div>
@@ -135,13 +135,13 @@
 <h3 id="using-rs-null">Using R’s <code>NULL</code>
 <a class="anchor" aria-label="anchor" href="#using-rs-null"></a>
 </h3>
-<p>The cpp20 version of R’s <code>R_NilValue</code> is <code>r_null</code> which is of type <code>r_sexp</code>. In an attempt to avoid the use of additional meta-programming tactics to deal with <code>r_null</code>, we allow vectors to be able to contain <code>r_null</code> which makes programming with R attributes easier. This means <code>r_vec&lt;T&gt;</code> objects can be <code>r_null</code>. To detect this, use the <code>is_null()</code> member function.</p>
+<p>The cppally version of R’s <code>R_NilValue</code> is <code>r_null</code> which is of type <code>r_sexp</code>. In an attempt to avoid the use of additional meta-programming tactics to deal with <code>r_null</code>, we allow vectors to be able to contain <code>r_null</code> which makes programming with R attributes easier. This means <code>r_vec&lt;T&gt;</code> objects can be <code>r_null</code>. To detect this, use the <code>is_null()</code> member function.</p>
 </div>
 </div>
 <div class="section level2">
 <h2 id="useful-makevars-flags">Useful Makevars flags<a class="anchor" aria-label="anchor" href="#useful-makevars-flags"></a>
 </h2>
-<p>Because cpp20 is a template-heavy library, binary sizes can sometimes get large. This is primarily an issue on windows which will throw a compiler error if a single .o file gets too big. In this case you may want to consider adding the following flag to Makevars.win</p>
+<p>Because cppally is a template-heavy library, binary sizes can sometimes get large. This is primarily an issue on windows which will throw a compiler error if a single .o file gets too big. In this case you may want to consider adding the following flag to Makevars.win</p>
 <div class="sourceCode" id="cb4"><pre class="sourceCode R"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" tabindex="-1"></a>PKG_CXXFLAGS <span class="ot">=</span> <span class="sc">-</span>Wa,<span class="sc">-</span>mbig<span class="sc">-</span>obj</span></code></pre></div>
 <p>To benefit from OMP SIMD vectorisation and parallelisation, it is recommended to add these flags to Makevars</p>
 <div class="sourceCode" id="cb5"><pre class="sourceCode R"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" tabindex="-1"></a>PKG_CXXFLAGS <span class="ot">=</span> <span class="er">$</span>(SHLIB_OPENMP_CXXFLAGS)</span>
@@ -168,7 +168,7 @@
 <span id="cb7-9"><a href="#cb7-9" tabindex="-1"></a>        <span class="st">"C:/Program Files/R/R-4.*/include"</span><span class="ot">,</span></span>
 <span id="cb7-10"><a href="#cb7-10" tabindex="-1"></a>        <span class="st">"${env:LOCALAPPDATA}/R/win-library/4.*/cpp11/include"</span><span class="ot">,</span></span>
 <span id="cb7-11"><a href="#cb7-11" tabindex="-1"></a>        <span class="st">"${env:LOCALAPPDATA}/R/win-library/4.*/Rcpp/include"</span><span class="ot">,</span></span>
-<span id="cb7-12"><a href="#cb7-12" tabindex="-1"></a>        <span class="st">"${env:LOCALAPPDATA}/R/win-library/4.*/cpp20/include"</span></span>
+<span id="cb7-12"><a href="#cb7-12" tabindex="-1"></a>        <span class="st">"${env:LOCALAPPDATA}/R/win-library/4.*/cppally/include"</span></span>
 <span id="cb7-13"><a href="#cb7-13" tabindex="-1"></a>      <span class="ot">]</span><span class="fu">,</span></span>
 <span id="cb7-14"><a href="#cb7-14" tabindex="-1"></a>      <span class="dt">"defines"</span><span class="fu">:</span> <span class="ot">[</span></span>
 <span id="cb7-15"><a href="#cb7-15" tabindex="-1"></a>        <span class="st">"_DEBUG"</span><span class="ot">,</span></span>
@@ -217,7 +217,7 @@
 <div class="citation">
 <h2 data-toc-skip>Citation</h2>
 <ul class="list-unstyled">
-<li><a href="authors.html#citation">Citing cpp20</a></li>
+<li><a href="authors.html#citation">Citing cppally</a></li>
 </ul>
 </div>
 

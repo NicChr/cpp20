@@ -1,8 +1,8 @@
-# A wrapper around `devtools::document()` to support cpp20 package development
+# A wrapper around `devtools::document()` to support cppally package development
 
 A wrapper around
 [`devtools::document()`](https://devtools.r-lib.org/reference/document.html)
-to support cpp20 package development
+to support cppally package development
 
 ## Usage
 
@@ -30,4 +30,4 @@ document(pkg = ".", roclets = NULL, quiet = FALSE)
 ## Value
 
 Invisibly updates roxygen documentation, compiles C++ code and exports
-cpp20 tagged functions to R.
+cppally tagged functions to R.
