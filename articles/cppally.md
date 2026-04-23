@@ -26,7 +26,7 @@ that we have a few routes.
 ### Registering C++ functions outside of a package context
 
 After writing our hello world program in foo.cpp we can use
-[`cpp_source()`](https://nicchr.github.io/cpp20/reference/cpp_source.md)
+[`cpp_source()`](https://nicchr.github.io/cppally/reference/cpp_source.md)
 to compile and register the function to R.
 
 ``` r
@@ -50,13 +50,13 @@ our own package.
 1.  Create package (if you haven’t already done so) using
     [`usethis::create_tidy_package()`](https://usethis.r-lib.org/reference/tidyverse.html)
 2.  Run
-    [`cppally::use_cppally()`](https://nicchr.github.io/cpp20/reference/use_cppally.md)
+    [`cppally::use_cppally()`](https://nicchr.github.io/cppally/reference/use_cppally.md)
 3.  Run
-    [`cppally::load_all()`](https://nicchr.github.io/cpp20/reference/load_all.md)
+    [`cppally::load_all()`](https://nicchr.github.io/cppally/reference/load_all.md)
 
 This will automatically add the necessary package content needed to
 start working with cppally. For continuous development, use
-[`cppally::load_all()`](https://nicchr.github.io/cpp20/reference/load_all.md)
+[`cppally::load_all()`](https://nicchr.github.io/cppally/reference/load_all.md)
 to compile and register cppally tagged functions, including our hello
 world function.
 

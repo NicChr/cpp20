@@ -11,8 +11,8 @@
 <script src="deps/bootstrap-5.3.1/bootstrap.bundle.min.js"></script><link href="deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet">
 <link href="deps/font-awesome-6.5.2/css/v4-shims.min.css" rel="stylesheet">
 <script src="deps/headroom-0.11.0/headroom.min.js"></script><script src="deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="deps/search-1.0.0/fuse.min.js"></script><script src="deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="pkgdown.js"></script><meta property="og:title" content="A C++20 API for R">
-<meta name="description" content="A header-only C++20 API for manipulating R data structures from C++. Provides C++20 concepts specific to R, custom scalar and vector classes with built-in NA handling, automatic object protection, SIMD (single-instruction-multiple-data), parallelisation, and a streamlined system for registering C++ functions, including templates, to R. Full API reference and documentation are available at &lt;https://nicchr.github.io/cpp20&gt;.">
-<meta property="og:description" content="A header-only C++20 API for manipulating R data structures from C++. Provides C++20 concepts specific to R, custom scalar and vector classes with built-in NA handling, automatic object protection, SIMD (single-instruction-multiple-data), parallelisation, and a streamlined system for registering C++ functions, including templates, to R. Full API reference and documentation are available at &lt;https://nicchr.github.io/cpp20&gt;.">
+<meta name="description" content="A header-only C++20 API for manipulating R data structures from C++. Provides C++20 concepts specific to R, custom scalar and vector classes with built-in NA handling, automatic object protection, SIMD (single-instruction-multiple-data), parallelisation, and a streamlined system for registering C++ functions, including templates, to R. Full API reference and documentation are available at &lt;https://nicchr.github.io/cppally&gt;.">
+<meta property="og:description" content="A header-only C++20 API for manipulating R data structures from C++. Provides C++20 concepts specific to R, custom scalar and vector classes with built-in NA handling, automatic object protection, SIMD (single-instruction-multiple-data), parallelisation, and a streamlined system for registering C++ functions, including templates, to R. Full API reference and documentation are available at &lt;https://nicchr.github.io/cppally&gt;.">
 </head>
 <body>
     <a href="#main" class="visually-hidden-focusable">Skip to contents</a>
@@ -45,7 +45,7 @@
 <li class="nav-item"><form class="form-inline" role="search">
  <input class="form-control" type="search" name="search-input" id="search-input" autocomplete="off" aria-label="Search site" placeholder="Search for" data-search-index="search.json">
 </form></li>
-<li class="nav-item"><a class="external-link nav-link" href="https://github.com/NicChr/cpp20/" aria-label="GitHub"><span class="fa fab fa-github fa-lg"></span></a></li>
+<li class="nav-item"><a class="external-link nav-link" href="https://github.com/NicChr/cppally/" aria-label="GitHub"><span class="fa fab fa-github fa-lg"></span></a></li>
       </ul>
 </div>
 
@@ -63,7 +63,7 @@
 <div class="page-header"><h1 id="cppally">cppally<a class="anchor" aria-label="anchor" href="#cppally"></a>
 </h1></div>
 <p>cppally is a high-performance header-only library providing a rich C++20 API for advanced R data manipulation. Leveraging C++20 Concepts, custom R-based classes, templated functions and Single-Instruction-Multiple-Data (SIMD) vectorisation, cppally enables type-safety, performance, flexible templates and readable code.</p>
-<p>For info on using cppally see <a href="https://nicchr.github.io/cpp20/articles/cpp20.html">Getting started with cppally</a></p>
+<p>For info on using cppally see <a href="https://nicchr.github.io/cppally/articles/cppally.html">Getting started with cppally</a></p>
 <div class="section level2">
 <h2 id="design-choices">Design choices<a class="anchor" aria-label="anchor" href="#design-choices"></a>
 </h2>
@@ -71,7 +71,7 @@
 <h3 id="templates">Templates<a class="anchor" aria-label="anchor" href="#templates"></a>
 </h3>
 <p>cppally makes heavy use of templates for powerful object-oriented programming. While this offers a flexible framework for writing generic functions, it comes at the cost of slower compile times and larger binary sizes.</p>
-<p>Users can write and optionally register their own templates (to R). There are two main limitations to be aware of - a C++ specific one and an R specific one. The C++ limitation is that templates generally must be written in header files if they are to be used across multiple compilation units. The R limitation has to do with automatic template argument deduction. There is a workaround discussed in the main vignette <a href="https://nicchr.github.io/cpp20/articles/cpp20.html">Getting started with cppally</a></p>
+<p>Users can write and optionally register their own templates (to R). There are two main limitations to be aware of - a C++ specific one and an R specific one. The C++ limitation is that templates generally must be written in header files if they are to be used across multiple compilation units. The R limitation has to do with automatic template argument deduction. There is a workaround discussed in the main vignette <a href="https://nicchr.github.io/cppally/articles/cppally.html">Getting started with cppally</a></p>
 </div>
 <div class="section level3">
 <h3 id="scalar-r-types-and-custom-methods">Scalar R types and custom methods<a class="anchor" aria-label="anchor" href="#scalar-r-types-and-custom-methods"></a>
@@ -81,7 +81,7 @@
 <div class="section level3">
 <h3 id="automatic-protection">Automatic protection<a class="anchor" aria-label="anchor" href="#automatic-protection"></a>
 </h3>
-<p>Like the excellent cpp11 package, cppally also handles automatic protection for R objects. For more info see <a href="https://nicchr.github.io/cpp20/articles/protection.html">Automatic Protection</a></p>
+<p>Like the excellent cpp11 package, cppally also handles automatic protection for R objects. For more info see <a href="https://nicchr.github.io/cppally/articles/protection.html">Automatic Protection</a></p>
 </div>
 <div class="section level3">
 <h3 id="interopability-with-the-r-c-api">Interopability with the R C API<a class="anchor" aria-label="anchor" href="#interopability-with-the-r-c-api"></a>
@@ -92,7 +92,7 @@
 <div class="section level3">
 <h3 id="views">views<a class="anchor" aria-label="anchor" href="#views"></a>
 </h3>
-<p>To avoid the overhead associated with automatic protection entirely, one can use view types like e.g. <code>r_str_view</code>, a non-owning class for R strings. For more info on views see <a href="https://nicchr.github.io/cpp20/articles/protection.html">Automatic Protection</a></p>
+<p>To avoid the overhead associated with automatic protection entirely, one can use view types like e.g. <code>r_str_view</code>, a non-owning class for R strings. For more info on views see <a href="https://nicchr.github.io/cppally/articles/protection.html">Automatic Protection</a></p>
 </div>
 <div class="section level3">
 <h3 id="no-copy-on-write-or-copy-on-modify">No copy-on-write or copy-on-modify<a class="anchor" aria-label="anchor" href="#no-copy-on-write-or-copy-on-modify"></a>
@@ -200,8 +200,8 @@
   </main><aside class="col-md-3"><div class="links">
 <h2 data-toc-skip>Links</h2>
 <ul class="list-unstyled">
-<li><a href="https://github.com/NicChr/cpp20/" class="external-link">Browse source code</a></li>
-<li><a href="https://github.com/NicChr/cpp20/issues" class="external-link">Report a bug</a></li>
+<li><a href="https://github.com/NicChr/cppally/" class="external-link">Browse source code</a></li>
+<li><a href="https://github.com/NicChr/cppally/issues" class="external-link">Report a bug</a></li>
 </ul>
 </div>
 
@@ -231,7 +231,7 @@
 <div class="dev-status">
 <h2 data-toc-skip>Dev status</h2>
 <ul class="list-unstyled">
-<li><a href="https://github.com/NicChr/cpp20/actions/workflows/R-CMD-check.yaml" class="external-link"><img src="https://github.com/NicChr/cpp20/actions/workflows/R-CMD-check.yaml/badge.svg" alt="R-CMD-check"></a></li>
+<li><a href="https://github.com/NicChr/cppally/actions/workflows/R-CMD-check.yaml" class="external-link"><img src="https://github.com/NicChr/cppally/actions/workflows/R-CMD-check.yaml/badge.svg" alt="R-CMD-check"></a></li>
 </ul>
 </div>
 
