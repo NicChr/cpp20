@@ -336,7 +336,7 @@ T lcm(const r_vec<T> &x, bool na_rm = false, T tol = r_limits<T>::tolerance()){
     for (r_size_t i = 1; i < n; ++i) {
     if (!na_rm && is_na(out)){
         break;
-    } else if (is_pos_inf(out)){
+    } else if (identical(out, pos_inf)){
         break;
     }
     out = lcm(out, x.get(i), na_rm, tol);

@@ -90,6 +90,9 @@ struct r_limits<T> {
     }
 };
 
+inline constexpr r_dbl pos_inf = r_limits<r_dbl>::max();
+inline constexpr r_dbl neg_inf = r_limits<r_dbl>::max();
+
 }
 
 #endif

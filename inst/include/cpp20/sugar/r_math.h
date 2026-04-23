@@ -90,36 +90,6 @@ inline r_str max(const r_str& x, const r_str& y){
   }
 }
 
-template <typename T>
-inline constexpr bool is_inf(T x){
-  return false;
-}
-
-template <>
-inline constexpr bool is_inf<r_dbl>(r_dbl x){
-  return unwrap(x) == r_limits<r_dbl>::max().value || unwrap(x) == r_limits<r_dbl>::min().value;
-}
-
-template <typename T>
-inline constexpr bool is_pos_inf(T x){
-  return false;
-}
-
-template <>
-inline constexpr bool is_pos_inf<r_dbl>(r_dbl x){
-  return unwrap(x) == r_limits<r_dbl>::max().value;
-}
-
-template <typename T>
-inline constexpr bool is_neg_inf(T x){
-  return false;
-}
-
-template <>
-inline constexpr bool is_neg_inf<r_dbl>(r_dbl x){
-  return unwrap(x) == r_limits<r_dbl>::min().value;
-}
-
 template <RMathType T>
 inline constexpr T abs(T x){
   return is_na(x) ? x : T{internal::cpp_abs(unwrap(x))};
@@ -228,11 +198,11 @@ inline r_dbl round(T x, U digits){
     return as<r_dbl>(x);
   } else if (is_na(digits)){
     return na<r_dbl>();
-  } else if (is_inf(x)){
+  } else if (identical(x, pos_inf)){
     return x;
-  } else if (is_neg_inf(digits)){
+  } else if (identical(digits, neg_inf)){
     return r_dbl(0.0);
-  } else if (is_pos_inf(digits)){
+  } else if (identical(digits, pos_inf)){
     return x;
   } else {
     r_dbl scale = std::pow(10.0, as<r_dbl>(digits));
@@ -244,7 +214,7 @@ template<RMathType T>
 inline T round(T x){
   if (is_na(x)){
     return x;
-  } else if (is_inf(x)){
+  } else if (identical(abs(x), pos_inf)){ 
     return x;
   } else {
     return as<T>(internal::round_to_even(as<r_dbl>(x)));
@@ -264,7 +234,7 @@ inline r_dbl signif(T x, U digits){
     return as<r_dbl>(x);
   } else if (is_na(new_digits)){
     return na<r_dbl>();
-  } else if (is_pos_inf(digits)){
+  } else if (identical(new_digits, pos_inf)){
     return as<r_dbl>(x);
   } else {
     new_digits -= ceiling(log10(abs(x)));
