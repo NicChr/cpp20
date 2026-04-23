@@ -33,7 +33,8 @@ inline SEXP unwind_token() {
 
 // Prefer __builtin_setjmp on GCC/Clang
 // Fall back to std::setjmp on MSVC and anywhere the builtin isn't available.
-#if !defined(CPP20_NO_BUILTIN_SETJMP) && (defined(__GNUC__) || defined(__clang__))
+#if !defined(CPP20_NO_BUILTIN_SETJMP) && (defined(__GNUC__) || defined(__clang__)) \
+    && !defined(__aarch64__) && !defined(__arm64__)
     using cpp20_jmp_buf = void*[5];
     #define CPP20_SETJMP(buf) __builtin_setjmp(buf)
     [[noreturn]] inline void cpp20_longjmp_from_voidp(void* ptr) {
