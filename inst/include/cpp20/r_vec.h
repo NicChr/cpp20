@@ -39,21 +39,35 @@ struct r_vec {
     return sexp.is_null();
   }
 
+  bool is_altrep() const noexcept {
+    return ALTREP(sexp.value);
+  }
+
   private:
 
-  // Initialise read-only ptr to: 
+  // Initialise read-only ptr to:
   // SEXP - If T is a type convertible to SEXP
   // unwrap_t<T> - Otherwise
-  using ptr_t = std::conditional_t<RObject<T>, const SEXP*, unwrap_t<T>*>;
+  static constexpr bool is_write_barrier_protected = RObject<T>;
+  using ptr_t = std::conditional_t<is_write_barrier_protected, const SEXP*, unwrap_t<T>*>;
+#ifdef CPP20_PRESERVE_ALTREP
+  // `mutable` so that lazy materialisation for ALTREP inputs can happen
+  // For non-ALTREP this is a one-shot init at construction
+  mutable ptr_t m_ptr = nullptr;
+#else
   ptr_t m_ptr = nullptr;
+#endif
 
   void initialise_ptr(){
-    if constexpr (internal::RPtrWritableType<T>) {
+#ifdef CPP20_PRESERVE_ALTREP
+    // For ALTREP leave m_ptr null so get/view go through elt<T>
+    // data() will materialise on first call
+    if (is_altrep()) return;
+#endif
+    if constexpr (is_write_barrier_protected){
+      m_ptr = internal::vector_ptr_ro<T>(sexp);
+    } else {
       m_ptr = internal::vector_ptr<T>(sexp);
-    } else if constexpr (any<T, r_sexp, r_sym>) {
-      m_ptr = (const SEXP*) DATAPTR_RO(sexp);
-    } else if constexpr (RStringType<T>){
-      m_ptr = (const SEXP*) STRING_PTR_RO(sexp);
     }
   }
 
@@ -124,8 +138,17 @@ struct r_vec {
     return sexp;
   }
 
-  // Direct pointer access
+  // Direct pointer access - materialises ALTREP when CPP20_PRESERVE_ALTREP is on
   ptr_t data() const {
+#ifdef CPP20_PRESERVE_ALTREP
+    if (!m_ptr) [[unlikely]] {
+      if constexpr (is_write_barrier_protected) {
+        m_ptr = internal::vector_ptr_ro<T>(sexp);
+      } else {
+        m_ptr = internal::vector_ptr<T>(sexp);
+      }
+    }
+#endif
     return m_ptr;
   }
 
@@ -165,16 +188,40 @@ struct r_vec {
 
   // Get element (no bounds-check)
   T get(r_size_t index) const {
+#ifdef CPP20_PRESERVE_ALTREP
+    if (m_ptr) [[likely]] {
+      return T(m_ptr[index]);
+    } else {
+      return T(internal::elt<T>(sexp, index));
+    }
+#else
     return T(m_ptr[index]);
+#endif
   }
 
   // View element (like `get()` but elements must be short-lived)
   // Element must not outlive the parent vector
   T view(r_size_t index) const {
     if constexpr (std::is_constructible_v<data_type, unwrap_t<data_type>, internal::view_tag>) {
+#ifdef CPP20_PRESERVE_ALTREP
+      if (m_ptr) [[likely]] {
+        return T(m_ptr[index], internal::view_tag{});
+      } else {
+        return T(internal::elt<T>(sexp, index), internal::view_tag{});
+      }
+#else
       return T(m_ptr[index], internal::view_tag{});
+#endif
     } else {
+#ifdef CPP20_PRESERVE_ALTREP
+      if (m_ptr) [[likely]] {
+        return T(m_ptr[index]);
+      } else {
+        return T(internal::elt<T>(sexp, index));
+      }
+#else
       return T(m_ptr[index]);
+#endif
     }
   }
 
@@ -185,7 +232,8 @@ struct r_vec {
       } else if constexpr (RObject<T>){
         SET_VECTOR_ELT(sexp, index, val);
       } else {
-        m_ptr[index] = unwrap(val);
+        static_assert(!is_write_barrier_protected, "Can't write data directly here, data is R write-barrier protected");
+        data()[index] = unwrap(val);
       }
   }
 
@@ -224,7 +272,7 @@ struct r_vec {
     r_size_t n = length();
     r_vec<r_lgl> out(n);
 
-    if constexpr (internal::RPtrWritableType<T>){
+    if constexpr (!is_write_barrier_protected){
       int n_threads = internal::calc_threads(n);
       if (n_threads > 1){
         OMP_PARALLEL_FOR_SIMD(n_threads)
@@ -251,7 +299,7 @@ struct r_vec {
     r_size_t n = length();
     r_size_t out(0);
 
-    if constexpr (internal::RPtrWritableType<T>){
+    if constexpr (!is_write_barrier_protected){
       int n_threads = internal::calc_threads(n);
 
       if (n_threads > 1){
@@ -310,16 +358,11 @@ struct r_vec {
     r_size_t out = 0;
     r_size_t n = length();
 
-    if constexpr (!is<T, r_sexp>){
-      auto* RESTRICT p_x = data();
-      auto val_ = unwrap(value);
-
+    if constexpr (RIntegerType<T>){
       // SIMD vectorisation isn't working with identical function (sad)
-      // Even though the code is simply: unwrap(x) == unwrap(y)
-      // At least we know this is equivalent to identical for the specified types above
       OMP_SIMD_REDUCTION1(+:out)
       for (r_size_t i = 0; i < n; ++i){
-        out += (p_x[i] == val_);
+        out += (unwrap(get(i)) == unwrap(value));
       }
     } else {
       // Fall-back
@@ -327,7 +370,6 @@ struct r_vec {
         out += identical(view(i), value);
       }
     }
-
     return out;
   }
   r_vec<T> remove(T const& value) const {
@@ -390,8 +432,9 @@ struct r_vec {
 
   // Sequential fill
   void fill(r_size_t start, r_size_t n, T const& val){
-    if constexpr (internal::RPtrWritableType<T>){
+    if constexpr (!is_write_barrier_protected){
       int n_threads = internal::calc_threads(n);
+      // data() materialises ALTREP on first call
       auto* RESTRICT p_target = data();
       if (n_threads > 1) {
         OMP_PARALLEL_FOR_SIMD(n_threads)
@@ -444,7 +487,7 @@ struct r_vec {
       auto resized_vec = r_vec<T>(n);
       r_size_t n_to_copy = std::min(n, vec_size);
 
-      if constexpr (internal::RPtrWritableType<T>){
+      if constexpr (!is_write_barrier_protected){
         std::copy_n(this->begin(), n_to_copy, resized_vec.begin());
       } else {
         for (r_size_t i = 0; i < n_to_copy; ++i){

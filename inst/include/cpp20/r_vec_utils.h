@@ -3,22 +3,33 @@
 
 #include <cpp20/r_types.h>
 #include <cpp20/r_sym.h>
+#include <cstring>
 
 namespace cpp20 {
 
 namespace internal {
 
-template <typename T>
-using vec_ptr_t = std::conditional_t<std::is_const_v<T>, const unwrap_t<T>*, unwrap_t<T>*>;
-
 inline r_sexp new_vec(SEXPTYPE type, r_size_t n){
   return r_sexp(safe[Rf_allocVector](type, n));
 }
 
-template <RPtrWritableType T>
-inline vec_ptr_t<T> vector_ptr(SEXP x) {
+template <internal::RPtrWritableType T>
+inline unwrap_t<T>* vector_ptr(SEXP x) {
   if constexpr (RTimeType<T>){
-    return reinterpret_cast<vec_ptr_t<T>>(vector_ptr<inherited_type_t<T>>(x));
+    return reinterpret_cast<unwrap_t<T>*>(vector_ptr<inherited_type_t<T>>(x));
+  } else {
+    static_assert(
+      always_false<T>,
+      "Unsupported type for vector_ptr"
+    );
+    return nullptr;
+  }
+}
+
+template <RVal T>
+inline const unwrap_t<T>* vector_ptr_ro(SEXP x) {
+  if constexpr (RTimeType<T>){
+    return reinterpret_cast<const unwrap_t<T>*>(vector_ptr_ro<inherited_type_t<T>>(x));
   } else {
     static_assert(
       always_false<T>,
@@ -34,7 +45,7 @@ inline int* vector_ptr<r_lgl>(SEXP x) {
 }
 
 template<>
-inline const int* vector_ptr<const r_lgl>(SEXP x) {
+inline const int* vector_ptr_ro<r_lgl>(SEXP x) {
   return LOGICAL_RO(x);
 }
 template<>
@@ -42,7 +53,7 @@ inline int* vector_ptr<r_int>(SEXP x) {
   return INTEGER(x);
 }
 template<>
-inline const int* vector_ptr<const r_int>(SEXP x) {
+inline const int* vector_ptr_ro<r_int>(SEXP x) {
   return INTEGER_RO(x);
 }
 
@@ -51,7 +62,7 @@ inline double* vector_ptr<r_dbl>(SEXP x) {
   return REAL(x);
 }
 template<>
-inline const double* vector_ptr<const r_dbl>(SEXP x) {
+inline const double* vector_ptr_ro<r_dbl>(SEXP x) {
   return REAL_RO(x);
 }
 // template <RTimeType T>
@@ -69,7 +80,7 @@ inline int64_t* vector_ptr<r_int64>(SEXP x) {
   return reinterpret_cast<int64_t*>(REAL(x));
 }
 template<>
-inline const int64_t* vector_ptr<const r_int64>(SEXP x) {
+inline const int64_t* vector_ptr_ro<r_int64>(SEXP x) {
   return reinterpret_cast<const int64_t*>(REAL_RO(x));
 }
 template<>
@@ -77,7 +88,7 @@ inline std::complex<double>* vector_ptr<r_cplx>(SEXP x) {
   return reinterpret_cast<std::complex<double>*>(COMPLEX(x));
 }
 template<>
-inline const std::complex<double>* vector_ptr<const r_cplx>(SEXP x) {
+inline const std::complex<double>* vector_ptr_ro<r_cplx>(SEXP x) {
   return reinterpret_cast<const std::complex<double>*>(COMPLEX_RO(x));
 }
 
@@ -86,9 +97,84 @@ inline unsigned char* vector_ptr<r_raw>(SEXP x) {
   return RAW(x);
 }
 template<>
-inline const unsigned char* vector_ptr<const r_raw>(SEXP x) {
+inline const unsigned char* vector_ptr_ro<r_raw>(SEXP x) {
   return RAW_RO(x);
 }
+
+template<>
+inline const SEXP* vector_ptr_ro<r_str>(SEXP x) {
+  return STRING_PTR_RO(x);
+}
+template<>
+inline const SEXP* vector_ptr_ro<r_str_view>(SEXP x) {
+  return STRING_PTR_RO(x);
+}
+template<>
+inline const SEXP* vector_ptr_ro<r_sexp>(SEXP x) {
+  return VECTOR_PTR_RO(x);
+}
+
+
+// ALTREP-safe accessors
+template <RVal T>
+inline unwrap_t<T> elt(SEXP x, r_size_t i) {
+  static_assert(
+    always_false<T>,
+    "Unsupported type for elt"
+  );
+  return {};
+}
+
+template<>
+inline unwrap_t<r_lgl> elt<r_lgl>(SEXP x, r_size_t i) {
+  return LOGICAL_ELT(x, i);
+}
+template<>
+inline unwrap_t<r_int> elt<r_int>(SEXP x, r_size_t i) {
+  return INTEGER_ELT(x, i);
+}
+template<>
+inline unwrap_t<r_dbl> elt<r_dbl>(SEXP x, r_size_t i) {
+  return REAL_ELT(x, i);
+}
+template<>
+inline unwrap_t<r_int64> elt<r_int64>(SEXP x, r_size_t i) {
+  double d = REAL_ELT(x, i);
+  int64_t v;
+  std::memcpy(&v, &d, sizeof(v));
+  return v;
+}
+template<>
+inline unwrap_t<r_cplx> elt<r_cplx>(SEXP x, r_size_t i) {
+  Rcomplex c = COMPLEX_ELT(x, i);
+  return std::complex<double>{c.r, c.i};
+}
+template<>
+inline unwrap_t<r_raw> elt<r_raw>(SEXP x, r_size_t i) {
+  return RAW_ELT(x, i);
+}
+template <>
+inline unwrap_t<r_date> elt<r_date>(SEXP x, r_size_t i) {
+  return static_cast<unwrap_t<r_date>>(elt<inherited_type_t<r_date>>(x, i));
+}
+
+template <>
+inline unwrap_t<r_psxct> elt<r_psxct>(SEXP x, r_size_t i) {
+  return static_cast<unwrap_t<r_psxct>>(elt<inherited_type_t<r_psxct>>(x, i));
+}
+template<>
+inline unwrap_t<r_str> elt<r_str>(SEXP x, r_size_t i) {
+  return STRING_ELT(x, i);
+}
+template<>
+inline unwrap_t<r_str_view> elt<r_str_view>(SEXP x, r_size_t i) {
+  return STRING_ELT(x, i);
+}
+template<>
+inline unwrap_t<r_sexp> elt<r_sexp>(SEXP x, r_size_t i) {
+  return VECTOR_ELT(x, i);
+}
+
 
 // Internal vec constructor
 template <RVal T>
