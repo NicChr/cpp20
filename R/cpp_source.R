@@ -65,8 +65,8 @@ generate_include_paths <- function(packages){
 #' `cpp_eval()` evaluates a single C++ expression and returns the result.
 #' For example `cpp_eval('get_threads()')` will run the C++ function
 #' `cppally::get_threads()` and return the number of OMP threads currently set
-#' for use.
-#' `void` return is not supported in `cpp_eval()`.
+#' for use. For expressions no return result, the call is evaluated and returns
+#' `NULL` invisibly.
 #'
 #' @param file C++ file.
 #' @param code If `file` is `NULL` then a string of C++ code to compile.
@@ -92,7 +92,8 @@ generate_include_paths <- function(packages){
 #' library(cppally)
 #'
 #' \donttest{
-#' cpp_eval("r_int(0)")
+#' cpp_eval('print("hello world!")')
+#' cpp_eval('r_int(0)')
 #' cpp_source(code = '
 #'   #include <cppally.hpp>
 #'   using namespace cppally;
@@ -234,18 +235,50 @@ cpp_eval <- function(code, env = parent.frame(), clean = TRUE,
                      quiet = TRUE, debug = FALSE,
                      preserve_altrep = FALSE,
                      cxx_std = Sys.getenv("CXX_STD", "CXX20")){
+
+  # Helper that returns a list containing
+  # "is_void" - TRUE if result is a void expression with no return result
+  # "result" - The evaluated result
+  # That way we can check is_void in R and
+  # return the result invisibly if it's a void expression
+  eval_helper <- paste(c(
+    'template <typename F>',
+    'SEXP cppally_eval(F&& f) {',
+    '  if constexpr (std::is_void_v<std::invoke_result_t<F>>) {',
+    '    std::forward<F>(f)();',
+    '    return make_vec<r_sexp>(',
+    '      arg("is_void") = make_vec<r_lgl>(r_true),',
+    '      arg("result") = R_NilValue',
+    '    );',
+    '  } else {',
+    '    return make_vec<r_sexp>(',
+    '      arg("is_void") = make_vec<r_lgl>(r_false),',
+    '      arg("result") = cpp_to_sexp(std::forward<F>(f)())',
+    '    );',
+    '  }',
+    '}'
+  ), collapse = "\n")
+  body <- paste0("SEXP f() { return cppally_eval([&]{ return (", code, "); }); }")
   cpp_source(
     code = paste(c(
       "#include <cppally/r_dispatch.h>",
       "#include <cppally.hpp>",
+      "#include <type_traits>",
+      "#include <utility>",
       "using namespace cppally;",
       "using internal::cpp_to_sexp;",
+      eval_helper,
       "[[cppally::register]]",
-      paste0("SEXP f() { return cpp_to_sexp(", code, "); }")
+      body
     ), collapse = "\n"),
     env = env, clean = clean, quiet = quiet,
     debug = debug, cxx_std = cxx_std,
     preserve_altrep = preserve_altrep
   )
-  get("f", envir = env)()
+  result <- get("f", envir = env)()
+  if (result[["is_void"]]){
+    invisible(result[["result"]])
+  } else {
+    result[["result"]]
+  }
 }

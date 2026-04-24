@@ -66,15 +66,16 @@ This may include multiple C++ functions.
 \code{cpp_eval()} evaluates a single C++ expression and returns the result.
 For example \code{cpp_eval('get_threads()')} will run the C++ function
 \code{cppally::get_threads()} and return the number of OMP threads currently set
-for use.
-\code{void} return is not supported in \code{cpp_eval()}.
+for use. For expressions no return result, the call is evaluated and returns
+\code{NULL} invisibly.
 }
 \examples{
 
 library(cppally)
 
 \donttest{
-cpp_eval("r_int(0)")
+cpp_eval('print("hello world!")')
+cpp_eval('r_int(0)')
 cpp_source(code = '
   #include <cppally.hpp>
   using namespace cppally;
