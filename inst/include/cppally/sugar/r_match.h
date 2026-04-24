@@ -3,6 +3,7 @@
 
 #include <cppally/r_coerce.h>
 #include <cppally/sugar/r_hash.h>
+#include <cppally/sugar/r_vec_methods.h>
 #include <ankerl/unordered_dense.h> // Hash maps for group IDs + unique + match
 
 namespace cppally {
@@ -118,6 +119,10 @@ r_vec<U> match(const r_vec<T>& needles, const r_vec<T>& haystack) {
 
 template <RVal T>
 r_factors::r_factors(const r_vec<T>& x, const r_vec<T>& levels) : value(match(x, levels)){
+
+  // Need to turn 0-indexed matches into 1-indexed
+  value += r_int(1);
+
   r_vec<r_str_view> str_levels;
   if constexpr (RStringType<T>) {
       str_levels = r_vec<r_str_view>(levels);
