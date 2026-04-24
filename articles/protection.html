@@ -117,7 +117,7 @@ optimisations.</p>
 <span id="cb2-2"><a href="#cb2-2" tabindex="-1"></a><span class="kw">using</span> <span class="kw">namespace</span> cppally<span class="op">;</span></span>
 <span id="cb2-3"><a href="#cb2-3" tabindex="-1"></a><span class="pp">#include </span><span class="im">&lt;chrono&gt;</span></span>
 <span id="cb2-4"><a href="#cb2-4" tabindex="-1"></a></span>
-<span id="cb2-5"><a href="#cb2-5" tabindex="-1"></a><span class="op">[[</span><span class="at">cpp</span><span class="op">::</span><span class="at">register</span><span class="op">]]</span></span>
+<span id="cb2-5"><a href="#cb2-5" tabindex="-1"></a><span class="op">[[</span><span class="at">cppally</span><span class="op">::</span><span class="at">register</span><span class="op">]]</span></span>
 <span id="cb2-6"><a href="#cb2-6" tabindex="-1"></a><span class="dt">double</span> bench_protect_insert_release_cppally<span class="op">(</span><span class="dt">int</span> n<span class="op">)</span> <span class="op">{</span></span>
 <span id="cb2-7"><a href="#cb2-7" tabindex="-1"></a>  SEXP dummy <span class="op">=</span> Rf_ScalarInteger<span class="op">(</span><span class="dv">42</span><span class="op">);</span></span>
 <span id="cb2-8"><a href="#cb2-8" tabindex="-1"></a>  R_PreserveObject<span class="op">(</span>dummy<span class="op">);</span></span>
@@ -157,7 +157,7 @@ per insert &amp; release.</p>
 <span id="cb4-13"><a href="#cb4-13" tabindex="-1"></a>  <span class="cf">return</span> ns <span class="op">/</span> n<span class="op">;</span>  <span class="co">// nanoseconds per copy</span></span>
 <span id="cb4-14"><a href="#cb4-14" tabindex="-1"></a><span class="op">}</span></span>
 <span id="cb4-15"><a href="#cb4-15" tabindex="-1"></a></span>
-<span id="cb4-16"><a href="#cb4-16" tabindex="-1"></a><span class="op">[[</span><span class="at">cpp</span><span class="op">::</span><span class="at">register</span><span class="op">]]</span></span>
+<span id="cb4-16"><a href="#cb4-16" tabindex="-1"></a><span class="op">[[</span><span class="at">cppally</span><span class="op">::</span><span class="at">register</span><span class="op">]]</span></span>
 <span id="cb4-17"><a href="#cb4-17" tabindex="-1"></a><span class="dt">double</span> bench_protect_copy_cppally<span class="op">(</span><span class="dt">int</span> n<span class="op">)</span> <span class="op">{</span></span>
 <span id="cb4-18"><a href="#cb4-18" tabindex="-1"></a>  SEXP dummy <span class="op">=</span> Rf_ScalarInteger<span class="op">(</span><span class="dv">42</span><span class="op">);</span></span>
 <span id="cb4-19"><a href="#cb4-19" tabindex="-1"></a>  r_sexp dummy2 <span class="op">=</span> r_sexp<span class="op">(</span>dummy<span class="op">);</span></span>
@@ -183,7 +183,7 @@ an impact on performance.</p>
 values in a character vector</p>
 <div class="sourceCode" id="cb6"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb6-1"><a href="#cb6-1" tabindex="-1"></a></span>
 <span id="cb6-2"><a href="#cb6-2" tabindex="-1"></a><span class="co">// Pure R C API NA count - As fast as it can reasonably get</span></span>
-<span id="cb6-3"><a href="#cb6-3" tabindex="-1"></a><span class="op">[[</span><span class="at">cpp</span><span class="op">::</span><span class="at">register</span><span class="op">]]</span> <span class="co">// Registered via cppally for convenience</span></span>
+<span id="cb6-3"><a href="#cb6-3" tabindex="-1"></a><span class="op">[[</span><span class="at">cppally</span><span class="op">::</span><span class="at">register</span><span class="op">]]</span> <span class="co">// Registered via cppally for convenience</span></span>
 <span id="cb6-4"><a href="#cb6-4" tabindex="-1"></a><span class="dt">int</span> C_na_count<span class="op">(</span>SEXP x<span class="op">){</span></span>
 <span id="cb6-5"><a href="#cb6-5" tabindex="-1"></a> <span class="dt">r_size_t</span> n <span class="op">=</span> Rf_xlength<span class="op">(</span>x<span class="op">);</span></span>
 <span id="cb6-6"><a href="#cb6-6" tabindex="-1"></a> <span class="dt">int</span> na_count <span class="op">=</span> <span class="dv">0</span><span class="op">;</span></span>
@@ -210,7 +210,7 @@ values in a character vector</p>
 <span id="cb6-27"><a href="#cb6-27" tabindex="-1"></a><span class="op">}</span></span>
 <span id="cb6-28"><a href="#cb6-28" tabindex="-1"></a></span>
 <span id="cb6-29"><a href="#cb6-29" tabindex="-1"></a><span class="co">// cppally NA count</span></span>
-<span id="cb6-30"><a href="#cb6-30" tabindex="-1"></a><span class="op">[[</span><span class="at">cpp</span><span class="op">::</span><span class="at">register</span><span class="op">]]</span></span>
+<span id="cb6-30"><a href="#cb6-30" tabindex="-1"></a><span class="op">[[</span><span class="at">cppally</span><span class="op">::</span><span class="at">register</span><span class="op">]]</span></span>
 <span id="cb6-31"><a href="#cb6-31" tabindex="-1"></a><span class="dt">int</span> cppally_na_count<span class="op">(</span>r_vec<span class="op">&lt;</span>r_str<span class="op">&gt;</span> x<span class="op">){</span></span>
 <span id="cb6-32"><a href="#cb6-32" tabindex="-1"></a> <span class="dt">r_size_t</span> n <span class="op">=</span> x<span class="op">.</span>length<span class="op">();</span></span>
 <span id="cb6-33"><a href="#cb6-33" tabindex="-1"></a> <span class="dt">int</span> na_count <span class="op">=</span> <span class="dv">0</span><span class="op">;</span></span>
@@ -269,7 +269,7 @@ checked if it is <code>NA</code>, and then incremented the
 <code>r_str</code> element beyond just reading its value which means we
 could have improved performance by using <code>r_str_view</code>, a
 non-owning version of <code>r_str</code>.</p>
-<div class="sourceCode" id="cb11"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb11-1"><a href="#cb11-1" tabindex="-1"></a><span class="op">[[</span><span class="at">cpp</span><span class="op">::</span><span class="at">register</span><span class="op">]]</span></span>
+<div class="sourceCode" id="cb11"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb11-1"><a href="#cb11-1" tabindex="-1"></a><span class="op">[[</span><span class="at">cppally</span><span class="op">::</span><span class="at">register</span><span class="op">]]</span></span>
 <span id="cb11-2"><a href="#cb11-2" tabindex="-1"></a><span class="dt">int</span> cppally_fast_na_count<span class="op">(</span>r_vec<span class="op">&lt;</span>r_str_view<span class="op">&gt;</span> x<span class="op">){</span></span>
 <span id="cb11-3"><a href="#cb11-3" tabindex="-1"></a> <span class="dt">r_size_t</span> n <span class="op">=</span> x<span class="op">.</span>length<span class="op">();</span></span>
 <span id="cb11-4"><a href="#cb11-4" tabindex="-1"></a> <span class="dt">int</span> na_count <span class="op">=</span> <span class="dv">0</span><span class="op">;</span></span>
@@ -294,7 +294,7 @@ of the R C API.</p>
 <p>We could have also used <code>view()</code>, a non-owning version of
 <code><a href="https://rdrr.io/r/base/get.html" class="external-link">get()</a></code> that extracts elements but in a non-owning
 context.</p>
-<div class="sourceCode" id="cb13"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb13-1"><a href="#cb13-1" tabindex="-1"></a><span class="op">[[</span><span class="at">cpp</span><span class="op">::</span><span class="at">register</span><span class="op">]]</span></span>
+<div class="sourceCode" id="cb13"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb13-1"><a href="#cb13-1" tabindex="-1"></a><span class="op">[[</span><span class="at">cppally</span><span class="op">::</span><span class="at">register</span><span class="op">]]</span></span>
 <span id="cb13-2"><a href="#cb13-2" tabindex="-1"></a><span class="dt">int</span> cppally_fast_na_count_v2<span class="op">(</span>r_vec<span class="op">&lt;</span>r_str<span class="op">&gt;</span> x<span class="op">){</span></span>
 <span id="cb13-3"><a href="#cb13-3" tabindex="-1"></a> <span class="dt">r_size_t</span> n <span class="op">=</span> x<span class="op">.</span>length<span class="op">();</span></span>
 <span id="cb13-4"><a href="#cb13-4" tabindex="-1"></a> <span class="dt">int</span> na_count <span class="op">=</span> <span class="dv">0</span><span class="op">;</span></span>

@@ -55,7 +55,7 @@ double bench_protect_insert_release_cpp11(int n) {
 using namespace cppally;
 #include <chrono>
 
-[[cpp::register]]
+[[cppally::register]]
 double bench_protect_insert_release_cppally(int n) {
   SEXP dummy = Rf_ScalarInteger(42);
   R_PreserveObject(dummy);
@@ -104,7 +104,7 @@ double bench_protect_copy_cpp11(int n) {
   return ns / n;  // nanoseconds per copy
 }
 
-[[cpp::register]]
+[[cppally::register]]
 double bench_protect_copy_cppally(int n) {
   SEXP dummy = Rf_ScalarInteger(42);
   r_sexp dummy2 = r_sexp(dummy);
@@ -139,7 +139,7 @@ impact on performance.
 
 ``` cpp
 // Pure R C API NA count - As fast as it can reasonably get
-[[cpp::register]] // Registered via cppally for convenience
+[[cppally::register]] // Registered via cppally for convenience
 int C_na_count(SEXP x){
  r_size_t n = Rf_xlength(x);
  int na_count = 0;
@@ -166,7 +166,7 @@ int cpp11_na_count(strings x){
 }
 
 // cppally NA count
-[[cpp::register]]
+[[cppally::register]]
 int cppally_na_count(r_vec<r_str> x){
  r_size_t n = x.length();
  int na_count = 0;
@@ -240,7 +240,7 @@ could have improved performance by using `r_str_view`, a non-owning
 version of `r_str`.
 
 ``` cpp
-[[cpp::register]]
+[[cppally::register]]
 int cppally_fast_na_count(r_vec<r_str_view> x){
  r_size_t n = x.length();
  int na_count = 0;
@@ -271,7 +271,7 @@ We could have also used `view()`, a non-owning version of
 a non-owning context.
 
 ``` cpp
-[[cpp::register]]
+[[cppally::register]]
 int cppally_fast_na_count_v2(r_vec<r_str> x){
  r_size_t n = x.length();
  int na_count = 0;

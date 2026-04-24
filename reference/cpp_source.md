@@ -10,7 +10,8 @@ functions.
 `cpp_eval()` evaluates a single C++ expression and returns the result.
 For example `cpp_eval('get_threads()')` will run the C++ function
 `cppally::get_threads()` and return the number of OMP threads currently
-set for use. `void` return is not supported in `cpp_eval()`.
+set for use. For expressions no return result, the call is evaluated and
+returns `NULL` invisibly.
 
 ## Usage
 
@@ -82,7 +83,7 @@ cpp_eval(
 ## Value
 
 `cpp_source()` invisibly compiles the C++ code and registers the
-`[[cpp::register]]` tagged functions to R.  
+`[[cppally::register]]` tagged functions to R.  
 `cpp_eval()` returns the result of the evaluated C++ expression.
 
 ## Examples
@@ -91,13 +92,15 @@ cpp_eval(
 library(cppally)
 
 # \donttest{
-cpp_eval("r_int(0)")
+cpp_eval('print("hello world!")')
+#> hello world!
+cpp_eval('r_int(0)')
 #> [1] 0
 cpp_source(code = '
   #include <cppally.hpp>
   using namespace cppally;
 
-  [[cpp::register]]
+  [[cppally::register]]
   r_dbl add(r_dbl x, r_dbl y){
     return x + y;
   }
@@ -117,7 +120,7 @@ cpp_source(
   #include <cppally.hpp>
   using namespace cppally;
 
-  [[cpp::register]]
+  [[cppally::register]]
   r_int last_altrep_unaware(r_vec<r_int> x){
     r_int out;
     r_size_t n = x.length();
@@ -135,7 +138,7 @@ cpp_source(
   #include <cppally.hpp>
   using namespace cppally;
 
-  [[cpp::register]]
+  [[cppally::register]]
   r_int last_altrep_aware(r_vec<r_int> x){
     r_int out;
     r_size_t n = x.length();
@@ -154,13 +157,13 @@ mark(last_altrep_aware(1:10^5)) # No materialisation
 #> # A tibble: 1 × 13
 #>   expression      min median `itr/sec` mem_alloc `gc/sec` n_itr  n_gc total_time
 #>   <bch:expr>   <bch:> <bch:>     <dbl> <bch:byt>    <dbl> <int> <dbl>   <bch:tm>
-#> 1 last_altrep… 1.43µs 1.49µs   532638.        0B        0 10000     0     18.8ms
+#> 1 last_altrep… 1.12µs 1.21µs   583897.        0B        0 10000     0     17.1ms
 #> # ℹ 4 more variables: result <list>, memory <list>, time <list>, gc <list>
 mark(last_altrep_unaware(1:10^5)) # Materialises full vector
 #> # A tibble: 1 × 13
 #>   expression      min median `itr/sec` mem_alloc `gc/sec` n_itr  n_gc total_time
-#>   <bch:expr>    <bch> <bch:>     <dbl> <bch:byt>    <dbl> <int> <dbl>   <bch:tm>
-#> 1 last_altrep_…  42µs 46.1µs    18581.     391KB     146.  3688    29      198ms
+#>   <bch:expr>   <bch:> <bch:>     <dbl> <bch:byt>    <dbl> <int> <dbl>   <bch:tm>
+#> 1 last_altrep… 28.8µs 29.3µs    24979.     391KB     200.  3614    29      145ms
 #> # ℹ 4 more variables: result <list>, memory <list>, time <list>, gc <list>
 
 # }

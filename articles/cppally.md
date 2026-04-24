@@ -5,16 +5,22 @@ and go through the main scalar types that cppally offers.
 
 ## Setup
 
+Let’s start by loading cppally
+
+``` r
+library(cppally)
+```
+
 ## Registering R functions
 
-To make a C++ function available to R we use the `[[cpp::register]]`
+To make a C++ function available to R we use the `[[cppally::register]]`
 tag.
 
 ``` cpp
 #include <cppally.hpp>
 using namespace cppally;
 
-[[cpp::register]]
+[[cppally::register]]
 void hello_world(){
   print("Hello World!");
 }
@@ -36,8 +42,8 @@ cpp_source(file = "src/foo.cpp")
 Now the function is available in R
 
 ``` r
-> hello_world()
-Hello World!
+hello_world()
+#> Hello World!
 ```
 
 ### Registering C++ functions inside a cppally-linked package
@@ -339,7 +345,7 @@ To coerce from one scalar to another we can use `as<T>`
 #include <cppally.hpp>
 using namespace cppally;
 
-[[cpp::register]]
+[[cppally::register]]
 r_int double_to_int(r_dbl x){
   return as<r_int>(x);
 }
@@ -359,7 +365,7 @@ We can also coerce from one vector type to another
 using namespace cppally;
 
 // Coerces NA correctly
-[[cpp::register]]
+[[cppally::register]]
 r_vec<r_int> to_int_vec(r_vec<r_dbl> x){
   return as<r_vec<r_int>>(x);
 }
@@ -377,7 +383,7 @@ a vector or vice versa
 #include <cppally.hpp>
 using namespace cppally;
 
-[[cpp::register]]
+[[cppally::register]]
 r_vec<r_sexp> coercions(){
   r_dbl a(4.2);
   r_vec<r_dbl> b = make_vec<r_dbl>(2.5); // Vector containing 2.5
@@ -433,6 +439,25 @@ overhead issues that `r_str` has. We can easily create symbols using the
 r_sym hello_sym("hello");
 ```
 
+## Cached strings & symbols
+
+When creating in-line strings it is more efficient to use `cached_str<>`
+
+``` r
+cpp_eval('cached_str<"hello">()')
+#> [1] "hello"
+```
+
+This will initialise the string once, cache it, and very efficiently
+re-use the cached string.
+
+We can cache symbols in a similar way
+
+``` r
+cpp_eval('cached_str<"names">()')
+#> [1] "names"
+```
+
 ### Lists
 
 `r_sexp` is generally interpreted as an “element of a list” since lists
@@ -447,7 +472,7 @@ integer vector. This must be used in a C++ lambda context.
 #include <cppally.hpp>
 using namespace cppally;
 
-[[cpp::register]]
+[[cppally::register]]
 
 r_vec<r_int> cpp_lengths(const r_vec<r_sexp>& x){
   r_size_t n = x.length();
@@ -473,7 +498,7 @@ type can’t be deduced into a distinct type, `r_sexp` is returned.
 #include <cppally.hpp>
 using namespace cppally;
 
-[[cpp::register]]
+[[cppally::register]]
 r_vec<r_int> cpp_lengths2(const r_vec<r_sexp>& x){
     r_size_t n = x.length();
     r_vec<r_int> out(n); // Initialise lengths vector
@@ -499,7 +524,7 @@ We can create a factor via `r_factors()`
 #include <cppally.hpp>
 using namespace cppally;
 
-[[cpp::register]]
+[[cppally::register]]
 r_factors new_factor(r_vec<r_str> x){
     return r_factors(x);
 }
@@ -521,7 +546,7 @@ using namespace cppally;
 
 static_assert(!RVector<r_factors>);
 
-[[cpp::register]]
+[[cppally::register]]
 r_vec<r_int> factor_codes(r_factors x){
     return x.codes();
 }
@@ -632,9 +657,9 @@ multiple
 ### Registering templates
 
 To register a C++ template to R, one must declare the
-`[[cpp::register]]` target after the template declaration. Also worth
-noting that templates must be defined in header files instead of cpp
-files.
+`[[cppally::register]]` target after the template declaration. Also
+worth noting that templates must be defined in header files instead of
+cpp files.
 
 ``` cpp
 #pragma once
@@ -643,7 +668,7 @@ files.
 using namespace cppally;
 
 template <RStringType T>
-[[cpp::register]]
+[[cppally::register]]
 void my_print(T x){
   print(x.c_str());
 }
@@ -656,7 +681,7 @@ While most templates can be registered to R, explicit instantiation
 
 ``` cpp
 template <RScalar T>
-[[cpp::register]]
+[[cppally::register]]
 T scalar_init(){
     return T();
 }
@@ -673,7 +698,7 @@ prototype argument to allow argument deduction from that
 
 ``` cpp
 template <typename T>
-[[cpp::register]]
+[[cppally::register]]
 T scalar_init(T ptype){
     return T();
 }
@@ -706,7 +731,7 @@ we can rely on automatic deduction
 
 ``` cpp
 template <RVector T>
-[[cpp::register]]
+[[cppally::register]]
 int cpp_length(T vec){
     return vec.length();
 }
@@ -732,7 +757,7 @@ Error: No matching template instantiation found for input types
 For non-template functions the input type must be specified
 
 ``` cpp
-[[cpp::register]]
+[[cppally::register]]
 r_dbl add_half(r_dbl x){
   return x + 0.5;
 }
@@ -783,7 +808,7 @@ coercions, an informative error is thrown.
 argument but is supported when the argument is explicitly an `r_sym`.
 
 ``` cpp
-[[cpp::register]]
+[[cppally::register]]
 r_str symbol_to_string(r_sym x){
     return as<r_str>(x);
 }

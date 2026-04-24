@@ -116,7 +116,7 @@ cppally delegates the handling of 64-bit integer vectors to bit64 by
 marking them with the “integer64” class.
 
 ``` cpp
-[[cpp::register]]
+[[cppally::register]]
 r_int64 as_int64(r_int x){
     return as<r_int64>(x);
 }
@@ -127,7 +127,7 @@ Please note that other 64-bit signed integer types like `int64_t`,
 integer vectors when returned to R.
 
 ``` cpp
-[[cpp::register]]
+[[cppally::register]]
 r_size_t as_r_size_t(r_int x){
     return as<r_size_t>(x);
 }

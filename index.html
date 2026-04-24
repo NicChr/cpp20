@@ -119,12 +119,12 @@
 <h3 id="id_64-bit-integers">64-bit integers<a class="anchor" aria-label="anchor" href="#id_64-bit-integers"></a>
 </h3>
 <p>On the C++ side, 64-bit integers are fully supported, including vectors. To return 64-bit integers to R we need the bit64 package to be loaded. cppally delegates the handling of 64-bit integer vectors to bit64 by marking them with the “integer64” class.</p>
-<div class="sourceCode" id="cb1"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb1-1"><a href="#cb1-1" tabindex="-1"></a><span class="op">[[</span><span class="at">cpp</span><span class="op">::</span><span class="at">register</span><span class="op">]]</span></span>
+<div class="sourceCode" id="cb1"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb1-1"><a href="#cb1-1" tabindex="-1"></a><span class="op">[[</span><span class="at">cppally</span><span class="op">::</span><span class="at">register</span><span class="op">]]</span></span>
 <span id="cb1-2"><a href="#cb1-2" tabindex="-1"></a>r_int64 as_int64<span class="op">(</span>r_int x<span class="op">){</span></span>
 <span id="cb1-3"><a href="#cb1-3" tabindex="-1"></a>    <span class="cf">return</span> as<span class="op">&lt;</span>r_int64<span class="op">&gt;(</span>x<span class="op">);</span></span>
 <span id="cb1-4"><a href="#cb1-4" tabindex="-1"></a><span class="op">}</span></span></code></pre></div>
 <p>Please note that other 64-bit signed integer types like <code>int64_t</code>, <code>R_xlen_t</code>, or cppally’s identical <code>r_size_t</code> will convert to 64-bit integer vectors when returned to R.</p>
-<div class="sourceCode" id="cb2"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb2-1"><a href="#cb2-1" tabindex="-1"></a><span class="op">[[</span><span class="at">cpp</span><span class="op">::</span><span class="at">register</span><span class="op">]]</span></span>
+<div class="sourceCode" id="cb2"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb2-1"><a href="#cb2-1" tabindex="-1"></a><span class="op">[[</span><span class="at">cppally</span><span class="op">::</span><span class="at">register</span><span class="op">]]</span></span>
 <span id="cb2-2"><a href="#cb2-2" tabindex="-1"></a><span class="dt">r_size_t</span> <span class="dt">as_r_size_t</span><span class="op">(</span>r_int x<span class="op">){</span></span>
 <span id="cb2-3"><a href="#cb2-3" tabindex="-1"></a>    <span class="cf">return</span> as<span class="op">&lt;</span><span class="dt">r_size_t</span><span class="op">&gt;(</span>x<span class="op">);</span></span>
 <span id="cb2-4"><a href="#cb2-4" tabindex="-1"></a><span class="op">}</span></span></code></pre></div>

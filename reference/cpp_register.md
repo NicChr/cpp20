@@ -1,7 +1,7 @@
 # Generates wrappers for registered C++ functions
 
 Register C++ functions to be callable from R. C++ functions decorated
-with `[[cpp::register]]` will be registered (including template
+with `[[cppally::register]]` will be registered (including template
 functions).
 
 ## Usage
