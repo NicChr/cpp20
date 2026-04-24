@@ -93,155 +93,190 @@ likely not optimal, so there is likely room for improvement.</p>
 <div class="section level2">
 <h2 id="protection-benchmark-cpp11-vs-cppally">Protection benchmark: cpp11 vs cppally<a class="anchor" aria-label="anchor" href="#protection-benchmark-cpp11-vs-cppally"></a>
 </h2>
-<p>All functions have been compiled with C++20, GCC 14.2.0 with -02
+<p>All functions have been compiled with C++20, GCC 14.2.0 with -O2
 optimisations.</p>
+<p>First, let’s load cppally</p>
+<div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://nicchr.github.io/cppally/">cppally</a></span><span class="op">)</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; Attaching package: 'cppally'</span></span>
+<span><span class="co">#&gt; The following objects are masked _by_ '.GlobalEnv':</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt;     cpp_eval, cpp_source</span></span></code></pre></div>
 <p><strong>Insert/release benchmark</strong></p>
-<div class="sourceCode" id="cb1"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb1-1"><a href="#cb1-1" tabindex="-1"></a><span class="pp">#include </span><span class="im">&lt;cpp11.hpp&gt;</span></span>
-<span id="cb1-2"><a href="#cb1-2" tabindex="-1"></a><span class="kw">using</span> <span class="kw">namespace</span> cpp11<span class="op">;</span></span>
-<span id="cb1-3"><a href="#cb1-3" tabindex="-1"></a><span class="pp">#include </span><span class="im">&lt;chrono&gt;</span></span>
-<span id="cb1-4"><a href="#cb1-4" tabindex="-1"></a></span>
-<span id="cb1-5"><a href="#cb1-5" tabindex="-1"></a><span class="op">[[</span><span class="at">cpp11</span><span class="op">::</span><span class="at">register</span><span class="op">]]</span></span>
-<span id="cb1-6"><a href="#cb1-6" tabindex="-1"></a><span class="dt">double</span> bench_protect_insert_release_cpp11<span class="op">(</span><span class="dt">int</span> n<span class="op">)</span> <span class="op">{</span></span>
-<span id="cb1-7"><a href="#cb1-7" tabindex="-1"></a>  SEXP dummy <span class="op">=</span> Rf_ScalarInteger<span class="op">(</span><span class="dv">42</span><span class="op">);</span></span>
-<span id="cb1-8"><a href="#cb1-8" tabindex="-1"></a>  R_PreserveObject<span class="op">(</span>dummy<span class="op">);</span></span>
-<span id="cb1-9"><a href="#cb1-9" tabindex="-1"></a>  <span class="kw">auto</span> start <span class="op">=</span> <span class="bu">std::</span>chrono::high_resolution_clock::now<span class="op">();</span></span>
-<span id="cb1-10"><a href="#cb1-10" tabindex="-1"></a>  <span class="cf">for</span> <span class="op">(</span><span class="dt">int</span> i <span class="op">=</span> <span class="dv">0</span><span class="op">;</span> i <span class="op">&lt;</span> n<span class="op">;</span> <span class="op">++</span>i<span class="op">)</span> <span class="op">{</span></span>
-<span id="cb1-11"><a href="#cb1-11" tabindex="-1"></a>    sexp x<span class="op">(</span>dummy<span class="op">);</span> <span class="co">// insert into pool</span></span>
-<span id="cb1-12"><a href="#cb1-12" tabindex="-1"></a>  <span class="op">}</span>           <span class="co">// destructor → release from pool</span></span>
-<span id="cb1-13"><a href="#cb1-13" tabindex="-1"></a>  <span class="kw">auto</span> end <span class="op">=</span> <span class="bu">std::</span>chrono::high_resolution_clock::now<span class="op">();</span></span>
-<span id="cb1-14"><a href="#cb1-14" tabindex="-1"></a>  R_ReleaseObject<span class="op">(</span>dummy<span class="op">);</span></span>
-<span id="cb1-15"><a href="#cb1-15" tabindex="-1"></a>  <span class="dt">double</span> ns <span class="op">=</span> <span class="bu">std::</span>chrono::duration<span class="op">&lt;</span><span class="dt">double</span><span class="op">,</span> <span class="bu">std::</span>nano<span class="op">&gt;(</span>end <span class="op">-</span> start<span class="op">).</span>count<span class="op">();</span></span>
-<span id="cb1-16"><a href="#cb1-16" tabindex="-1"></a>  <span class="cf">return</span> ns <span class="op">/</span> n<span class="op">;</span> <span class="co">// nanoseconds per insert+release cycle</span></span>
-<span id="cb1-17"><a href="#cb1-17" tabindex="-1"></a><span class="op">}</span></span></code></pre></div>
-<div class="sourceCode" id="cb2"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb2-1"><a href="#cb2-1" tabindex="-1"></a><span class="pp">#include </span><span class="im">&lt;cppally.hpp&gt;</span></span>
-<span id="cb2-2"><a href="#cb2-2" tabindex="-1"></a><span class="kw">using</span> <span class="kw">namespace</span> cppally<span class="op">;</span></span>
-<span id="cb2-3"><a href="#cb2-3" tabindex="-1"></a><span class="pp">#include </span><span class="im">&lt;chrono&gt;</span></span>
-<span id="cb2-4"><a href="#cb2-4" tabindex="-1"></a></span>
-<span id="cb2-5"><a href="#cb2-5" tabindex="-1"></a><span class="op">[[</span><span class="at">cppally</span><span class="op">::</span><span class="at">register</span><span class="op">]]</span></span>
-<span id="cb2-6"><a href="#cb2-6" tabindex="-1"></a><span class="dt">double</span> bench_protect_insert_release_cppally<span class="op">(</span><span class="dt">int</span> n<span class="op">)</span> <span class="op">{</span></span>
-<span id="cb2-7"><a href="#cb2-7" tabindex="-1"></a>  SEXP dummy <span class="op">=</span> Rf_ScalarInteger<span class="op">(</span><span class="dv">42</span><span class="op">);</span></span>
-<span id="cb2-8"><a href="#cb2-8" tabindex="-1"></a>  R_PreserveObject<span class="op">(</span>dummy<span class="op">);</span></span>
-<span id="cb2-9"><a href="#cb2-9" tabindex="-1"></a>  <span class="kw">auto</span> start <span class="op">=</span> <span class="bu">std::</span>chrono::high_resolution_clock::now<span class="op">();</span></span>
-<span id="cb2-10"><a href="#cb2-10" tabindex="-1"></a>  <span class="cf">for</span> <span class="op">(</span><span class="dt">int</span> i <span class="op">=</span> <span class="dv">0</span><span class="op">;</span> i <span class="op">&lt;</span> n<span class="op">;</span> <span class="op">++</span>i<span class="op">)</span> <span class="op">{</span></span>
-<span id="cb2-11"><a href="#cb2-11" tabindex="-1"></a>    r_sexp x<span class="op">(</span>dummy<span class="op">);</span> <span class="co">// insert into pool</span></span>
-<span id="cb2-12"><a href="#cb2-12" tabindex="-1"></a>  <span class="op">}</span>           <span class="co">// destructor → release from pool</span></span>
-<span id="cb2-13"><a href="#cb2-13" tabindex="-1"></a>  <span class="kw">auto</span> end <span class="op">=</span> <span class="bu">std::</span>chrono::high_resolution_clock::now<span class="op">();</span></span>
-<span id="cb2-14"><a href="#cb2-14" tabindex="-1"></a>  R_ReleaseObject<span class="op">(</span>dummy<span class="op">);</span></span>
-<span id="cb2-15"><a href="#cb2-15" tabindex="-1"></a>  <span class="dt">double</span> ns <span class="op">=</span> <span class="bu">std::</span>chrono::duration<span class="op">&lt;</span><span class="dt">double</span><span class="op">,</span> <span class="bu">std::</span>nano<span class="op">&gt;(</span>end <span class="op">-</span> start<span class="op">).</span>count<span class="op">();</span></span>
-<span id="cb2-16"><a href="#cb2-16" tabindex="-1"></a>  <span class="cf">return</span> ns <span class="op">/</span> n<span class="op">;</span> <span class="co">// nanoseconds per insert+release cycle</span></span>
-<span id="cb2-17"><a href="#cb2-17" tabindex="-1"></a><span class="op">}</span></span></code></pre></div>
-<p><strong>Results in nanoseconds per insert &amp; release</strong></p>
-<div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" tabindex="-1"></a><span class="fu">library</span>(bench)</span>
-<span id="cb3-2"><a href="#cb3-2" tabindex="-1"></a></span>
-<span id="cb3-3"><a href="#cb3-3" tabindex="-1"></a><span class="fu">replicate</span>(<span class="dv">10</span><span class="sc">^</span><span class="dv">4</span>, <span class="fu">bench_protect_insert_release_cpp11</span>(<span class="dv">10000</span>)) <span class="sc">|&gt;</span> <span class="fu">mean</span>()</span>
-<span id="cb3-4"><a href="#cb3-4" tabindex="-1"></a>[<span class="dv">1</span>] <span class="fl">29.11816</span></span>
+<div class="sourceCode" id="cb2"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb2-1"><a href="#cb2-1" tabindex="-1"></a></span>
+<span id="cb2-2"><a href="#cb2-2" tabindex="-1"></a><span class="pp">#include </span><span class="im">&lt;cpp11.hpp&gt;</span></span>
+<span id="cb2-3"><a href="#cb2-3" tabindex="-1"></a></span>
+<span id="cb2-4"><a href="#cb2-4" tabindex="-1"></a><span class="op">[[</span><span class="at">cppally</span><span class="op">::</span><span class="at">linking_to</span><span class="op">(</span><span class="st">"cpp11"</span><span class="op">)]]</span></span>
+<span id="cb2-5"><a href="#cb2-5" tabindex="-1"></a></span>
+<span id="cb2-6"><a href="#cb2-6" tabindex="-1"></a><span class="kw">using</span> <span class="kw">namespace</span> cpp11<span class="op">;</span></span>
+<span id="cb2-7"><a href="#cb2-7" tabindex="-1"></a><span class="pp">#include </span><span class="im">&lt;chrono&gt;</span></span>
+<span id="cb2-8"><a href="#cb2-8" tabindex="-1"></a></span>
+<span id="cb2-9"><a href="#cb2-9" tabindex="-1"></a><span class="op">[[</span><span class="at">cppally</span><span class="op">::</span><span class="at">register</span><span class="op">]]</span></span>
+<span id="cb2-10"><a href="#cb2-10" tabindex="-1"></a><span class="dt">double</span> bench_protect_insert_release_cpp11<span class="op">(</span><span class="dt">int</span> n<span class="op">)</span> <span class="op">{</span></span>
+<span id="cb2-11"><a href="#cb2-11" tabindex="-1"></a>  SEXP dummy <span class="op">=</span> Rf_ScalarInteger<span class="op">(</span><span class="dv">42</span><span class="op">);</span></span>
+<span id="cb2-12"><a href="#cb2-12" tabindex="-1"></a>  R_PreserveObject<span class="op">(</span>dummy<span class="op">);</span></span>
+<span id="cb2-13"><a href="#cb2-13" tabindex="-1"></a>  <span class="kw">auto</span> start <span class="op">=</span> <span class="bu">std::</span>chrono::high_resolution_clock::now<span class="op">();</span></span>
+<span id="cb2-14"><a href="#cb2-14" tabindex="-1"></a>  <span class="cf">for</span> <span class="op">(</span><span class="dt">int</span> i <span class="op">=</span> <span class="dv">0</span><span class="op">;</span> i <span class="op">&lt;</span> n<span class="op">;</span> <span class="op">++</span>i<span class="op">)</span> <span class="op">{</span></span>
+<span id="cb2-15"><a href="#cb2-15" tabindex="-1"></a>    sexp x<span class="op">(</span>dummy<span class="op">);</span> <span class="co">// insert into pool</span></span>
+<span id="cb2-16"><a href="#cb2-16" tabindex="-1"></a>  <span class="op">}</span>           <span class="co">// destructor → release from pool</span></span>
+<span id="cb2-17"><a href="#cb2-17" tabindex="-1"></a>  <span class="kw">auto</span> end <span class="op">=</span> <span class="bu">std::</span>chrono::high_resolution_clock::now<span class="op">();</span></span>
+<span id="cb2-18"><a href="#cb2-18" tabindex="-1"></a>  R_ReleaseObject<span class="op">(</span>dummy<span class="op">);</span></span>
+<span id="cb2-19"><a href="#cb2-19" tabindex="-1"></a>  <span class="dt">double</span> ns <span class="op">=</span> <span class="bu">std::</span>chrono::duration<span class="op">&lt;</span><span class="dt">double</span><span class="op">,</span> <span class="bu">std::</span>nano<span class="op">&gt;(</span>end <span class="op">-</span> start<span class="op">).</span>count<span class="op">();</span></span>
+<span id="cb2-20"><a href="#cb2-20" tabindex="-1"></a>  <span class="cf">return</span> ns <span class="op">/</span> n<span class="op">;</span> <span class="co">// nanoseconds per insert+release cycle</span></span>
+<span id="cb2-21"><a href="#cb2-21" tabindex="-1"></a><span class="op">}</span></span></code></pre></div>
+<div class="sourceCode" id="cb3"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb3-1"><a href="#cb3-1" tabindex="-1"></a></span>
+<span id="cb3-2"><a href="#cb3-2" tabindex="-1"></a><span class="pp">#include </span><span class="im">&lt;cppally.hpp&gt;</span></span>
+<span id="cb3-3"><a href="#cb3-3" tabindex="-1"></a><span class="kw">using</span> <span class="kw">namespace</span> cppally<span class="op">;</span></span>
+<span id="cb3-4"><a href="#cb3-4" tabindex="-1"></a><span class="pp">#include </span><span class="im">&lt;chrono&gt;</span></span>
 <span id="cb3-5"><a href="#cb3-5" tabindex="-1"></a></span>
-<span id="cb3-6"><a href="#cb3-6" tabindex="-1"></a><span class="fu">replicate</span>(<span class="dv">10</span><span class="sc">^</span><span class="dv">4</span>, <span class="fu">bench_protect_insert_release_cppally</span>(<span class="dv">10000</span>)) <span class="sc">|&gt;</span> <span class="fu">mean</span>()</span>
-<span id="cb3-7"><a href="#cb3-7" tabindex="-1"></a>[<span class="dv">1</span>] <span class="fl">6.35814</span></span></code></pre></div>
-<p>On my machine, cpp11 performs an insert &amp; release every 29
-nanoseconds. cppally performs significantly better, with 6 nanoseconds
+<span id="cb3-6"><a href="#cb3-6" tabindex="-1"></a><span class="op">[[</span><span class="at">cppally</span><span class="op">::</span><span class="at">register</span><span class="op">]]</span></span>
+<span id="cb3-7"><a href="#cb3-7" tabindex="-1"></a><span class="dt">double</span> bench_protect_insert_release_cppally<span class="op">(</span><span class="dt">int</span> n<span class="op">)</span> <span class="op">{</span></span>
+<span id="cb3-8"><a href="#cb3-8" tabindex="-1"></a>  SEXP dummy <span class="op">=</span> Rf_ScalarInteger<span class="op">(</span><span class="dv">42</span><span class="op">);</span></span>
+<span id="cb3-9"><a href="#cb3-9" tabindex="-1"></a>  R_PreserveObject<span class="op">(</span>dummy<span class="op">);</span></span>
+<span id="cb3-10"><a href="#cb3-10" tabindex="-1"></a>  <span class="kw">auto</span> start <span class="op">=</span> <span class="bu">std::</span>chrono::high_resolution_clock::now<span class="op">();</span></span>
+<span id="cb3-11"><a href="#cb3-11" tabindex="-1"></a>  <span class="cf">for</span> <span class="op">(</span><span class="dt">int</span> i <span class="op">=</span> <span class="dv">0</span><span class="op">;</span> i <span class="op">&lt;</span> n<span class="op">;</span> <span class="op">++</span>i<span class="op">)</span> <span class="op">{</span></span>
+<span id="cb3-12"><a href="#cb3-12" tabindex="-1"></a>    r_sexp x<span class="op">(</span>dummy<span class="op">);</span> <span class="co">// insert into pool</span></span>
+<span id="cb3-13"><a href="#cb3-13" tabindex="-1"></a>  <span class="op">}</span>           <span class="co">// destructor → release from pool</span></span>
+<span id="cb3-14"><a href="#cb3-14" tabindex="-1"></a>  <span class="kw">auto</span> end <span class="op">=</span> <span class="bu">std::</span>chrono::high_resolution_clock::now<span class="op">();</span></span>
+<span id="cb3-15"><a href="#cb3-15" tabindex="-1"></a>  R_ReleaseObject<span class="op">(</span>dummy<span class="op">);</span></span>
+<span id="cb3-16"><a href="#cb3-16" tabindex="-1"></a>  <span class="dt">double</span> ns <span class="op">=</span> <span class="bu">std::</span>chrono::duration<span class="op">&lt;</span><span class="dt">double</span><span class="op">,</span> <span class="bu">std::</span>nano<span class="op">&gt;(</span>end <span class="op">-</span> start<span class="op">).</span>count<span class="op">();</span></span>
+<span id="cb3-17"><a href="#cb3-17" tabindex="-1"></a>  <span class="cf">return</span> ns <span class="op">/</span> n<span class="op">;</span> <span class="co">// nanoseconds per insert+release cycle</span></span>
+<span id="cb3-18"><a href="#cb3-18" tabindex="-1"></a><span class="op">}</span></span></code></pre></div>
+<p><strong>Results in nanoseconds per insert &amp; release</strong></p>
+<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/lapply.html" class="external-link">replicate</a></span><span class="op">(</span><span class="fl">10</span><span class="op">^</span><span class="fl">4</span>, <span class="fu">bench_protect_insert_release_cpp11</span><span class="op">(</span><span class="fl">10</span><span class="op">^</span><span class="fl">4</span><span class="op">)</span><span class="op">)</span> <span class="op">|&gt;</span> <span class="fu"><a href="https://rdrr.io/r/base/mean.html" class="external-link">mean</a></span><span class="op">(</span><span class="op">)</span></span>
+<span><span class="co">#&gt; [1] 43.40882</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/lapply.html" class="external-link">replicate</a></span><span class="op">(</span><span class="fl">10</span><span class="op">^</span><span class="fl">4</span>, <span class="fu">bench_protect_insert_release_cppally</span><span class="op">(</span><span class="fl">10</span><span class="op">^</span><span class="fl">4</span><span class="op">)</span><span class="op">)</span> <span class="op">|&gt;</span> <span class="fu"><a href="https://rdrr.io/r/base/mean.html" class="external-link">mean</a></span><span class="op">(</span><span class="op">)</span></span>
+<span><span class="co">#&gt; [1] 14.55433</span></span></code></pre></div>
+<p>On my machine, cpp11 performs an insert &amp; release every ~30
+nanoseconds. cppally performs significantly better, with ~7 nanoseconds
 per insert &amp; release.</p>
 <p><strong>Copy benchmark</strong></p>
-<div class="sourceCode" id="cb4"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb4-1"><a href="#cb4-1" tabindex="-1"></a><span class="op">[[</span><span class="at">cpp11</span><span class="op">::</span><span class="at">register</span><span class="op">]]</span></span>
-<span id="cb4-2"><a href="#cb4-2" tabindex="-1"></a><span class="dt">double</span> bench_protect_copy_cpp11<span class="op">(</span><span class="dt">int</span> n<span class="op">)</span> <span class="op">{</span></span>
-<span id="cb4-3"><a href="#cb4-3" tabindex="-1"></a>  SEXP dummy <span class="op">=</span> Rf_ScalarInteger<span class="op">(</span><span class="dv">42</span><span class="op">);</span></span>
-<span id="cb4-4"><a href="#cb4-4" tabindex="-1"></a>  sexp dummy2 <span class="op">=</span> sexp<span class="op">(</span>dummy<span class="op">);</span></span>
-<span id="cb4-5"><a href="#cb4-5" tabindex="-1"></a></span>
-<span id="cb4-6"><a href="#cb4-6" tabindex="-1"></a>  <span class="kw">auto</span> start <span class="op">=</span> <span class="bu">std::</span>chrono::high_resolution_clock::now<span class="op">();</span></span>
-<span id="cb4-7"><a href="#cb4-7" tabindex="-1"></a>  <span class="cf">for</span> <span class="op">(</span><span class="dt">int</span> i <span class="op">=</span> <span class="dv">0</span><span class="op">;</span> i <span class="op">&lt;</span> n<span class="op">;</span> <span class="op">++</span>i<span class="op">)</span> <span class="op">{</span></span>
-<span id="cb4-8"><a href="#cb4-8" tabindex="-1"></a>    sexp x <span class="op">=</span> dummy2<span class="op">;</span> <span class="co">// Copy</span></span>
-<span id="cb4-9"><a href="#cb4-9" tabindex="-1"></a>  <span class="op">}</span></span>
-<span id="cb4-10"><a href="#cb4-10" tabindex="-1"></a>  <span class="kw">auto</span> end <span class="op">=</span> <span class="bu">std::</span>chrono::high_resolution_clock::now<span class="op">();</span></span>
-<span id="cb4-11"><a href="#cb4-11" tabindex="-1"></a></span>
-<span id="cb4-12"><a href="#cb4-12" tabindex="-1"></a>  <span class="dt">double</span> ns <span class="op">=</span> <span class="bu">std::</span>chrono::duration<span class="op">&lt;</span><span class="dt">double</span><span class="op">,</span> <span class="bu">std::</span>nano<span class="op">&gt;(</span>end <span class="op">-</span> start<span class="op">).</span>count<span class="op">();</span></span>
-<span id="cb4-13"><a href="#cb4-13" tabindex="-1"></a>  <span class="cf">return</span> ns <span class="op">/</span> n<span class="op">;</span>  <span class="co">// nanoseconds per copy</span></span>
-<span id="cb4-14"><a href="#cb4-14" tabindex="-1"></a><span class="op">}</span></span>
-<span id="cb4-15"><a href="#cb4-15" tabindex="-1"></a></span>
-<span id="cb4-16"><a href="#cb4-16" tabindex="-1"></a><span class="op">[[</span><span class="at">cppally</span><span class="op">::</span><span class="at">register</span><span class="op">]]</span></span>
-<span id="cb4-17"><a href="#cb4-17" tabindex="-1"></a><span class="dt">double</span> bench_protect_copy_cppally<span class="op">(</span><span class="dt">int</span> n<span class="op">)</span> <span class="op">{</span></span>
-<span id="cb4-18"><a href="#cb4-18" tabindex="-1"></a>  SEXP dummy <span class="op">=</span> Rf_ScalarInteger<span class="op">(</span><span class="dv">42</span><span class="op">);</span></span>
-<span id="cb4-19"><a href="#cb4-19" tabindex="-1"></a>  r_sexp dummy2 <span class="op">=</span> r_sexp<span class="op">(</span>dummy<span class="op">);</span></span>
-<span id="cb4-20"><a href="#cb4-20" tabindex="-1"></a>  <span class="kw">auto</span> start <span class="op">=</span> <span class="bu">std::</span>chrono::high_resolution_clock::now<span class="op">();</span></span>
-<span id="cb4-21"><a href="#cb4-21" tabindex="-1"></a>  <span class="cf">for</span> <span class="op">(</span><span class="dt">int</span> i <span class="op">=</span> <span class="dv">0</span><span class="op">;</span> i <span class="op">&lt;</span> n<span class="op">;</span> <span class="op">++</span>i<span class="op">)</span> <span class="op">{</span></span>
-<span id="cb4-22"><a href="#cb4-22" tabindex="-1"></a>    r_sexp x <span class="op">=</span> dummy2<span class="op">;</span> <span class="co">// Copy</span></span>
-<span id="cb4-23"><a href="#cb4-23" tabindex="-1"></a>  <span class="op">}</span></span>
-<span id="cb4-24"><a href="#cb4-24" tabindex="-1"></a>  <span class="kw">auto</span> end <span class="op">=</span> <span class="bu">std::</span>chrono::high_resolution_clock::now<span class="op">();</span></span>
-<span id="cb4-25"><a href="#cb4-25" tabindex="-1"></a>  <span class="dt">double</span> ns <span class="op">=</span> <span class="bu">std::</span>chrono::duration<span class="op">&lt;</span><span class="dt">double</span><span class="op">,</span> <span class="bu">std::</span>nano<span class="op">&gt;(</span>end <span class="op">-</span> start<span class="op">).</span>count<span class="op">();</span></span>
-<span id="cb4-26"><a href="#cb4-26" tabindex="-1"></a>  <span class="cf">return</span> ns <span class="op">/</span> n<span class="op">;</span> <span class="co">// nanoseconds per copy</span></span>
-<span id="cb4-27"><a href="#cb4-27" tabindex="-1"></a><span class="op">}</span></span></code></pre></div>
+<div class="sourceCode" id="cb5"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb5-1"><a href="#cb5-1" tabindex="-1"></a></span>
+<span id="cb5-2"><a href="#cb5-2" tabindex="-1"></a></span>
+<span id="cb5-3"><a href="#cb5-3" tabindex="-1"></a><span class="pp">#include </span><span class="im">&lt;cpp11.hpp&gt;</span></span>
+<span id="cb5-4"><a href="#cb5-4" tabindex="-1"></a><span class="op">[[</span><span class="at">cppally</span><span class="op">::</span><span class="at">linking_to</span><span class="op">(</span><span class="st">"cpp11"</span><span class="op">)]]</span></span>
+<span id="cb5-5"><a href="#cb5-5" tabindex="-1"></a></span>
+<span id="cb5-6"><a href="#cb5-6" tabindex="-1"></a><span class="kw">using</span> <span class="kw">namespace</span> cpp11<span class="op">;</span></span>
+<span id="cb5-7"><a href="#cb5-7" tabindex="-1"></a><span class="pp">#include </span><span class="im">&lt;chrono&gt;</span></span>
+<span id="cb5-8"><a href="#cb5-8" tabindex="-1"></a></span>
+<span id="cb5-9"><a href="#cb5-9" tabindex="-1"></a><span class="op">[[</span><span class="at">cppally</span><span class="op">::</span><span class="at">register</span><span class="op">]]</span></span>
+<span id="cb5-10"><a href="#cb5-10" tabindex="-1"></a><span class="dt">double</span> bench_protect_copy_cpp11<span class="op">(</span><span class="dt">int</span> n<span class="op">)</span> <span class="op">{</span></span>
+<span id="cb5-11"><a href="#cb5-11" tabindex="-1"></a>  SEXP dummy <span class="op">=</span> Rf_ScalarInteger<span class="op">(</span><span class="dv">42</span><span class="op">);</span></span>
+<span id="cb5-12"><a href="#cb5-12" tabindex="-1"></a>  sexp dummy2 <span class="op">=</span> sexp<span class="op">(</span>dummy<span class="op">);</span></span>
+<span id="cb5-13"><a href="#cb5-13" tabindex="-1"></a></span>
+<span id="cb5-14"><a href="#cb5-14" tabindex="-1"></a>  <span class="kw">auto</span> start <span class="op">=</span> <span class="bu">std::</span>chrono::high_resolution_clock::now<span class="op">();</span></span>
+<span id="cb5-15"><a href="#cb5-15" tabindex="-1"></a>  <span class="cf">for</span> <span class="op">(</span><span class="dt">int</span> i <span class="op">=</span> <span class="dv">0</span><span class="op">;</span> i <span class="op">&lt;</span> n<span class="op">;</span> <span class="op">++</span>i<span class="op">)</span> <span class="op">{</span></span>
+<span id="cb5-16"><a href="#cb5-16" tabindex="-1"></a>    sexp x <span class="op">=</span> dummy2<span class="op">;</span> <span class="co">// Copy</span></span>
+<span id="cb5-17"><a href="#cb5-17" tabindex="-1"></a>  <span class="op">}</span></span>
+<span id="cb5-18"><a href="#cb5-18" tabindex="-1"></a>  <span class="kw">auto</span> end <span class="op">=</span> <span class="bu">std::</span>chrono::high_resolution_clock::now<span class="op">();</span></span>
+<span id="cb5-19"><a href="#cb5-19" tabindex="-1"></a></span>
+<span id="cb5-20"><a href="#cb5-20" tabindex="-1"></a>  <span class="dt">double</span> ns <span class="op">=</span> <span class="bu">std::</span>chrono::duration<span class="op">&lt;</span><span class="dt">double</span><span class="op">,</span> <span class="bu">std::</span>nano<span class="op">&gt;(</span>end <span class="op">-</span> start<span class="op">).</span>count<span class="op">();</span></span>
+<span id="cb5-21"><a href="#cb5-21" tabindex="-1"></a>  <span class="cf">return</span> ns <span class="op">/</span> n<span class="op">;</span>  <span class="co">// nanoseconds per copy</span></span>
+<span id="cb5-22"><a href="#cb5-22" tabindex="-1"></a><span class="op">}</span></span></code></pre></div>
+<div class="sourceCode" id="cb6"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb6-1"><a href="#cb6-1" tabindex="-1"></a></span>
+<span id="cb6-2"><a href="#cb6-2" tabindex="-1"></a><span class="pp">#include </span><span class="im">&lt;cppally.hpp&gt;</span></span>
+<span id="cb6-3"><a href="#cb6-3" tabindex="-1"></a><span class="kw">using</span> <span class="kw">namespace</span> cppally<span class="op">;</span></span>
+<span id="cb6-4"><a href="#cb6-4" tabindex="-1"></a><span class="pp">#include </span><span class="im">&lt;chrono&gt;</span></span>
+<span id="cb6-5"><a href="#cb6-5" tabindex="-1"></a></span>
+<span id="cb6-6"><a href="#cb6-6" tabindex="-1"></a><span class="op">[[</span><span class="at">cppally</span><span class="op">::</span><span class="at">register</span><span class="op">]]</span></span>
+<span id="cb6-7"><a href="#cb6-7" tabindex="-1"></a><span class="dt">double</span> bench_protect_copy_cppally<span class="op">(</span><span class="dt">int</span> n<span class="op">)</span> <span class="op">{</span></span>
+<span id="cb6-8"><a href="#cb6-8" tabindex="-1"></a>  SEXP dummy <span class="op">=</span> Rf_ScalarInteger<span class="op">(</span><span class="dv">42</span><span class="op">);</span></span>
+<span id="cb6-9"><a href="#cb6-9" tabindex="-1"></a>  r_sexp dummy2 <span class="op">=</span> r_sexp<span class="op">(</span>dummy<span class="op">);</span></span>
+<span id="cb6-10"><a href="#cb6-10" tabindex="-1"></a>  <span class="kw">auto</span> start <span class="op">=</span> <span class="bu">std::</span>chrono::high_resolution_clock::now<span class="op">();</span></span>
+<span id="cb6-11"><a href="#cb6-11" tabindex="-1"></a>  <span class="cf">for</span> <span class="op">(</span><span class="dt">int</span> i <span class="op">=</span> <span class="dv">0</span><span class="op">;</span> i <span class="op">&lt;</span> n<span class="op">;</span> <span class="op">++</span>i<span class="op">)</span> <span class="op">{</span></span>
+<span id="cb6-12"><a href="#cb6-12" tabindex="-1"></a>    r_sexp x <span class="op">=</span> dummy2<span class="op">;</span> <span class="co">// Copy</span></span>
+<span id="cb6-13"><a href="#cb6-13" tabindex="-1"></a>  <span class="op">}</span></span>
+<span id="cb6-14"><a href="#cb6-14" tabindex="-1"></a>  <span class="kw">auto</span> end <span class="op">=</span> <span class="bu">std::</span>chrono::high_resolution_clock::now<span class="op">();</span></span>
+<span id="cb6-15"><a href="#cb6-15" tabindex="-1"></a>  <span class="dt">double</span> ns <span class="op">=</span> <span class="bu">std::</span>chrono::duration<span class="op">&lt;</span><span class="dt">double</span><span class="op">,</span> <span class="bu">std::</span>nano<span class="op">&gt;(</span>end <span class="op">-</span> start<span class="op">).</span>count<span class="op">();</span></span>
+<span id="cb6-16"><a href="#cb6-16" tabindex="-1"></a>  <span class="cf">return</span> ns <span class="op">/</span> n<span class="op">;</span> <span class="co">// nanoseconds per copy</span></span>
+<span id="cb6-17"><a href="#cb6-17" tabindex="-1"></a><span class="op">}</span></span></code></pre></div>
 <p><strong>Results in nanoseconds per copy</strong></p>
-<div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" tabindex="-1"></a><span class="fu">replicate</span>(<span class="dv">10</span><span class="sc">^</span><span class="dv">4</span>, <span class="fu">bench_protect_copy_cpp11</span>(<span class="dv">10000</span>)) <span class="sc">|&gt;</span> <span class="fu">mean</span>()</span>
-<span id="cb5-2"><a href="#cb5-2" tabindex="-1"></a>[<span class="dv">1</span>] <span class="fl">27.59263</span></span>
-<span id="cb5-3"><a href="#cb5-3" tabindex="-1"></a><span class="fu">replicate</span>(<span class="dv">10</span><span class="sc">^</span><span class="dv">4</span>, <span class="fu">bench_protect_copy_cppally</span>(<span class="dv">10000</span>)) <span class="sc">|&gt;</span> <span class="fu">mean</span>()</span>
-<span id="cb5-4"><a href="#cb5-4" tabindex="-1"></a>[<span class="dv">1</span>] <span class="fl">0.240208</span></span></code></pre></div>
+<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/lapply.html" class="external-link">replicate</a></span><span class="op">(</span><span class="fl">10</span><span class="op">^</span><span class="fl">4</span>, <span class="fu">bench_protect_copy_cpp11</span><span class="op">(</span><span class="fl">10</span><span class="op">^</span><span class="fl">4</span><span class="op">)</span><span class="op">)</span> <span class="op">|&gt;</span> <span class="fu"><a href="https://rdrr.io/r/base/mean.html" class="external-link">mean</a></span><span class="op">(</span><span class="op">)</span></span>
+<span><span class="co">#&gt; [1] 38.7948</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/lapply.html" class="external-link">replicate</a></span><span class="op">(</span><span class="fl">10</span><span class="op">^</span><span class="fl">4</span>, <span class="fu">bench_protect_copy_cppally</span><span class="op">(</span><span class="fl">10</span><span class="op">^</span><span class="fl">4</span><span class="op">)</span><span class="op">)</span> <span class="op">|&gt;</span> <span class="fu"><a href="https://rdrr.io/r/base/mean.html" class="external-link">mean</a></span><span class="op">(</span><span class="op">)</span></span>
+<span><span class="co">#&gt; [1] 0.3163218</span></span></code></pre></div>
 <p>In these benchmark results we can see a drastic difference, with
-cpp11 at 27 ns/copy and cppally at 0.25 ns/copy.</p>
+cpp11 at ~27 ns/copy and cppally at ~0.25 ns/copy.</p>
 <p><strong>Impact of protection overhead, a real example</strong></p>
 <p>Let’s look at a real example of how much protection overhead can have
 an impact on performance.</p>
 <p><strong>Example:</strong> Counting the number of <code>NA</code>
 values in a character vector</p>
-<div class="sourceCode" id="cb6"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb6-1"><a href="#cb6-1" tabindex="-1"></a></span>
-<span id="cb6-2"><a href="#cb6-2" tabindex="-1"></a><span class="co">// Pure R C API NA count - As fast as it can reasonably get</span></span>
-<span id="cb6-3"><a href="#cb6-3" tabindex="-1"></a><span class="op">[[</span><span class="at">cppally</span><span class="op">::</span><span class="at">register</span><span class="op">]]</span> <span class="co">// Registered via cppally for convenience</span></span>
-<span id="cb6-4"><a href="#cb6-4" tabindex="-1"></a><span class="dt">int</span> C_na_count<span class="op">(</span>SEXP x<span class="op">){</span></span>
-<span id="cb6-5"><a href="#cb6-5" tabindex="-1"></a> <span class="dt">r_size_t</span> n <span class="op">=</span> Rf_xlength<span class="op">(</span>x<span class="op">);</span></span>
-<span id="cb6-6"><a href="#cb6-6" tabindex="-1"></a> <span class="dt">int</span> na_count <span class="op">=</span> <span class="dv">0</span><span class="op">;</span></span>
-<span id="cb6-7"><a href="#cb6-7" tabindex="-1"></a> <span class="at">const</span> SEXP <span class="op">*</span>p_x <span class="op">=</span> STRING_PTR_RO<span class="op">(</span>x<span class="op">);</span></span>
-<span id="cb6-8"><a href="#cb6-8" tabindex="-1"></a> <span class="cf">for</span> <span class="op">(</span><span class="dt">r_size_t</span> i <span class="op">=</span> <span class="dv">0</span><span class="op">;</span> i <span class="op">&lt;</span> n<span class="op">;</span> <span class="op">++</span>i<span class="op">){</span></span>
-<span id="cb6-9"><a href="#cb6-9" tabindex="-1"></a>  SEXP str <span class="op">=</span> p_x<span class="op">[</span>i<span class="op">];</span> <span class="co">// No protection so no extra overhead</span></span>
-<span id="cb6-10"><a href="#cb6-10" tabindex="-1"></a>  na_count <span class="op">+=</span> str <span class="op">==</span> NA_STRING<span class="op">;</span></span>
-<span id="cb6-11"><a href="#cb6-11" tabindex="-1"></a> <span class="op">}</span></span>
-<span id="cb6-12"><a href="#cb6-12" tabindex="-1"></a> <span class="cf">return</span> na_count<span class="op">;</span></span>
-<span id="cb6-13"><a href="#cb6-13" tabindex="-1"></a><span class="op">}</span></span>
-<span id="cb6-14"><a href="#cb6-14" tabindex="-1"></a></span>
-<span id="cb6-15"><a href="#cb6-15" tabindex="-1"></a><span class="co">// cpp11 NA count</span></span>
-<span id="cb6-16"><a href="#cb6-16" tabindex="-1"></a><span class="op">[[</span><span class="at">cpp11</span><span class="op">::</span><span class="at">register</span><span class="op">]]</span></span>
-<span id="cb6-17"><a href="#cb6-17" tabindex="-1"></a><span class="dt">int</span> cpp11_na_count<span class="op">(</span>strings x<span class="op">){</span></span>
-<span id="cb6-18"><a href="#cb6-18" tabindex="-1"></a>  <span class="dt">R_xlen_t</span> n <span class="op">=</span> x<span class="op">.</span>size<span class="op">();</span></span>
-<span id="cb6-19"><a href="#cb6-19" tabindex="-1"></a></span>
-<span id="cb6-20"><a href="#cb6-20" tabindex="-1"></a>  <span class="dt">int</span> na_count <span class="op">=</span> <span class="dv">0</span><span class="op">;</span></span>
-<span id="cb6-21"><a href="#cb6-21" tabindex="-1"></a></span>
-<span id="cb6-22"><a href="#cb6-22" tabindex="-1"></a>  <span class="cf">for</span> <span class="op">(</span><span class="dt">R_xlen_t</span> i <span class="op">=</span> <span class="dv">0</span><span class="op">;</span> i <span class="op">&lt;</span> n<span class="op">;</span> <span class="op">++</span>i<span class="op">){</span></span>
-<span id="cb6-23"><a href="#cb6-23" tabindex="-1"></a>    r_string str <span class="op">=</span> x<span class="op">[</span>i<span class="op">];</span> <span class="co">// r_string protects the underlying CHARSXP</span></span>
-<span id="cb6-24"><a href="#cb6-24" tabindex="-1"></a>    na_count <span class="op">+=</span> is_na<span class="op">(</span>str<span class="op">);</span></span>
-<span id="cb6-25"><a href="#cb6-25" tabindex="-1"></a>  <span class="op">}</span></span>
-<span id="cb6-26"><a href="#cb6-26" tabindex="-1"></a>  <span class="cf">return</span> na_count<span class="op">;</span></span>
-<span id="cb6-27"><a href="#cb6-27" tabindex="-1"></a><span class="op">}</span></span>
-<span id="cb6-28"><a href="#cb6-28" tabindex="-1"></a></span>
-<span id="cb6-29"><a href="#cb6-29" tabindex="-1"></a><span class="co">// cppally NA count</span></span>
-<span id="cb6-30"><a href="#cb6-30" tabindex="-1"></a><span class="op">[[</span><span class="at">cppally</span><span class="op">::</span><span class="at">register</span><span class="op">]]</span></span>
-<span id="cb6-31"><a href="#cb6-31" tabindex="-1"></a><span class="dt">int</span> cppally_na_count<span class="op">(</span>r_vec<span class="op">&lt;</span>r_str<span class="op">&gt;</span> x<span class="op">){</span></span>
-<span id="cb6-32"><a href="#cb6-32" tabindex="-1"></a> <span class="dt">r_size_t</span> n <span class="op">=</span> x<span class="op">.</span>length<span class="op">();</span></span>
-<span id="cb6-33"><a href="#cb6-33" tabindex="-1"></a> <span class="dt">int</span> na_count <span class="op">=</span> <span class="dv">0</span><span class="op">;</span></span>
-<span id="cb6-34"><a href="#cb6-34" tabindex="-1"></a> <span class="cf">for</span> <span class="op">(</span><span class="dt">r_size_t</span> i <span class="op">=</span> <span class="dv">0</span><span class="op">;</span> i <span class="op">&lt;</span> n<span class="op">;</span> <span class="op">++</span>i<span class="op">){</span></span>
-<span id="cb6-35"><a href="#cb6-35" tabindex="-1"></a>  r_str str <span class="op">=</span> x<span class="op">.</span>get<span class="op">(</span>i<span class="op">);</span> <span class="co">// r_str protects the underlying CHARSXP</span></span>
-<span id="cb6-36"><a href="#cb6-36" tabindex="-1"></a>  na_count <span class="op">+=</span> is_na<span class="op">(</span>str<span class="op">);</span></span>
-<span id="cb6-37"><a href="#cb6-37" tabindex="-1"></a> <span class="op">}</span></span>
-<span id="cb6-38"><a href="#cb6-38" tabindex="-1"></a> <span class="cf">return</span> na_count<span class="op">;</span></span>
-<span id="cb6-39"><a href="#cb6-39" tabindex="-1"></a><span class="op">}</span></span></code></pre></div>
-<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">x</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/sample.html" class="external-link">sample</a></span><span class="op">(</span><span class="va">letters</span>, <span class="fl">10</span><span class="op">^</span><span class="fl">5</span>, <span class="cn">TRUE</span><span class="op">)</span></span>
+<div class="sourceCode" id="cb8"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb8-1"><a href="#cb8-1" tabindex="-1"></a></span>
+<span id="cb8-2"><a href="#cb8-2" tabindex="-1"></a></span>
+<span id="cb8-3"><a href="#cb8-3" tabindex="-1"></a><span class="pp">#include </span><span class="im">&lt;cpp11.hpp&gt;</span></span>
+<span id="cb8-4"><a href="#cb8-4" tabindex="-1"></a><span class="op">[[</span><span class="at">cppally</span><span class="op">::</span><span class="at">linking_to</span><span class="op">(</span><span class="st">"cpp11"</span><span class="op">)]]</span></span>
+<span id="cb8-5"><a href="#cb8-5" tabindex="-1"></a></span>
+<span id="cb8-6"><a href="#cb8-6" tabindex="-1"></a><span class="co">// Pure R C API NA count - As fast as it can reasonably get</span></span>
+<span id="cb8-7"><a href="#cb8-7" tabindex="-1"></a><span class="op">[[</span><span class="at">cppally</span><span class="op">::</span><span class="at">register</span><span class="op">]]</span> <span class="co">// Registered via cppally for convenience</span></span>
+<span id="cb8-8"><a href="#cb8-8" tabindex="-1"></a><span class="dt">int</span> C_na_count<span class="op">(</span>SEXP x<span class="op">){</span></span>
+<span id="cb8-9"><a href="#cb8-9" tabindex="-1"></a> <span class="dt">r_size_t</span> n <span class="op">=</span> Rf_xlength<span class="op">(</span>x<span class="op">);</span></span>
+<span id="cb8-10"><a href="#cb8-10" tabindex="-1"></a> <span class="dt">int</span> na_count <span class="op">=</span> <span class="dv">0</span><span class="op">;</span></span>
+<span id="cb8-11"><a href="#cb8-11" tabindex="-1"></a> <span class="at">const</span> SEXP <span class="op">*</span>p_x <span class="op">=</span> STRING_PTR_RO<span class="op">(</span>x<span class="op">);</span></span>
+<span id="cb8-12"><a href="#cb8-12" tabindex="-1"></a> <span class="cf">for</span> <span class="op">(</span><span class="dt">r_size_t</span> i <span class="op">=</span> <span class="dv">0</span><span class="op">;</span> i <span class="op">&lt;</span> n<span class="op">;</span> <span class="op">++</span>i<span class="op">){</span></span>
+<span id="cb8-13"><a href="#cb8-13" tabindex="-1"></a>  SEXP str <span class="op">=</span> p_x<span class="op">[</span>i<span class="op">];</span> <span class="co">// No protection so no extra overhead</span></span>
+<span id="cb8-14"><a href="#cb8-14" tabindex="-1"></a>  na_count <span class="op">+=</span> str <span class="op">==</span> NA_STRING<span class="op">;</span></span>
+<span id="cb8-15"><a href="#cb8-15" tabindex="-1"></a> <span class="op">}</span></span>
+<span id="cb8-16"><a href="#cb8-16" tabindex="-1"></a> <span class="cf">return</span> na_count<span class="op">;</span></span>
+<span id="cb8-17"><a href="#cb8-17" tabindex="-1"></a><span class="op">}</span></span>
+<span id="cb8-18"><a href="#cb8-18" tabindex="-1"></a></span>
+<span id="cb8-19"><a href="#cb8-19" tabindex="-1"></a><span class="co">// cpp11 NA count</span></span>
+<span id="cb8-20"><a href="#cb8-20" tabindex="-1"></a><span class="op">[[</span><span class="at">cppally</span><span class="op">::</span><span class="at">register</span><span class="op">]]</span></span>
+<span id="cb8-21"><a href="#cb8-21" tabindex="-1"></a><span class="dt">int</span> cpp11_na_count<span class="op">(</span>SEXP x<span class="op">){</span></span>
+<span id="cb8-22"><a href="#cb8-22" tabindex="-1"></a>  <span class="kw">using</span> <span class="kw">namespace</span> cpp11<span class="op">;</span></span>
+<span id="cb8-23"><a href="#cb8-23" tabindex="-1"></a>  strings <span class="va">x_</span><span class="op">(</span>x<span class="op">);</span></span>
+<span id="cb8-24"><a href="#cb8-24" tabindex="-1"></a>  <span class="dt">R_xlen_t</span> n <span class="op">=</span> <span class="va">x_</span><span class="op">.</span>size<span class="op">();</span></span>
+<span id="cb8-25"><a href="#cb8-25" tabindex="-1"></a></span>
+<span id="cb8-26"><a href="#cb8-26" tabindex="-1"></a>  <span class="dt">int</span> na_count <span class="op">=</span> <span class="dv">0</span><span class="op">;</span></span>
+<span id="cb8-27"><a href="#cb8-27" tabindex="-1"></a></span>
+<span id="cb8-28"><a href="#cb8-28" tabindex="-1"></a>  <span class="cf">for</span> <span class="op">(</span><span class="dt">R_xlen_t</span> i <span class="op">=</span> <span class="dv">0</span><span class="op">;</span> i <span class="op">&lt;</span> n<span class="op">;</span> <span class="op">++</span>i<span class="op">){</span></span>
+<span id="cb8-29"><a href="#cb8-29" tabindex="-1"></a>    r_string str <span class="op">=</span> <span class="va">x_</span><span class="op">[</span>i<span class="op">];</span> <span class="co">// r_string protects the underlying CHARSXP</span></span>
+<span id="cb8-30"><a href="#cb8-30" tabindex="-1"></a>    na_count <span class="op">+=</span> cpp11<span class="op">::</span>is_na<span class="op">(</span>str<span class="op">);</span></span>
+<span id="cb8-31"><a href="#cb8-31" tabindex="-1"></a>  <span class="op">}</span></span>
+<span id="cb8-32"><a href="#cb8-32" tabindex="-1"></a>  <span class="cf">return</span> na_count<span class="op">;</span></span>
+<span id="cb8-33"><a href="#cb8-33" tabindex="-1"></a><span class="op">}</span></span>
+<span id="cb8-34"><a href="#cb8-34" tabindex="-1"></a></span>
+<span id="cb8-35"><a href="#cb8-35" tabindex="-1"></a><span class="co">// cppally NA count</span></span>
+<span id="cb8-36"><a href="#cb8-36" tabindex="-1"></a><span class="op">[[</span><span class="at">cppally</span><span class="op">::</span><span class="at">register</span><span class="op">]]</span></span>
+<span id="cb8-37"><a href="#cb8-37" tabindex="-1"></a><span class="dt">int</span> cppally_na_count<span class="op">(</span>r_vec<span class="op">&lt;</span>r_str<span class="op">&gt;</span> x<span class="op">){</span></span>
+<span id="cb8-38"><a href="#cb8-38" tabindex="-1"></a> <span class="dt">r_size_t</span> n <span class="op">=</span> x<span class="op">.</span>length<span class="op">();</span></span>
+<span id="cb8-39"><a href="#cb8-39" tabindex="-1"></a> <span class="dt">int</span> na_count <span class="op">=</span> <span class="dv">0</span><span class="op">;</span></span>
+<span id="cb8-40"><a href="#cb8-40" tabindex="-1"></a> <span class="cf">for</span> <span class="op">(</span><span class="dt">r_size_t</span> i <span class="op">=</span> <span class="dv">0</span><span class="op">;</span> i <span class="op">&lt;</span> n<span class="op">;</span> <span class="op">++</span>i<span class="op">){</span></span>
+<span id="cb8-41"><a href="#cb8-41" tabindex="-1"></a>  r_str str <span class="op">=</span> x<span class="op">.</span>get<span class="op">(</span>i<span class="op">);</span> <span class="co">// r_str protects the underlying CHARSXP</span></span>
+<span id="cb8-42"><a href="#cb8-42" tabindex="-1"></a>  na_count <span class="op">+=</span> is_na<span class="op">(</span>str<span class="op">);</span></span>
+<span id="cb8-43"><a href="#cb8-43" tabindex="-1"></a> <span class="op">}</span></span>
+<span id="cb8-44"><a href="#cb8-44" tabindex="-1"></a> <span class="cf">return</span> na_count<span class="op">;</span></span>
+<span id="cb8-45"><a href="#cb8-45" tabindex="-1"></a><span class="op">}</span></span></code></pre></div>
+<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/Random.html" class="external-link">set.seed</a></span><span class="op">(</span><span class="fl">42</span><span class="op">)</span></span>
+<span><span class="va">x</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/sample.html" class="external-link">sample</a></span><span class="op">(</span><span class="va">letters</span>, <span class="fl">10</span><span class="op">^</span><span class="fl">5</span>, <span class="cn">TRUE</span><span class="op">)</span></span>
 <span><span class="va">x</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/r/base/sample.html" class="external-link">sample.int</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="va">x</span><span class="op">)</span>, <span class="fl">10</span><span class="op">^</span><span class="fl">3</span><span class="op">)</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="cn">NA</span></span></code></pre></div>
 <p><strong>R C API results</strong> - Extremely fast &lt;30
 microseconds</p>
-<div class="sourceCode" id="cb8"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" tabindex="-1"></a><span class="fu">mark</span>(<span class="fu">C_na_count</span>(x))</span>
-<span id="cb8-2"><a href="#cb8-2" tabindex="-1"></a><span class="co"># A tibble: 1 × 13</span></span>
-<span id="cb8-3"><a href="#cb8-3" tabindex="-1"></a>  expression         min  median <span class="st">`</span><span class="at">itr/sec</span><span class="st">`</span> mem_alloc <span class="st">`</span><span class="at">gc/sec</span><span class="st">`</span> n_itr  n_gc total_time result memory     time       gc      </span>
-<span id="cb8-4"><a href="#cb8-4" tabindex="-1"></a>  <span class="sc">&lt;</span>bch<span class="sc">:</span>expr<span class="sc">&gt;</span>    <span class="er">&lt;</span>bch<span class="sc">:</span>tm<span class="sc">&gt;</span> <span class="er">&lt;</span>bch<span class="sc">:</span>t<span class="sc">&gt;</span>     <span class="er">&lt;</span>dbl<span class="sc">&gt;</span> <span class="er">&lt;</span>bch<span class="sc">:</span>byt<span class="sc">&gt;</span>    <span class="er">&lt;</span>dbl<span class="sc">&gt;</span> <span class="er">&lt;</span>int<span class="sc">&gt;</span> <span class="er">&lt;</span>dbl<span class="sc">&gt;</span>   <span class="er">&lt;</span>bch<span class="sc">:</span>tm<span class="sc">&gt;</span> <span class="er">&lt;</span>list<span class="sc">&gt;</span> <span class="er">&lt;</span>list<span class="sc">&gt;</span>     <span class="er">&lt;</span>list<span class="sc">&gt;</span>     <span class="er">&lt;</span>list<span class="sc">&gt;</span>  </span>
-<span id="cb8-5"><a href="#cb8-5" tabindex="-1"></a><span class="dv">1</span> <span class="fu">C_na_count</span>(x)   <span class="fl">24.3</span>µs  <span class="fl">26.6</span>µs    <span class="fl">35597.</span>        <span class="dv">0</span>B        <span class="dv">0</span> <span class="dv">10000</span>     <span class="dv">0</span>      <span class="dv">281</span>ms <span class="sc">&lt;</span>int<span class="sc">&gt;</span>  <span class="er">&lt;</span>Rprofmem<span class="sc">&gt;</span> <span class="er">&lt;</span>bench_tm<span class="sc">&gt;</span> <span class="er">&lt;</span>tibble<span class="sc">&gt;</span></span></code></pre></div>
-<p><strong>cpp11 results</strong> - 5 milliseconds</p>
-<div class="sourceCode" id="cb9"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" tabindex="-1"></a><span class="fu">mark</span>(<span class="fu">cpp11_na_count</span>(x))</span>
-<span id="cb9-2"><a href="#cb9-2" tabindex="-1"></a><span class="co"># A tibble: 1 × 13</span></span>
-<span id="cb9-3"><a href="#cb9-3" tabindex="-1"></a>  expression          min median <span class="st">`</span><span class="at">itr/sec</span><span class="st">`</span> mem_alloc <span class="st">`</span><span class="at">gc/sec</span><span class="st">`</span> n_itr  n_gc total_time result memory     time       gc      </span>
-<span id="cb9-4"><a href="#cb9-4" tabindex="-1"></a>  <span class="sc">&lt;</span>bch<span class="sc">:</span>expr<span class="sc">&gt;</span>       <span class="er">&lt;</span>bch<span class="sc">:</span><span class="er">&gt;</span> <span class="er">&lt;</span>bch<span class="sc">:</span><span class="er">&gt;</span>     <span class="er">&lt;</span>dbl<span class="sc">&gt;</span> <span class="er">&lt;</span>bch<span class="sc">:</span>byt<span class="sc">&gt;</span>    <span class="er">&lt;</span>dbl<span class="sc">&gt;</span> <span class="er">&lt;</span>int<span class="sc">&gt;</span> <span class="er">&lt;</span>dbl<span class="sc">&gt;</span>   <span class="er">&lt;</span>bch<span class="sc">:</span>tm<span class="sc">&gt;</span> <span class="er">&lt;</span>list<span class="sc">&gt;</span> <span class="er">&lt;</span>list<span class="sc">&gt;</span>     <span class="er">&lt;</span>list<span class="sc">&gt;</span>     <span class="er">&lt;</span>list<span class="sc">&gt;</span>  </span>
-<span id="cb9-5"><a href="#cb9-5" tabindex="-1"></a><span class="dv">1</span> <span class="fu">cpp11_na_count</span>(… <span class="fl">4.65</span>ms    <span class="dv">5</span>ms      <span class="fl">193.</span>        <span class="dv">0</span>B     <span class="fl">23.8</span>    <span class="dv">73</span>     <span class="dv">9</span>      <span class="dv">379</span>ms <span class="sc">&lt;</span>int<span class="sc">&gt;</span>  <span class="er">&lt;</span>Rprofmem<span class="sc">&gt;</span> <span class="er">&lt;</span>bench_tm<span class="sc">&gt;</span> <span class="er">&lt;</span>tibble<span class="sc">&gt;</span></span></code></pre></div>
-<p><strong>cppally results</strong> - 730 microseconds</p>
-<div class="sourceCode" id="cb10"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" tabindex="-1"></a><span class="fu">mark</span>(<span class="fu">cppally_na_count</span>(x))</span>
-<span id="cb10-2"><a href="#cb10-2" tabindex="-1"></a><span class="co"># A tibble: 1 × 13</span></span>
-<span id="cb10-3"><a href="#cb10-3" tabindex="-1"></a>  expression          min median <span class="st">`</span><span class="at">itr/sec</span><span class="st">`</span> mem_alloc <span class="st">`</span><span class="at">gc/sec</span><span class="st">`</span> n_itr  n_gc total_time result memory     time       gc      </span>
-<span id="cb10-4"><a href="#cb10-4" tabindex="-1"></a>  <span class="sc">&lt;</span>bch<span class="sc">:</span>expr<span class="sc">&gt;</span>        <span class="er">&lt;</span>bch<span class="sc">&gt;</span> <span class="er">&lt;</span>bch<span class="sc">:</span><span class="er">&gt;</span>     <span class="er">&lt;</span>dbl<span class="sc">&gt;</span> <span class="er">&lt;</span>bch<span class="sc">:</span>byt<span class="sc">&gt;</span>    <span class="er">&lt;</span>dbl<span class="sc">&gt;</span> <span class="er">&lt;</span>int<span class="sc">&gt;</span> <span class="er">&lt;</span>dbl<span class="sc">&gt;</span>   <span class="er">&lt;</span>bch<span class="sc">:</span>tm<span class="sc">&gt;</span> <span class="er">&lt;</span>list<span class="sc">&gt;</span> <span class="er">&lt;</span>list<span class="sc">&gt;</span>     <span class="er">&lt;</span>list<span class="sc">&gt;</span>     <span class="er">&lt;</span>list<span class="sc">&gt;</span>  </span>
-<span id="cb10-5"><a href="#cb10-5" tabindex="-1"></a><span class="dv">1</span> <span class="fu">cppally_na_count</span>(x) <span class="dv">683</span>µs  <span class="dv">728</span>µs     <span class="fl">1175.</span>        <span class="dv">0</span>B        <span class="dv">0</span>   <span class="dv">588</span>     <span class="dv">0</span>      <span class="dv">500</span>ms <span class="sc">&lt;</span>int<span class="sc">&gt;</span>  <span class="er">&lt;</span>Rprofmem<span class="sc">&gt;</span> <span class="er">&lt;</span>bench_tm<span class="sc">&gt;</span> <span class="er">&lt;</span>tibble<span class="sc">&gt;</span></span></code></pre></div>
+<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://bench.r-lib.org/" class="external-link">bench</a></span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://bench.r-lib.org/reference/mark.html" class="external-link">mark</a></span><span class="op">(</span><span class="fu">C_na_count</span><span class="op">(</span><span class="va">x</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 1 × 6</span></span></span>
+<span><span class="co">#&gt;   expression         min   median `itr/sec` mem_alloc `gc/sec`</span></span>
+<span><span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;bch:expr&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;bch:tm&gt;</span> <span style="color: #949494; font-style: italic;">&lt;bch:tm&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;bch:byt&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span> C_na_count(x)   34.1µs   63.5µs    <span style="text-decoration: underline;">15</span>883.        0B        0</span></span></code></pre></div>
+<p><strong>cpp11 results</strong> - ~5 milliseconds</p>
+<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://bench.r-lib.org/reference/mark.html" class="external-link">mark</a></span><span class="op">(</span><span class="fu">cpp11_na_count</span><span class="op">(</span><span class="va">x</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 1 × 6</span></span></span>
+<span><span class="co">#&gt;   expression             min   median `itr/sec` mem_alloc `gc/sec`</span></span>
+<span><span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;bch:expr&gt;</span>        <span style="color: #949494; font-style: italic;">&lt;bch:tm&gt;</span> <span style="color: #949494; font-style: italic;">&lt;bch:tm&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;bch:byt&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span> cpp11_na_count(x)   6.62ms   6.82ms      146.        0B     47.6</span></span></code></pre></div>
+<p><strong>cppally results</strong> - ~750 microseconds</p>
+<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://bench.r-lib.org/reference/mark.html" class="external-link">mark</a></span><span class="op">(</span><span class="fu">cppally_na_count</span><span class="op">(</span><span class="va">x</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 1 × 6</span></span></span>
+<span><span class="co">#&gt;   expression               min   median `itr/sec` mem_alloc `gc/sec`</span></span>
+<span><span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;bch:expr&gt;</span>          <span style="color: #949494; font-style: italic;">&lt;bch:tm&gt;</span> <span style="color: #949494; font-style: italic;">&lt;bch:tm&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;bch:byt&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span> cppally_na_count(x)   1.46ms   1.47ms      678.        0B        0</span></span></code></pre></div>
 <p>Counting values is a simple operation and because of its simplicity,
 the overhead associated with protection will dominate the benchmark. We
 can see that when removing the protection overhead and using the R C API
@@ -269,21 +304,23 @@ checked if it is <code>NA</code>, and then incremented the
 <code>r_str</code> element beyond just reading its value which means we
 could have improved performance by using <code>r_str_view</code>, a
 non-owning version of <code>r_str</code>.</p>
-<div class="sourceCode" id="cb11"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb11-1"><a href="#cb11-1" tabindex="-1"></a><span class="op">[[</span><span class="at">cppally</span><span class="op">::</span><span class="at">register</span><span class="op">]]</span></span>
-<span id="cb11-2"><a href="#cb11-2" tabindex="-1"></a><span class="dt">int</span> cppally_fast_na_count<span class="op">(</span>r_vec<span class="op">&lt;</span>r_str_view<span class="op">&gt;</span> x<span class="op">){</span></span>
-<span id="cb11-3"><a href="#cb11-3" tabindex="-1"></a> <span class="dt">r_size_t</span> n <span class="op">=</span> x<span class="op">.</span>length<span class="op">();</span></span>
-<span id="cb11-4"><a href="#cb11-4" tabindex="-1"></a> <span class="dt">int</span> na_count <span class="op">=</span> <span class="dv">0</span><span class="op">;</span></span>
-<span id="cb11-5"><a href="#cb11-5" tabindex="-1"></a> <span class="cf">for</span> <span class="op">(</span><span class="dt">r_size_t</span> i <span class="op">=</span> <span class="dv">0</span><span class="op">;</span> i <span class="op">&lt;</span> n<span class="op">;</span> <span class="op">++</span>i<span class="op">){</span></span>
-<span id="cb11-6"><a href="#cb11-6" tabindex="-1"></a>  r_str_view str <span class="op">=</span> x<span class="op">.</span>get<span class="op">(</span>i<span class="op">);</span> <span class="co">// `r_str_view` does NOT re-protect the underlying CHARSXP</span></span>
-<span id="cb11-7"><a href="#cb11-7" tabindex="-1"></a>  na_count <span class="op">+=</span> is_na<span class="op">(</span>str<span class="op">);</span></span>
-<span id="cb11-8"><a href="#cb11-8" tabindex="-1"></a> <span class="op">}</span></span>
-<span id="cb11-9"><a href="#cb11-9" tabindex="-1"></a> <span class="cf">return</span> na_count<span class="op">;</span></span>
-<span id="cb11-10"><a href="#cb11-10" tabindex="-1"></a><span class="op">}</span></span></code></pre></div>
-<div class="sourceCode" id="cb12"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" tabindex="-1"></a><span class="fu">mark</span>(<span class="fu">cppally_fast_na_count</span>(x))</span>
-<span id="cb12-2"><a href="#cb12-2" tabindex="-1"></a><span class="co"># A tibble: 1 × 13</span></span>
-<span id="cb12-3"><a href="#cb12-3" tabindex="-1"></a>  expression          min median <span class="st">`</span><span class="at">itr/sec</span><span class="st">`</span> mem_alloc <span class="st">`</span><span class="at">gc/sec</span><span class="st">`</span> n_itr  n_gc total_time result memory     time       gc      </span>
-<span id="cb12-4"><a href="#cb12-4" tabindex="-1"></a>  <span class="sc">&lt;</span>bch<span class="sc">:</span>expr<span class="sc">&gt;</span>       <span class="er">&lt;</span>bch<span class="sc">:</span><span class="er">&gt;</span> <span class="er">&lt;</span>bch<span class="sc">:</span><span class="er">&gt;</span>     <span class="er">&lt;</span>dbl<span class="sc">&gt;</span> <span class="er">&lt;</span>bch<span class="sc">:</span>byt<span class="sc">&gt;</span>    <span class="er">&lt;</span>dbl<span class="sc">&gt;</span> <span class="er">&lt;</span>int<span class="sc">&gt;</span> <span class="er">&lt;</span>dbl<span class="sc">&gt;</span>   <span class="er">&lt;</span>bch<span class="sc">:</span>tm<span class="sc">&gt;</span> <span class="er">&lt;</span>list<span class="sc">&gt;</span> <span class="er">&lt;</span>list<span class="sc">&gt;</span>     <span class="er">&lt;</span>list<span class="sc">&gt;</span>     <span class="er">&lt;</span>list<span class="sc">&gt;</span>  </span>
-<span id="cb12-5"><a href="#cb12-5" tabindex="-1"></a><span class="dv">1</span> cppally_fast_na_c… <span class="fl">67.2</span>µs <span class="fl">70.6</span>µs    <span class="fl">13434.</span>        <span class="dv">0</span>B        <span class="dv">0</span>  <span class="dv">6708</span>     <span class="dv">0</span>      <span class="dv">499</span>ms <span class="sc">&lt;</span>int<span class="sc">&gt;</span>  <span class="er">&lt;</span>Rprofmem<span class="sc">&gt;</span> <span class="er">&lt;</span>bench_tm<span class="sc">&gt;</span> <span class="er">&lt;</span>tibble<span class="sc">&gt;</span></span></code></pre></div>
+<div class="sourceCode" id="cb13"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb13-1"><a href="#cb13-1" tabindex="-1"></a></span>
+<span id="cb13-2"><a href="#cb13-2" tabindex="-1"></a><span class="op">[[</span><span class="at">cppally</span><span class="op">::</span><span class="at">register</span><span class="op">]]</span></span>
+<span id="cb13-3"><a href="#cb13-3" tabindex="-1"></a><span class="dt">int</span> cppally_fast_na_count<span class="op">(</span>r_vec<span class="op">&lt;</span>r_str_view<span class="op">&gt;</span> x<span class="op">){</span></span>
+<span id="cb13-4"><a href="#cb13-4" tabindex="-1"></a> <span class="dt">r_size_t</span> n <span class="op">=</span> x<span class="op">.</span>length<span class="op">();</span></span>
+<span id="cb13-5"><a href="#cb13-5" tabindex="-1"></a> <span class="dt">int</span> na_count <span class="op">=</span> <span class="dv">0</span><span class="op">;</span></span>
+<span id="cb13-6"><a href="#cb13-6" tabindex="-1"></a> <span class="cf">for</span> <span class="op">(</span><span class="dt">r_size_t</span> i <span class="op">=</span> <span class="dv">0</span><span class="op">;</span> i <span class="op">&lt;</span> n<span class="op">;</span> <span class="op">++</span>i<span class="op">){</span></span>
+<span id="cb13-7"><a href="#cb13-7" tabindex="-1"></a>  r_str_view str <span class="op">=</span> x<span class="op">.</span>get<span class="op">(</span>i<span class="op">);</span> <span class="co">// `r_str_view` does NOT re-protect the underlying CHARSXP</span></span>
+<span id="cb13-8"><a href="#cb13-8" tabindex="-1"></a>  na_count <span class="op">+=</span> is_na<span class="op">(</span>str<span class="op">);</span></span>
+<span id="cb13-9"><a href="#cb13-9" tabindex="-1"></a> <span class="op">}</span></span>
+<span id="cb13-10"><a href="#cb13-10" tabindex="-1"></a> <span class="cf">return</span> na_count<span class="op">;</span></span>
+<span id="cb13-11"><a href="#cb13-11" tabindex="-1"></a><span class="op">}</span></span></code></pre></div>
+<div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://bench.r-lib.org/reference/mark.html" class="external-link">mark</a></span><span class="op">(</span><span class="fu">cppally_fast_na_count</span><span class="op">(</span><span class="va">x</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 1 × 6</span></span></span>
+<span><span class="co">#&gt;   expression                    min   median `itr/sec` mem_alloc `gc/sec`</span></span>
+<span><span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;bch:expr&gt;</span>               <span style="color: #949494; font-style: italic;">&lt;bch:tm&gt;</span> <span style="color: #949494; font-style: italic;">&lt;bch:tm&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;bch:byt&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span> cppally_fast_na_count(x)    218µs    219µs     <span style="text-decoration: underline;">4</span>470.        0B        0</span></span></code></pre></div>
 <p>Looking at the benchmark results, we have effectively eliminated the
 protection overhead and the median execution time is much closer to that
 of the R C API.</p>
@@ -294,22 +331,23 @@ of the R C API.</p>
 <p>We could have also used <code>view()</code>, a non-owning version of
 <code><a href="https://rdrr.io/r/base/get.html" class="external-link">get()</a></code> that extracts elements but in a non-owning
 context.</p>
-<div class="sourceCode" id="cb13"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb13-1"><a href="#cb13-1" tabindex="-1"></a><span class="op">[[</span><span class="at">cppally</span><span class="op">::</span><span class="at">register</span><span class="op">]]</span></span>
-<span id="cb13-2"><a href="#cb13-2" tabindex="-1"></a><span class="dt">int</span> cppally_fast_na_count_v2<span class="op">(</span>r_vec<span class="op">&lt;</span>r_str<span class="op">&gt;</span> x<span class="op">){</span></span>
-<span id="cb13-3"><a href="#cb13-3" tabindex="-1"></a> <span class="dt">r_size_t</span> n <span class="op">=</span> x<span class="op">.</span>length<span class="op">();</span></span>
-<span id="cb13-4"><a href="#cb13-4" tabindex="-1"></a> <span class="dt">int</span> na_count <span class="op">=</span> <span class="dv">0</span><span class="op">;</span></span>
-<span id="cb13-5"><a href="#cb13-5" tabindex="-1"></a> <span class="cf">for</span> <span class="op">(</span><span class="dt">r_size_t</span> i <span class="op">=</span> <span class="dv">0</span><span class="op">;</span> i <span class="op">&lt;</span> n<span class="op">;</span> <span class="op">++</span>i<span class="op">){</span></span>
-<span id="cb13-6"><a href="#cb13-6" tabindex="-1"></a>  <span class="co">// view() is safe as long as you neither assign the result</span></span>
-<span id="cb13-7"><a href="#cb13-7" tabindex="-1"></a>  <span class="co">// to a variable nor return it from the function</span></span>
-<span id="cb13-8"><a href="#cb13-8" tabindex="-1"></a>  na_count <span class="op">+=</span> is_na<span class="op">(</span>x<span class="op">.</span>view<span class="op">(</span>i<span class="op">));</span> </span>
-<span id="cb13-9"><a href="#cb13-9" tabindex="-1"></a> <span class="op">}</span></span>
-<span id="cb13-10"><a href="#cb13-10" tabindex="-1"></a> <span class="cf">return</span> na_count<span class="op">;</span></span>
-<span id="cb13-11"><a href="#cb13-11" tabindex="-1"></a><span class="op">}</span></span></code></pre></div>
-<div class="sourceCode" id="cb14"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" tabindex="-1"></a><span class="fu">mark</span>(<span class="fu">cppally_fast_na_count_v2</span>(x))</span>
-<span id="cb14-2"><a href="#cb14-2" tabindex="-1"></a><span class="co"># A tibble: 1 × 13</span></span>
-<span id="cb14-3"><a href="#cb14-3" tabindex="-1"></a>  expression          min median <span class="st">`</span><span class="at">itr/sec</span><span class="st">`</span> mem_alloc <span class="st">`</span><span class="at">gc/sec</span><span class="st">`</span> n_itr  n_gc total_time result memory     time       gc      </span>
-<span id="cb14-4"><a href="#cb14-4" tabindex="-1"></a>  <span class="sc">&lt;</span>bch<span class="sc">:</span>expr<span class="sc">&gt;</span>       <span class="er">&lt;</span>bch<span class="sc">:</span><span class="er">&gt;</span> <span class="er">&lt;</span>bch<span class="sc">:</span><span class="er">&gt;</span>     <span class="er">&lt;</span>dbl<span class="sc">&gt;</span> <span class="er">&lt;</span>bch<span class="sc">:</span>byt<span class="sc">&gt;</span>    <span class="er">&lt;</span>dbl<span class="sc">&gt;</span> <span class="er">&lt;</span>int<span class="sc">&gt;</span> <span class="er">&lt;</span>dbl<span class="sc">&gt;</span>   <span class="er">&lt;</span>bch<span class="sc">:</span>tm<span class="sc">&gt;</span> <span class="er">&lt;</span>list<span class="sc">&gt;</span> <span class="er">&lt;</span>list<span class="sc">&gt;</span>     <span class="er">&lt;</span>list<span class="sc">&gt;</span>     <span class="er">&lt;</span>list<span class="sc">&gt;</span>  </span>
-<span id="cb14-5"><a href="#cb14-5" tabindex="-1"></a><span class="dv">1</span> cppally_fast_na_c… <span class="fl">67.2</span>µs <span class="fl">70.6</span>µs    <span class="fl">13221.</span>    <span class="fl">8.05</span>KB        <span class="dv">0</span>  <span class="dv">6602</span>     <span class="dv">0</span>      <span class="dv">499</span>ms <span class="sc">&lt;</span>int<span class="sc">&gt;</span>  <span class="er">&lt;</span>Rprofmem<span class="sc">&gt;</span> <span class="er">&lt;</span>bench_tm<span class="sc">&gt;</span> <span class="er">&lt;</span>tibble<span class="sc">&gt;</span></span></code></pre></div>
+<div class="sourceCode" id="cb15"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb15-1"><a href="#cb15-1" tabindex="-1"></a></span>
+<span id="cb15-2"><a href="#cb15-2" tabindex="-1"></a><span class="op">[[</span><span class="at">cppally</span><span class="op">::</span><span class="at">register</span><span class="op">]]</span></span>
+<span id="cb15-3"><a href="#cb15-3" tabindex="-1"></a><span class="dt">int</span> cppally_fast_na_count_v2<span class="op">(</span>r_vec<span class="op">&lt;</span>r_str<span class="op">&gt;</span> x<span class="op">){</span></span>
+<span id="cb15-4"><a href="#cb15-4" tabindex="-1"></a> <span class="dt">r_size_t</span> n <span class="op">=</span> x<span class="op">.</span>length<span class="op">();</span></span>
+<span id="cb15-5"><a href="#cb15-5" tabindex="-1"></a> <span class="dt">int</span> na_count <span class="op">=</span> <span class="dv">0</span><span class="op">;</span></span>
+<span id="cb15-6"><a href="#cb15-6" tabindex="-1"></a> <span class="cf">for</span> <span class="op">(</span><span class="dt">r_size_t</span> i <span class="op">=</span> <span class="dv">0</span><span class="op">;</span> i <span class="op">&lt;</span> n<span class="op">;</span> <span class="op">++</span>i<span class="op">){</span></span>
+<span id="cb15-7"><a href="#cb15-7" tabindex="-1"></a>  <span class="co">// view() is safe in a short-lived read-only context</span></span>
+<span id="cb15-8"><a href="#cb15-8" tabindex="-1"></a>  na_count <span class="op">+=</span> is_na<span class="op">(</span>x<span class="op">.</span>view<span class="op">(</span>i<span class="op">));</span> </span>
+<span id="cb15-9"><a href="#cb15-9" tabindex="-1"></a> <span class="op">}</span></span>
+<span id="cb15-10"><a href="#cb15-10" tabindex="-1"></a> <span class="cf">return</span> na_count<span class="op">;</span></span>
+<span id="cb15-11"><a href="#cb15-11" tabindex="-1"></a><span class="op">}</span></span></code></pre></div>
+<div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://bench.r-lib.org/reference/mark.html" class="external-link">mark</a></span><span class="op">(</span><span class="fu">cppally_fast_na_count_v2</span><span class="op">(</span><span class="va">x</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 1 × 6</span></span></span>
+<span><span class="co">#&gt;   expression                       min   median `itr/sec` mem_alloc `gc/sec`</span></span>
+<span><span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;bch:expr&gt;</span>                  <span style="color: #949494; font-style: italic;">&lt;bch:tm&gt;</span> <span style="color: #949494; font-style: italic;">&lt;bch:tm&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;bch:byt&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span> cppally_fast_na_count_v2(x)    187µs    188µs     <span style="text-decoration: underline;">5</span>228.        0B        0</span></span></code></pre></div>
 <p>The results are similar to that of
 <code>cppally_fast_na_count()</code>.</p>
 </div>
@@ -323,25 +361,27 @@ class which is a lightweight wrapper around a <code>SEXP</code> and
 never protects the underlying <code>SEXP</code>. Its lifetime must be
 shorter than the object it is pointing to.</p>
 <p><strong>DO</strong>:</p>
-<div class="sourceCode" id="cb15"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb15-1"><a href="#cb15-1" tabindex="-1"></a><span class="dt">void</span> good<span class="op">(</span>r_str x<span class="op">){</span></span>
-<span id="cb15-2"><a href="#cb15-2" tabindex="-1"></a>  r_str_view str <span class="op">=</span> x<span class="op">;</span></span>
-<span id="cb15-3"><a href="#cb15-3" tabindex="-1"></a>  <span class="cf">if</span> <span class="op">(</span>str<span class="op">.</span>cpp_str<span class="op">()</span> <span class="op">==</span> <span class="st">"true"</span><span class="op">){</span></span>
-<span id="cb15-4"><a href="#cb15-4" tabindex="-1"></a>    print<span class="op">(</span><span class="st">"true"</span><span class="op">);</span></span>
-<span id="cb15-5"><a href="#cb15-5" tabindex="-1"></a>  <span class="op">}</span> <span class="cf">else</span> <span class="op">{</span></span>
-<span id="cb15-6"><a href="#cb15-6" tabindex="-1"></a>    print<span class="op">(</span><span class="st">"false"</span><span class="op">);</span></span>
-<span id="cb15-7"><a href="#cb15-7" tabindex="-1"></a>  <span class="op">}</span></span>
-<span id="cb15-8"><a href="#cb15-8" tabindex="-1"></a><span class="op">}</span></span></code></pre></div>
+<div class="sourceCode" id="cb17"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb17-1"><a href="#cb17-1" tabindex="-1"></a></span>
+<span id="cb17-2"><a href="#cb17-2" tabindex="-1"></a><span class="dt">void</span> good<span class="op">(</span>r_str x<span class="op">){</span></span>
+<span id="cb17-3"><a href="#cb17-3" tabindex="-1"></a>  r_str_view str <span class="op">=</span> x<span class="op">;</span></span>
+<span id="cb17-4"><a href="#cb17-4" tabindex="-1"></a>  <span class="cf">if</span> <span class="op">(</span>str<span class="op">.</span>cpp_str<span class="op">()</span> <span class="op">==</span> <span class="st">"true"</span><span class="op">){</span></span>
+<span id="cb17-5"><a href="#cb17-5" tabindex="-1"></a>    print<span class="op">(</span><span class="st">"true"</span><span class="op">);</span></span>
+<span id="cb17-6"><a href="#cb17-6" tabindex="-1"></a>  <span class="op">}</span> <span class="cf">else</span> <span class="op">{</span></span>
+<span id="cb17-7"><a href="#cb17-7" tabindex="-1"></a>    print<span class="op">(</span><span class="st">"false"</span><span class="op">);</span></span>
+<span id="cb17-8"><a href="#cb17-8" tabindex="-1"></a>  <span class="op">}</span></span>
+<span id="cb17-9"><a href="#cb17-9" tabindex="-1"></a><span class="op">}</span></span></code></pre></div>
 <p>The above example is safe because <code>str</code> is not returned by
 <code>good()</code> AND does not outlive <code>x</code>.</p>
 <p><strong>DON’T</strong>:</p>
-<div class="sourceCode" id="cb16"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb16-1"><a href="#cb16-1" tabindex="-1"></a>r_str_view bar<span class="op">(){</span></span>
-<span id="cb16-2"><a href="#cb16-2" tabindex="-1"></a>  r_str new_str<span class="op">(</span><span class="st">"I will be destroyed at the end of `bar()`"</span><span class="op">);</span></span>
-<span id="cb16-3"><a href="#cb16-3" tabindex="-1"></a>  r_str_view bad_str <span class="op">=</span> new_str<span class="op">;</span> <span class="co">// A view of new_str</span></span>
-<span id="cb16-4"><a href="#cb16-4" tabindex="-1"></a>  <span class="cf">return</span> bad_str<span class="op">;</span> <span class="co">// Points to underlying CHARSXP but nothing protecting it</span></span>
-<span id="cb16-5"><a href="#cb16-5" tabindex="-1"></a><span class="op">}</span></span></code></pre></div>
+<div class="sourceCode" id="cb18"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb18-1"><a href="#cb18-1" tabindex="-1"></a></span>
+<span id="cb18-2"><a href="#cb18-2" tabindex="-1"></a>r_str_view bad<span class="op">(){</span></span>
+<span id="cb18-3"><a href="#cb18-3" tabindex="-1"></a>  r_str new_str<span class="op">(</span><span class="st">"I will be destroyed at the end of `bad()`"</span><span class="op">);</span></span>
+<span id="cb18-4"><a href="#cb18-4" tabindex="-1"></a>  r_str_view bad_str <span class="op">=</span> new_str<span class="op">;</span> <span class="co">// A view of new_str</span></span>
+<span id="cb18-5"><a href="#cb18-5" tabindex="-1"></a>  <span class="cf">return</span> bad_str<span class="op">;</span> <span class="co">// Points to underlying CHARSXP but nothing protecting it</span></span>
+<span id="cb18-6"><a href="#cb18-6" tabindex="-1"></a><span class="op">}</span></span></code></pre></div>
 <p>The above is a classic example of what <strong>not</strong> to do
 with string views, which is to have the view outlive the owner. In this
-case <code>bad_str</code> is returned at the end of <code>bar()</code>
+case <code>bad_str</code> is returned at the end of <code>bad()</code>
 at which point <code>new_str</code> goes out of scope and gets
 destroyed. This means nothing is protecting the underlying
 <code>CHARSXP</code> that <code>new_str</code> was protecting and once

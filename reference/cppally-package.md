@@ -20,3 +20,14 @@ Useful links:
 
 **Maintainer**: Nick Christofides <nick.christofides.r@gmail.com>
 ([ORCID](https://orcid.org/0000-0002-9743-7342)) \[copyright holder\]
+
+Other contributors:
+
+- Martin Leitner-Ankerl (Author of bundled ankerl::unordered_dense
+  library) \[copyright holder\]
+
+- Malte Skarupke (Author of bundled ska_sort library) \[copyright
+  holder\]
+
+- Posit Software, PBC (SEXP protection mechanism in r_sexp.h inspired by
+  cpp11) \[copyright holder\]

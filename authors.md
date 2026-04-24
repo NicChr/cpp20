@@ -5,6 +5,15 @@
 - **Nick Christofides**. Author, maintainer, copyright holder.
   [](https://orcid.org/0000-0002-9743-7342)
 
+- **Martin Leitner-Ankerl**. Copyright holder.  
+  Author of bundled ankerl::unordered_dense library
+
+- **Malte Skarupke**. Copyright holder.  
+  Author of bundled ska_sort library
+
+- **Posit Software, PBC**. Copyright holder.  
+  SEXP protection mechanism in r_sexp.h inspired by cpp11
+
 ## Citation
 
 Source:
