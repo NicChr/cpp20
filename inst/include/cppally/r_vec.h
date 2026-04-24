@@ -93,6 +93,12 @@ struct r_vec {
 
   public:
 
+  // Has data been materialised?
+  // Will only have been materialised if data ptr has been assigned
+  bool materialised() const noexcept {
+    return static_cast<bool>(m_ptr); 
+  }
+
   // Constructor that wraps new_vec_impl<T>
   explicit r_vec(r_size_t n)
     : sexp(internal::new_vec_impl<data_type>(n))
