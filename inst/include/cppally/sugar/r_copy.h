@@ -72,21 +72,23 @@ inline r_sexp deep_copy(const r_sexp& x){
 template <RVector T>
 inline T shallow_copy(const T& x){
     
-    if (x.is_null()) return T(r_null);
+    return T(safe[Rf_shallow_duplicate](x));
 
-    r_size_t n = x.length();
-    T out(n);
+    // if (x.is_null()) return T(r_null);
 
-    // If list, shallow copy list elements
-    if constexpr (is<T, r_vec<r_sexp>>){
-        for (r_size_t i = 0; i < n; ++i){
-            out.set(i, x.view(i));
-        }
-    } else {
-        r_copy_n(out, x, 0, n);
-    }    
-    attr::set_attrs(out, attr::get_attrs(x));
-    return out;
+    // r_size_t n = x.length();
+    // T out(n);
+
+    // // If list, shallow copy list elements
+    // if constexpr (is<T, r_vec<r_sexp>>){
+    //     for (r_size_t i = 0; i < n; ++i){
+    //         out.set(i, x.view(i));
+    //     }
+    // } else {
+    //     r_copy_n(out, x, 0, n);
+    // }    
+    // attr::set_attrs(out, attr::get_attrs(x));
+    // return out;
 }
 
 template<>
