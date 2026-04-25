@@ -18,6 +18,99 @@ knitr::opts_chunk$set(
 ```
 
 
+```{r, include = FALSE}
+required <- c("bit64", "brio", "callr", "cli", 
+              "decor", "desc", "glue", "purrr", "readr",
+              "stringr", "vctrs", "withr")
+if (!all(vapply(required, requireNamespace, logical(1), quietly = TRUE))) {
+  knitr::opts_chunk$set(eval = FALSE)
+  knitr::knit_exit()
+}
+```
+
+```{r, include=FALSE}
+# Helpers to compile all examples in debug mode
+cpp_source <- function(..., code, debug = TRUE, env = parent.frame()){
+  preamble <- c("#include <cppally.hpp>", "using namespace cppally;")
+  code <- paste(c(preamble, code), collapse = "\n")
+  cppally::cpp_source(debug = debug, env = env, code = code, ...)
+}
+cpp_eval <- function(..., debug = TRUE, env = parent.frame()){
+    cppally::cpp_eval(debug = debug, env = env, ...)
+}
+
+# Helpers to source and display C++/R code
+chunk_impl <- function(x, language){
+  paste0("```", language, "\n", x, "\n```\n")
+}
+as_code_chunk <- function(x, language){
+  cat(chunk_impl(x, language))
+}
+as_cpp_chunk <- function(x){
+  as_code_chunk(x, "cpp")
+}
+```
+
+```{r, include=FALSE}
+# Compile necessary examples in one-go 
+# as it's faster when building readme and vignettes
+
+# Only for single-line functions
+source_body <- function(x){
+ regmatches(x, regexpr("(?<=return )[^;]+", x, perl = TRUE)) 
+}
+
+examples <- c(
+  cppally_str_to_int = '
+[[cppally::register]]
+r_int cppally_str_to_int(){
+  return as<r_int>(r_str("a"));
+}', 
+  foo = '
+[[cppally::register]]
+r_int foo(r_int x){
+  return x;
+}', 
+  as_int64 = '
+[[cppally::register]]
+r_int64 as_int64(r_int x){
+	return as<r_int64>(x);
+}
+', 
+  cppally_as_r_size_t = '
+[[cppally::register]]
+r_size_t cppally_as_r_size_t(){
+  return as<r_size_t>(r_int(0));
+}
+', 
+  cppally_as_r_xlen_t = '
+[[cppally::register]]
+R_xlen_t cppally_as_r_xlen_t(){
+  return as<R_xlen_t>(r_int(0));
+}
+', 
+  cppally_as_int64_t = '
+[[cppally::register]]
+int64_t cppally_as_int64_t(){
+  return as<int64_t>(r_int(0));
+}',
+  vec_null = '
+[[cppally::register]]
+r_vec<r_int> vec_null(){
+  return r_vec<r_int>(r_null);
+}',
+  vec_is_null = '
+[[cppally::register]]
+bool vec_is_null(){
+  return r_vec<r_int>(r_null).is_null();
+}')
+  
+
+source_code_collapsed <- paste(examples, collapse = "\n")
+cpp_source(code = source_code_collapsed)
+```
+
+
 ## Acknowledgements
 
 I first want to thank the authors and contributors of the fantastic [cpp11](https://cpp11.r-lib.org/) R package, without which I would not have been inspired to write this package. I'd also like to thank the authors and contributors of [Rcpp](https://github.com/RcppCore/Rcpp) for developing this ecosystem that has laid much of the groundwork for C++ and R integration.
@@ -49,7 +142,7 @@ Like the excellent cpp11 package, cppally also handles automatic protection for 
 
 For performance reasons, ALTREP materialisation is eager by default, which means that 
 ALTREP vectors are materialised on construction. To preserve ALTREP compact representations, one can enable the package-wide 'CPPALLY_PRESERVE_ALTREP' flag. This can be done through `cppally::use_preserve_altrep_flag()` or `cppally::cpp_source(..., preserve_altrep = TRUE)`. You can also manually add the 
-'-CPPALLY_PRESERVE_ALTREP' flag to Makevars.
+'-DCPPALLY_PRESERVE_ALTREP' flag to Makevars.
 
 ### Interopability with the R C API
 
@@ -67,9 +160,38 @@ Deep copies are almost never triggered when modifying vectors, a design choice t
 
 ### Lossy coercion
 
-Any coercion that results in complete information loss is an error (partial is allowed, e.g. double -> int). This means that for example `as<r_int>(r_str("a"))` will throw an error instead of returning an NA like R does with `as.integer("a")`
+Any coercion that results in complete information loss is an error (partial is allowed, e.g. double -> int). 
 
-The benefit of this is that when registering C++ functions to R, inputs can be supplied flexibly without unexpected behaviour. Let's say you have a function foo that expects an `r_int` but you give it an `r_dbl` without realising - this will implicitly coerce to `r_int` without throwing an error. If it can't be coerced to integer without complete information loss (i.e non-parse-able string to integer), then an informative error is thrown. If we allowed implicit coercion to NA then we would need to be strict with inputs to balance things out. 
+For example, string -> int may not be possible without complete information loss
+
+```{r, echo=FALSE, results = 'asis'}
+as_cpp_chunk(source_body(examples[["cppally_str_to_int"]]))
+```
+
+```{r, echo=FALSE, error=TRUE}
+cppally_str_to_int()
+```
+
+This is contrast to R which returns an NA with a warning
+
+```{r}
+as.integer("a")
+```
+
+
+The benefit of cppally's approach is that when registering C++ functions to R, inputs can be supplied flexibly without unexpected behaviour. 
+
+Let's say you have a function `foo` that expects an `r_int` but you give it an `r_dbl` without realising - this will implicitly coerce to `r_int` without throwing an error.
+
+```{r, echo=FALSE, results = 'asis'}
+as_cpp_chunk(examples[["foo"]])
+```
+
+```{r}
+foo(1.2345)
+```
+
+If we allowed implicit coercion to NA then we would need to be strict with inputs to balance things out.
 
 ### Vector indexing
 
@@ -79,35 +201,67 @@ All indexing is 0-based including subsetting vectors.
 
 On the C++ side, 64-bit integers are fully supported, including vectors. To return 64-bit integers to R we need the bit64 package to be loaded. cppally delegates the handling of 64-bit integer vectors to bit64 by marking them with the "integer64" class.
 
-```cpp
-[[cppally::register]]
-r_int64 as_int64(r_int x){
-	return as<r_int64>(x);
-}
-```
 
-Please note that other 64-bit signed integer types like `int64_t`, `R_xlen_t`, or cppally's identical `r_size_t` will convert to 64-bit integer vectors when returned to R.
-
-```cpp
-[[cppally::register]]
-r_size_t as_r_size_t(r_int x){
-	return as<r_size_t>(x);
-}
-```
-
-```r
+```{r, message=FALSE}
 library(bit64)
-as_int64(10L)
-integer64
-[1] 10
-as_r_size_t(10L)
-integer64
-[1] 10
 ```
+
+
+```{r, echo=FALSE, results = 'asis'}
+as_cpp_chunk(examples[["as_int64"]])
+```
+
+```{r}
+as_int64(.Machine$integer.max) + 1L
+```
+
+Please note that other signed 64-bit integer types like `int64_t`, `R_xlen_t` and cppally's `r_size_t` will convert to 64-bit integer vectors when returned to R.
+
+```{r, echo=FALSE, results = 'asis'}
+as_cpp_chunk(source_body(examples[["cppally_as_r_size_t"]]))
+```
+
+```{r, echo=FALSE}
+cppally_as_r_size_t()
+```
+
+
+```{r, echo=FALSE, results = 'asis'}
+as_cpp_chunk(source_body(examples[["cppally_as_r_xlen_t"]]))
+```
+
+```{r, echo=FALSE}
+cppally_as_r_xlen_t()
+```
+
+```{r, echo=FALSE, results = 'asis'}
+as_cpp_chunk(source_body(examples[["cppally_as_int64_t"]]))
+```
+
+```{r, echo=FALSE}
+cppally_as_int64_t()
+```
+
 
 ### Using R's `NULL`
 
 The cppally version of R's `R_NilValue` is `r_null` which is of type `r_sexp`. In an attempt to avoid the use of additional meta-programming tactics to deal with `r_null`, we allow vectors to be able to contain `r_null` which makes programming with R attributes easier. This means `r_vec<T>` objects can be `r_null`. To detect this, use the `is_null()` member function.
+
+```{r, echo=FALSE, results = 'asis'}
+as_cpp_chunk(source_body(examples[["vec_null"]]))
+```
+
+```{r, echo=FALSE}
+vec_null()
+```
+
+```{r, echo=FALSE, results = 'asis'}
+as_cpp_chunk(source_body(examples[["vec_is_null"]]))
+```
+
+```{r, echo=FALSE}
+vec_is_null()
+```
 
 ## Useful Makevars flags
 
@@ -183,8 +337,9 @@ Your R libraries can be found with
 
 The compiler bundled with RTools is likely found here
 
-```r
-cxx <- system2(file.path(R.home("bin"), "R"), c("CMD", "config", "CXX20"), stdout = TRUE)
+```{r}
+cxx <- system2(file.path(R.home("bin"), "R"), 
+               c("CMD", "config", "CXX20"), stdout = TRUE)
 cxx_bin <- trimws(strsplit(cxx, " ")[[1]][1])
-normalizePath(Sys.which(cxx_bin))
+Sys.which(cxx_bin)
 ```
