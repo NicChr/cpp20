@@ -122,7 +122,6 @@ r_vec<r_lgl> lgl_ops(){
     r_na && r_na      // NA
   );
 }
-  
 ```
 
 ``` r
@@ -138,7 +137,7 @@ except in if-statements where an error is thrown if the value is `NA`.
 **DON’T** do this:
 
 ``` cpp
-[[cppally::register]] 
+[[cppally::register]]
 void bad_lgl_print(r_lgl condition){
   if (condition){
     print("true");
@@ -161,7 +160,7 @@ bad_lgl_print(NA) # Can't implicitly convert NA to bool
 **DO** this:
 
 ``` cpp
-[[cppally::register]] 
+[[cppally::register]]
 void good_lgl_print(r_lgl condition){
   if (is_na(condition)){
     print("NA");
@@ -188,7 +187,7 @@ return `bool` and are equivalent to R’s
 [`isFALSE()`](https://rdrr.io/r/base/Logic.html)
 
 ``` cpp
-[[cppally::register]] 
+[[cppally::register]]
 void also_good_lgl_print(r_lgl condition){
   if (condition.is_true()){
     print("true");
@@ -259,29 +258,21 @@ To create inline vectors, use `make_vec<>`
 make_vec<r_dbl>(1, 1.5, 2, na<r_dbl>())
 ```
 
-------------------------------------------------------------------------
-
-``` r
-[1] 1.0 1.5 2.0  NA
-```
+    #> [1] 1.0 1.5 2.0  NA
 
 We can add names on the fly with `arg()`
 
 ``` cpp
 make_vec<r_dbl>(
-    arg("first") = 1, 
-    arg("second") = 1.5, 
-    arg("third") = 2, 
+    arg("first") = 1,
+    arg("second") = 1.5,
+    arg("third") = 2,
     arg("last") = na<r_dbl>()
   )
 ```
 
-------------------------------------------------------------------------
-
-``` r
- first second  third   last 
-   1.0    1.5    2.0     NA 
-```
+    #>  first second  third   last 
+    #>    1.0    1.5    2.0     NA
 
 In R a list is a generic vector, so cppally defines lists as
 `r_vec<r_sexp>`, a vector of the generic type `r_sexp`.
@@ -290,18 +281,14 @@ In R a list is a generic vector, so cppally defines lists as
 make_vec<r_sexp>(1, 2, 3)
 ```
 
-------------------------------------------------------------------------
-
-``` r
-[[1]]
-[1] 1
-
-[[2]]
-[1] 2
-
-[[3]]
-[1] 3
-```
+    #> [[1]]
+    #> [1] 1
+    #> 
+    #> [[2]]
+    #> [1] 2
+    #> 
+    #> [[3]]
+    #> [1] 3
 
 A list of all cppally vectors of length 0
 
@@ -372,7 +359,7 @@ template <RMathType T>
 [[cppally::register]]
 T cpp_abs(T x){
   if (is_na(x)) return na<T>();
-  
+
   if (x < 0){
     return -x;
   } else {
@@ -479,8 +466,8 @@ scalar_default(character(1)) # Default is ""
 #> [1] ""
 ```
 
-Exporting variadic templates is also not supported. The best alternative
-is to use lists (`r_vec<r_sexp>`).
+Exporting variadic templates are also not supported. The best
+alternative is to use lists (`r_vec<r_sexp>`).
 
 In the above example we used the `RScalar` concept which includes all
 cppally scalar types (excluding `r_sexp`). For a list of all cppally
@@ -560,11 +547,7 @@ We can create R strings easily
 r_str("hello")
 ```
 
-------------------------------------------------------------------------
-
-``` r
-[1] "hello"
-```
+    #> [1] "hello"
 
 To get a C or C++ string, use the members `c_str()` and `cpp_str()`
 respectively
@@ -575,11 +558,7 @@ C string via `c_str()`
 r_str("hello").c_str()
 ```
 
-------------------------------------------------------------------------
-
-``` r
-[1] "hello"
-```
+    #> [1] "hello"
 
 C++ string_view via `cpp_str()`
 
@@ -610,11 +589,7 @@ literal
 r_sym("new_symbol")
 ```
 
-------------------------------------------------------------------------
-
-``` r
-new_symbol
-```
+    #> new_symbol
 
 Or from a cppally string
 
@@ -622,11 +597,7 @@ Or from a cppally string
 r_sym(r_str("symbol_from_string"))
 ```
 
-------------------------------------------------------------------------
-
-``` r
-symbol_from_string
-```
+    #> symbol_from_string
 
 ## Cached strings & symbols
 
@@ -639,11 +610,7 @@ strings/symbols from string literals
 cached_str<"cached_string">()
 ```
 
-------------------------------------------------------------------------
-
-``` r
-[1] "cached_string"
-```
+    #> [1] "cached_string"
 
 This initialises the string once, caches it (to R’s CHARSXP pool), and
 efficiently re-uses the cached string for each subsequent call.
@@ -654,11 +621,7 @@ We can cache symbols in a similar way
 cached_sym<"cached_symbol">()
 ```
 
-------------------------------------------------------------------------
-
-``` r
-cached_symbol
-```
+    #> cached_symbol
 
 ## Lists
 
@@ -803,7 +766,7 @@ r_vec<r_int> factor_codes(r_factors x){
 ``` r
 letter_fct <- new_factor(letters)
 
-letter_fct |> 
+letter_fct |>
     factor_codes()
 #>  [1]  1  2  3  4  5  6  7  8  9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25
 #> [26] 26
@@ -817,30 +780,29 @@ namespace.
 **Example:** Converting a list of samples to a data frame
 
 ``` cpp
-
 [[cppally::register]]
 r_vec<r_sexp> list_as_df(r_vec<r_sexp> x){
 
   r_size_t n = x.length();
-  
+
   if (n_unique(x.lengths()) > 1){
     abort("List must have vectors of equal length to be converted to a data frame");
   }
-  
+
   r_vec<r_str> names(attr::get_attr(x, cached_sym<"names">()));
   if (names.is_null()){
      abort("list must have names to be converted to a data frame");
   }
-  
+
   r_vec<r_sexp> out = shallow_copy(x);
-  
+
   int nrow = 0;
   r_vec<r_int> row_names;
   if (n > 0){
     nrow = out.view(0).length();
     row_names = make_vec<r_int>(na<r_int>(), -nrow);
   }
-  
+
   attr::set_attr(out, cached_sym<"row.names">(), row_names);
   attr::set_attr(out, cached_sym<"class">(), make_vec<r_str>("data.frame"));
   return out;
@@ -906,8 +868,8 @@ mark(
 #> # A tibble: 2 × 6
 #>   expression            min   median `itr/sec` mem_alloc `gc/sec`
 #>   <bch:expr>       <bch:tm> <bch:tm>     <dbl> <bch:byt>    <dbl>
-#> 1 base_n_unique       780µs    801µs     1054.    1.38MB     29.5
-#> 2 cppally_n_unique    280µs    282µs     3492.        0B      0
+#> 1 base_n_unique      1.13ms    1.3ms      772.    1.38MB     20.5
+#> 2 cppally_n_unique 264.14µs  265.5µs     3707.        0B      0
 ```
 
 More useful sugar functions
@@ -920,16 +882,16 @@ More useful sugar functions
   identical function that works for scalars and vectors. Use this for
   exact equality of any scalar or vector.
 
-- [`match()`](https://rdrr.io/r/base/match.html) - Like R’s match, but
-  also faster
+- [`match()`](https://bit64.r-lib.org/reference/bit64S3.html) - Like R’s
+  match, but also faster
 
 - `sequences()` - Like
   [`sequence()`](https://rdrr.io/r/base/sequence.html) but it returns a
   list of sequences and also works with doubles.
 
-- [`order()`](https://rdrr.io/r/base/order.html) - Like base R’s order
-  but it internally uses a hybrid approach of ska sort, count sorting,
-  quick sort, etc.
+- [`order()`](https://bit64.r-lib.org/reference/bit64S3.html) - Like
+  base R’s order but it internally uses a hybrid approach of ska sort,
+  count sorting, quick sort, etc.
 
 - `make_groups()` - An advanced function that returns a struct
   containing group IDs and number of groups (i.e number of unique group
@@ -1064,19 +1026,18 @@ consistently.
 **Example:** Summing a double vector using `r_vec<T>::data()` member
 
 ``` cpp
-
 [[cppally::register]]
 double primitive_sum(const r_vec<r_dbl>& x){
-  
+
   // r_vec<T>::data_type always returns typename T
   using data_t = typename std::remove_cvref_t<decltype(x)>::data_type;
-  
+
   using primitive_t = unwrap_t<data_t>;
   primitive_t *p_x = x.data();
-  
+
   r_size_t n = x.length();
   double sum = 0;
-  
+
   OMP_SIMD_REDUCTION1(+:sum)
   for (r_size_t i = 0; i < n; ++i){
     sum += p_x[i];

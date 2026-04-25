@@ -61,7 +61,7 @@ preserve ALTREP compact representations, one can enable the package-wide
 ‘CPPALLY_PRESERVE_ALTREP’ flag. This can be done through
 [`cppally::use_preserve_altrep_flag()`](https://nicchr.github.io/cppally/reference/use_preserve_altrep_flag.md)
 or `cppally::cpp_source(..., preserve_altrep = TRUE)`. You can also
-manually add the ‘-CPPALLY_PRESERVE_ALTREP’ flag to Makevars.
+manually add the ‘-DCPPALLY_PRESERVE_ALTREP’ flag to Makevars.
 
 ### Interopability with the R C API
 
@@ -91,18 +91,49 @@ that it’s safe to modify the existing vector.
 ### Lossy coercion
 
 Any coercion that results in complete information loss is an error
-(partial is allowed, e.g. double -\> int). This means that for example
-`as<r_int>(r_str("a"))` will throw an error instead of returning an NA
-like R does with `as.integer("a")`
+(partial is allowed, e.g. double -\> int).
 
-The benefit of this is that when registering C++ functions to R, inputs
-can be supplied flexibly without unexpected behaviour. Let’s say you
-have a function foo that expects an `r_int` but you give it an `r_dbl`
-without realising - this will implicitly coerce to `r_int` without
-throwing an error. If it can’t be coerced to integer without complete
-information loss (i.e non-parse-able string to integer), then an
-informative error is thrown. If we allowed implicit coercion to NA then
-we would need to be strict with inputs to balance things out.
+For example, string -\> int may not be possible without complete
+information loss
+
+``` cpp
+as<r_int>(r_str("a"))
+```
+
+``` R
+#> Error:
+#> ! Implicit NA coercion detected from r_str to r_int, please ensure data can be coerced without complete loss of information
+```
+
+This is contrast to R which returns an NA with a warning
+
+``` r
+as.integer("a")
+#> Warning: NAs introduced by coercion
+#> [1] NA
+```
+
+The benefit of cppally’s approach is that when registering C++ functions
+to R, inputs can be supplied flexibly without unexpected behaviour.
+
+Let’s say you have a function `foo` that expects an `r_int` but you give
+it an `r_dbl` without realising - this will implicitly coerce to `r_int`
+without throwing an error.
+
+``` cpp
+[[cppally::register]]
+r_int foo(r_int x){
+  return x;
+}
+```
+
+``` r
+foo(1.2345)
+#> [1] 1
+```
+
+If we allowed implicit coercion to NA then we would need to be strict
+with inputs to balance things out.
 
 ### Vector indexing
 
@@ -115,6 +146,10 @@ To return 64-bit integers to R we need the bit64 package to be loaded.
 cppally delegates the handling of 64-bit integer vectors to bit64 by
 marking them with the “integer64” class.
 
+``` r
+library(bit64)
+```
+
 ``` cpp
 [[cppally::register]]
 r_int64 as_int64(r_int x){
@@ -122,25 +157,41 @@ r_int64 as_int64(r_int x){
 }
 ```
 
-Please note that other 64-bit signed integer types like `int64_t`,
-`R_xlen_t`, or cppally’s identical `r_size_t` will convert to 64-bit
-integer vectors when returned to R.
-
-``` cpp
-[[cppally::register]]
-r_size_t as_r_size_t(r_int x){
-    return as<r_size_t>(x);
-}
+``` r
+as_int64(.Machine$integer.max) + 1L
+#> integer64
+#> [1] 2147483648
 ```
 
-``` r
-library(bit64)
-as_int64(10L)
-integer64
-[1] 10
-as_r_size_t(10L)
-integer64
-[1] 10
+Please note that other signed 64-bit integer types like `int64_t`,
+`R_xlen_t` and cppally’s `r_size_t` will convert to 64-bit integer
+vectors when returned to R.
+
+``` cpp
+as<r_size_t>(r_int(0))
+```
+
+``` R
+#> integer64
+#> [1] 0
+```
+
+``` cpp
+as<R_xlen_t>(r_int(0))
+```
+
+``` R
+#> integer64
+#> [1] 0
+```
+
+``` cpp
+as<int64_t>(r_int(0))
+```
+
+``` R
+#> integer64
+#> [1] 0
 ```
 
 ### Using R’s `NULL`
@@ -151,6 +202,22 @@ tactics to deal with `r_null`, we allow vectors to be able to contain
 `r_null` which makes programming with R attributes easier. This means
 `r_vec<T>` objects can be `r_null`. To detect this, use the `is_null()`
 member function.
+
+``` cpp
+r_vec<r_int>(r_null)
+```
+
+``` R
+#> NULL
+```
+
+``` cpp
+r_vec<r_int>(r_null).is_null()
+```
+
+``` R
+#> [1] TRUE
+```
 
 ## Useful Makevars flags
 
@@ -240,9 +307,12 @@ Your R libraries can be found with
 The compiler bundled with RTools is likely found here
 
 ``` r
-cxx <- system2(file.path(R.home("bin"), "R"), c("CMD", "config", "CXX20"), stdout = TRUE)
+cxx <- system2(file.path(R.home("bin"), "R"), 
+               c("CMD", "config", "CXX20"), stdout = TRUE)
 cxx_bin <- trimws(strsplit(cxx, " ")[[1]][1])
-normalizePath(Sys.which(cxx_bin))
+Sys.which(cxx_bin)
+#>                                          g++ 
+#> "C:\\rtools45\\X86_64~1.POS\\bin\\G__~1.EXE"
 ```
 
 # Package index
