@@ -35,9 +35,6 @@ cpp_source <- function(..., code, debug = TRUE, env = parent.frame()){
   code <- paste(c(preamble, code), collapse = "\n")
   cppally::cpp_source(debug = debug, env = env, code = code, ...)
 }
-cpp_eval <- function(..., debug = TRUE, env = parent.frame()){
-    cppally::cpp_eval(debug = debug, env = env, ...)
-}
 
 # Helpers to source and display C++/R code
 chunk_impl <- function(x, language){
