@@ -233,13 +233,13 @@ cpp_source <- function(file, code = NULL, env = parent.frame(),
   source(r_path, local = env)
   dyn.load(shared_lib, local = TRUE, now = TRUE)
 }
-#' @rdname cpp_source
-#' @export
-cpp_eval <- function(code, env = curr_env(), clean = TRUE,
-                     quiet = TRUE, debug = FALSE,
-                     preserve_altrep = FALSE,
-                     cxx_std = Sys.getenv("CXX_STD", "CXX20")){
-
+source_single_exprs <- function(exprs, env = parent.frame(), clean = TRUE,
+                                quiet = TRUE, debug = FALSE,
+                                preserve_altrep = FALSE,
+                                cxx_std = Sys.getenv("CXX_STD", "CXX20")){
+  if (length(exprs) == 0){
+    cli::cli_abort("{.arg exprs} is length 0, please supply a valid input")
+  }
   # Helper that returns a list containing
   # "is_void" - TRUE if result is a void expression with no return result
   # "result" - The evaluated result
@@ -262,7 +262,11 @@ cpp_eval <- function(code, env = curr_env(), clean = TRUE,
     '  }',
     '}'
   ), collapse = "\n")
-  body <- paste0("SEXP f() { return cppally_eval([&]{ return (", code, "); }); }")
+  fun_names <- paste0("f", seq_along(exprs))
+  bodies <- paste0(
+    "[[cppally::register]]\nSEXP ", fun_names,
+    "() { return cppally_eval([&]{ return (", exprs, "); }); }"
+  )
   cpp_source(
     code = paste(c(
       "#include <cppally/r_dispatch.h>",
@@ -272,17 +276,38 @@ cpp_eval <- function(code, env = curr_env(), clean = TRUE,
       "using namespace cppally;",
       "using internal::cpp_to_sexp;",
       eval_helper,
-      "[[cppally::register]]",
-      body
+      bodies
     ), collapse = "\n"),
     env = env, clean = clean, quiet = quiet,
     debug = debug, cxx_std = cxx_std,
     preserve_altrep = preserve_altrep
   )
-  result <- get("f", envir = env)()
-  if (result[["is_void"]]){
-    invisible(result[["result"]])
+}
+#' @rdname cpp_source
+#' @export
+cpp_eval <- function(code, env = curr_env(), clean = TRUE,
+                     quiet = TRUE, debug = FALSE,
+                     preserve_altrep = FALSE,
+                     cxx_std = Sys.getenv("CXX_STD", "CXX20")){
+  curr_objs <- names(env)
+  source_single_exprs(
+    code, env = env, clean = clean,
+    quiet = quiet, debug = debug,
+    preserve_altrep = preserve_altrep,
+    cxx_std = cxx_std
+  )
+  fn_names <- paste0("f", seq_along(code))
+  fns <- mget(fn_names, envir = env)
+  names(fns) <- paste0("res", seq_along(fns))
+  results <- lapply(fns, \(fn) fn())
+  is_void <- vapply(results, \(x) x[["is_void"]], logical(1))
+  results <- lapply(results, \(x) x[["result"]])[!is_void]
+
+  if (length(results) == 0){
+    invisible()
+  } else if (length(results) == 1){
+    results[[1]]
   } else {
-    result[["result"]]
+    results
   }
 }
