@@ -53,6 +53,16 @@ r_vec<r_lgl> duplicated(const T& x, bool all = false){
   }
 }
 
+template <RFactor T>
+r_vec<r_lgl> duplicated(const T& x, bool all = false){
+    return duplicated(x.value);
+}
+
+template <RSexpType T>
+r_vec<r_lgl> duplicated(const T& x, bool all = false){
+    return CPPALLY_VIEW_AND_APPLY(x, /*return_type = */ r_vec<r_lgl>, /*fn = */ duplicated, /*rest of args = */ all);
+}
+
 template <RVal T>
 r_factors::r_factors(const r_vec<T>& x) : r_factors(x, unique(x)) {}
 
