@@ -143,6 +143,21 @@ void view_elements(const r_vec<r_sexp>& x, Visitor&& vis) {
 
 }
 
+// Helper that disambiguates r_sexp type via view_sexp and then calls the named function
+// If there is no defined specialisation or overload then this is caught in the last branch
+// If the visited type can't be disambiguated, this is caught in the first branch
+#define CPPALLY_VIEW_AND_APPLY(ret, fn, x, ...)                                 \
+    view_sexp(x, [&](const auto& x_) -> ret {                                   \
+        if constexpr (is<std::remove_cvref_t<decltype(x_)>, r_sexp>) {          \
+            abort("Unsupported SEXP type in `" #fn "()`");                      \
+        } else if constexpr (requires { fn(x_ __VA_OPT__(,) __VA_ARGS__); }) {  \
+            return fn(x_ __VA_OPT__(,) __VA_ARGS__);                            \
+        } else {                                                                \
+            abort("No available method for type %s in `" #fn "()`",             \
+                internal::type_str<std::remove_cvref_t<decltype(x_)>>());       \
+        }                                                                       \
+    })
+
 }
 
 #endif

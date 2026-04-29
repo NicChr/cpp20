@@ -310,13 +310,7 @@ inline groups make_groups(const T& x, bool ordered = false) {
 }
 template <RSexpType T>
 inline groups make_groups(const T& x, bool ordered = false) {
-    return view_sexp(x, [&](const auto& x_) -> groups {
-        if constexpr (requires { make_groups(x_, ordered); }) {
-            return make_groups(x_, ordered);
-        } else {
-            abort("Unsupported SEXP type in `make_groups()`");
-        }
-    });
+    return CPPALLY_VIEW_AND_APPLY(/*return_type = */ groups, /*fn = */ make_groups, x, ordered);
 }
 
 // namespace internal {

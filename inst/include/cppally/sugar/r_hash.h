@@ -122,17 +122,7 @@ inline uint64_t r_hash_impl(const r_factors& x) noexcept {
 // Specialization for elements of lists
 template<>
 inline uint64_t r_hash_impl(const r_sexp& x) noexcept {
-    if (x.is_null()) return 0;
-    
-    // Recursively hash the element
-    return view_sexp(x, [](const auto& vec) -> uint64_t {
-        using vec_t = std::remove_cvref_t<decltype(vec)>;
-        if constexpr (is<vec_t, r_sexp>){
-            abort("Unsupported element type, current implementation can only hash vectors and factors");
-        } else {
-            return r_hash_impl(vec);
-        }
-    });
+    return CPPALLY_VIEW_AND_APPLY(/*return_type = */ uint64_t, /*fn = */ r_hash_impl, x);
 };
 
 
