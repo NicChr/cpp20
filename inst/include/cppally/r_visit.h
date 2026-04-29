@@ -13,20 +13,21 @@ namespace cppally {
 template <class F>
 decltype(auto) visit_sexp(SEXP x, F&& f) {
 switch (internal::CPPALLY_TYPEOF(x)) {
-    case LGLSXP:                        return f(r_vec<r_lgl>(x));
-    case INTSXP:                        return f(r_vec<r_int>(x));
-    case internal::CPPALLY_INT64SXP:      return f(r_vec<r_int64>(x));
-    case REALSXP:                       return f(r_vec<r_dbl>(x));
-    case STRSXP:                        return f(r_vec<r_str>(x));
-    case VECSXP:                        return f(r_vec<r_sexp>(x));
-    case CPLXSXP:                       return f(r_vec<r_cplx>(x));
-    case RAWSXP:                        return f(r_vec<r_raw>(x));
-    case internal::CPPALLY_REALDATESXP:   return f(r_vec<r_date>(x));
-    case internal::CPPALLY_REALPSXTSXP:   return f(r_vec<r_psxct>(x));
-    case internal::CPPALLY_FCTSXP:        return f(r_factors(x));
-    case SYMSXP:                        return f(r_sym(x));
-    // case CPPALLY_DFSXP:                return f(r_df(x));
-    default:                            return f(r_sexp(x));
+    case LGLSXP:                            return f(r_vec<r_lgl>(x));
+    case INTSXP:                            return f(r_vec<r_int>(x));
+    case internal::CPPALLY_INT64SXP:        return f(r_vec<r_int64>(x));
+    case REALSXP:                           return f(r_vec<r_dbl>(x));
+    case STRSXP:                            return f(r_vec<r_str>(x));
+    case VECSXP:                            return f(r_vec<r_sexp>(x));
+    case CPLXSXP:                           return f(r_vec<r_cplx>(x));
+    case RAWSXP:                            return f(r_vec<r_raw>(x));
+    case NILSXP:                            return f(r_vec<r_sexp>(r_null));
+    case internal::CPPALLY_REALDATESXP:     return f(r_vec<r_date>(x));
+    case internal::CPPALLY_REALPSXTSXP:     return f(r_vec<r_psxct>(x));
+    case internal::CPPALLY_FCTSXP:          return f(r_factors(x));
+    case SYMSXP:                            return f(r_sym(x));
+    // case CPPALLY_DFSXP:                  return f(r_df(x));
+    default:                                return f(r_sexp(x));
 }
 }
 
@@ -41,6 +42,7 @@ switch (internal::CPPALLY_TYPEOF(x)) {
     case VECSXP:                        return f(r_vec<r_sexp>(x));
     case CPLXSXP:                       return f(r_vec<r_cplx>(x));
     case RAWSXP:                        return f(r_vec<r_raw>(x));
+    case NILSXP:                            return f(r_vec<r_sexp>(r_null));
     case internal::CPPALLY_REALDATESXP:   return f(r_vec<r_date>(x));
     case internal::CPPALLY_REALPSXTSXP:   return f(r_vec<r_psxct>(x));
     case internal::CPPALLY_FCTSXP:        return f(r_factors(x));
@@ -61,6 +63,7 @@ switch (internal::CPPALLY_TYPEOF(x)) {
     case VECSXP:                        return f(r_vec<r_sexp>(x));
     case CPLXSXP:                       return f(r_vec<r_cplx>(x));
     case RAWSXP:                        return f(r_vec<r_raw>(x));
+    case NILSXP:                            return f(r_vec<r_sexp>(r_null));
     case internal::CPPALLY_REALDATESXP:   return f(r_vec<r_date>(x));
     case internal::CPPALLY_REALPSXTSXP:   return f(r_vec<r_psxct>(x));
     default:                            abort("`x` must be a vector to be instantiated from an `r_sexp`");
@@ -78,6 +81,7 @@ switch (internal::CPPALLY_TYPEOF(x)) {
     case VECSXP:                        return f(r_vec<r_sexp>(x));
     case CPLXSXP:                       return f(r_vec<r_cplx>(x));
     case RAWSXP:                        return f(r_vec<r_raw>(x));
+    case NILSXP:                            return f(r_vec<r_sexp>(r_null));
     case internal::CPPALLY_REALDATESXP:   return f(r_vec<r_date>(x));
     case internal::CPPALLY_REALPSXTSXP:   return f(r_vec<r_psxct>(x));
     default:                            abort("`x` must be a vector to be instantiated from an `r_sexp`");
@@ -95,6 +99,7 @@ switch (internal::CPPALLY_TYPEOF(x)) {
     case VECSXP:                        return f(r_vec<r_sexp>(x, internal::view_tag{}));
     case CPLXSXP:                       return f(r_vec<r_cplx>(x, internal::view_tag{}));
     case RAWSXP:                        return f(r_vec<r_raw>(x, internal::view_tag{}));
+    case NILSXP:                            return f(r_vec<r_sexp>(r_null, internal::view_tag{}));
     case internal::CPPALLY_REALDATESXP:   return f(r_vec<r_date>(x, internal::view_tag{}));
     case internal::CPPALLY_REALPSXTSXP:   return f(r_vec<r_psxct>(x, internal::view_tag{}));
     case internal::CPPALLY_FCTSXP:        return f(r_factors(x, internal::view_tag{}));
@@ -115,6 +120,7 @@ switch (internal::CPPALLY_TYPEOF(x)) {
     case VECSXP:                        return f(r_vec<r_sexp>(x, internal::view_tag{}));
     case CPLXSXP:                       return f(r_vec<r_cplx>(x, internal::view_tag{}));
     case RAWSXP:                        return f(r_vec<r_raw>(x, internal::view_tag{}));
+    case NILSXP:                            return f(r_vec<r_sexp>(r_null, internal::view_tag{}));
     case internal::CPPALLY_REALDATESXP:   return f(r_vec<r_date>(x, internal::view_tag{}));
     case internal::CPPALLY_REALPSXTSXP:   return f(r_vec<r_psxct>(x, internal::view_tag{}));
     case internal::CPPALLY_FCTSXP:        return f(r_factors(x, internal::view_tag{}));
