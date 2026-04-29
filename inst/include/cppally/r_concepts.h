@@ -101,6 +101,9 @@ template <typename T>
 concept RPsxctType = is<T, r_psxct>;
 
 template <typename T>
+concept RSexpType = is<T, r_sexp>;
+
+template <typename T>
 concept RTimeType = RDateType<T> || RPsxctType<T>;
 
 template <typename T>
