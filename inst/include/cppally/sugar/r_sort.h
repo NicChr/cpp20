@@ -18,8 +18,9 @@ namespace internal {
 // general order vector that sorts `x`
 // NAs are ordered last
 // Internal function to be used for low overhead sorting small vectors (n<500)
-template <RSortableType T>
-r_vec<r_int> cpp_order(const r_vec<T>& x) {
+template <RSortableVector T>
+r_vec<r_int> cpp_order(const T& x) {
+    using data_t = typename T::data_type;
     int n = x.size();
     r_vec<r_int> p(n);
     OMP_SIMD
@@ -27,7 +28,7 @@ r_vec<r_int> cpp_order(const r_vec<T>& x) {
 
     auto *p_x = x.data();
 
-    if constexpr (RNumericType<T>){
+    if constexpr (RNumericType<data_t>){
         std::sort(p.begin(), p.end(), [&](int i, int j) {
             if (is_na(x.view(i))) return false;
             if (is_na(x.view(j))) return true;
@@ -50,8 +51,9 @@ r_vec<r_int> cpp_order(const r_vec<T>& x) {
     return p;
 }
 
-template <RSortableType T>
-r_vec<r_int> cpp_stable_order(const r_vec<T>& x) {
+template <RSortableVector T>
+r_vec<r_int> cpp_stable_order(const T& x) {
+    using data_t = typename T::data_type;
     int n = x.size();
     r_vec<r_int> p(n);
     OMP_SIMD
@@ -59,7 +61,7 @@ r_vec<r_int> cpp_stable_order(const r_vec<T>& x) {
 
     auto *p_x = x.data();
 
-    if constexpr (RNumericType<T>){
+    if constexpr (RNumericType<data_t>){
         std::stable_sort(p.begin(), p.end(), [&](int i, int j) {
             if (is_na(x.view(i))) return false;
             if (is_na(x.view(j))) return true;
@@ -86,10 +88,11 @@ r_vec<r_int> cpp_stable_order(const r_vec<T>& x) {
 
 // 0-indexed ordering permutation vector that represents in sequential order, 
 // the indices of `x` elements that need to be chosen to return a sorted `x`
-template <RSortableType T>
-inline r_vec<r_int> order(const r_vec<T>& x, bool preserve_ties = true) {
+template <RSortableVector T>
+inline r_vec<r_int> order(const T& x, bool preserve_ties = true) {
 
-    using base_t = unwrap_t<T>;
+    using data_t = typename T::data_type;
+    using base_t = unwrap_t<data_t>;
 
     uint32_t n = x.size();
     if (n < 500){
@@ -105,7 +108,7 @@ inline r_vec<r_int> order(const r_vec<T>& x, bool preserve_ties = true) {
     // Integers with small range optimisation
     // ----------------------------------------------------------------------
     
-    if constexpr (RIntegerType<T>) {
+    if constexpr (RIntegerType<data_t>) {
 
         if (n >= 100000){
 
@@ -179,7 +182,7 @@ inline r_vec<r_int> order(const r_vec<T>& x, bool preserve_ties = true) {
     }
 }
 
-    if constexpr (RNumericType<T>) {
+    if constexpr (RNumericType<data_t>) {
 
         r_vec<r_int> out(n);
         int* RESTRICT p_out = out.data();
@@ -237,15 +240,15 @@ inline r_vec<r_int> order(const r_vec<T>& x, bool preserve_ties = true) {
     // Strings
     // ---------------------------------------------------------------------- 
 
-    else if constexpr (RStringType<T>) {
+    else if constexpr (RStringType<data_t>) {
     
         r_size_t n = x.length();
         r_vec<r_int> out(n);
         auto* RESTRICT px = x.data();
         
         // Single Hash Map to assign group IDs and count frequencies
-        ankerl::unordered_dense::map<SEXP, uint32_t, internal::r_hash<T>, internal::r_hash_eq<T>> lookup;
-        auto n_uniques_guess = internal::get_hash_map_reserve_size<T>(n);
+        ankerl::unordered_dense::map<SEXP, uint32_t, internal::r_hash<data_t>, internal::r_hash_eq<data_t>> lookup;
+        auto n_uniques_guess = internal::get_hash_map_reserve_size<data_t>(n);
         lookup.reserve(n_uniques_guess);
         
         std::vector<SEXP> uniques;
@@ -332,18 +335,28 @@ inline r_vec<r_int> order(const r_vec<T>& x, bool preserve_ties = true) {
     }
 }
 
+template <RFactor T>
+inline r_vec<r_int> order(const T& x, bool preserve_ties = true) {
+    return order(x.value);
+}
+
+
+template <RSexpType T>
+inline r_vec<r_int> order(const T& x, bool preserve_ties = true) {
+    return CPPALLY_VIEW_AND_APPLY(
+        x, /*return_type = */ r_vec<r_int>, /*fn = */ order, 
+        /*rest of args = */ preserve_ties
+    );
+}
 
 // Is x in a sorted order? i.e is x increasing but not necessarily monotonically?
 // To retrieve a bool result, use the `is_true` member function
-template <RSortableType T>
-inline r_lgl is_sorted(const r_vec<T>& x) {
-    
+template <RSortableVector T>
+inline r_lgl is_sorted(const T& x) {
     r_size_t n = x.length();
-
     for (r_size_t i = 1; i < n; ++i) {
-        
         r_lgl is_increasing = x.view(i) >= x.view(i - 1);
-        
+
         // If NA return NA, if false return false
         if (!is_increasing.is_true()){
             return is_increasing;
