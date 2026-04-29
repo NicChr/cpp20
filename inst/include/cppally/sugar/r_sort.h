@@ -102,7 +102,7 @@ inline r_vec<r_int> order(const r_vec<T>& x, bool preserve_ties = true) {
 
     
     // ----------------------------------------------------------------------
-    // Types with numeric storage
+    // Integers with small range optimisation
     // ----------------------------------------------------------------------
     
     if constexpr (RIntegerType<T>) {
@@ -181,36 +181,54 @@ inline r_vec<r_int> order(const r_vec<T>& x, bool preserve_ties = true) {
 
     if constexpr (RNumericType<T>) {
 
-        using unsigned_t = decltype(ska_sort::detail::to_unsigned_or_bool(std::declval<base_t>()));
-        
         r_vec<r_int> out(n);
-        auto* RESTRICT px = x.data();
-        
-        struct key_index {
-            unsigned_t key;
-            uint32_t index;
-        };
-        
-        std::vector<key_index> pairs;
-        pairs.reserve(n);
-
-        for (uint32_t i = 0; i < n; ++i) {
-            unsigned_t key = is_na(px[i]) ? std::numeric_limits<unsigned_t>::max() : ska_sort::detail::to_unsigned_or_bool(px[i]);
-            pairs.push_back({key, i});
-        }
-
-        if (preserve_ties){
-        ska_sort::ska_sort(pairs.begin(), pairs.end(), 
-            [](const key_index& k){ return std::make_pair(k.key, k.index); });
-        } else {
-            ska_sort::ska_sort(pairs.begin(), pairs.end(), 
-            [](const key_index& k){ return k.key; });
-        }
-
         int* RESTRICT p_out = out.data();
-        OMP_SIMD
-        for (uint32_t i = 0; i < n; ++i) {
-            p_out[i] = static_cast<int>(pairs[i].index);
+        const auto* RESTRICT p_x = x.data();
+
+        using unsigned_t = decltype(ska_sort::detail::to_unsigned_or_bool(std::declval<base_t>()));
+
+        if constexpr (sizeof(unsigned_t) == sizeof(int)) {
+            // 32-bit key: sort r_vec<r_int> backing directly — single allocation, no copy
+            OMP_SIMD
+            for (r_size_t i = 0; i < n; ++i) p_out[i] = static_cast<int>(i);
+            // std::iota(p_out, p_out + n, 0);
+
+            if (preserve_ties) {
+                ska_sort::ska_sort(p_out, p_out + n, [&](uint32_t ui) {
+                    unsigned_t key = is_na(p_x[ui]) ? std::numeric_limits<unsigned_t>::max()
+                                                   : ska_sort::detail::to_unsigned_or_bool(p_x[ui]) - 1u; // -1 so that INT_MAX doesn't sort after NA
+                    return std::make_pair(key, ui);
+                });
+            } else {
+                ska_sort::ska_sort(p_out, p_out + n, [&](uint32_t ui) {
+                    return is_na(p_x[ui]) ? std::numeric_limits<unsigned_t>::max()
+                                        : ska_sort::detail::to_unsigned_or_bool(p_x[ui]) - 1u; // -1 so that INT_MAX doesn't sort after NA
+                });
+            }
+        } else {
+            // 64-bit key: key_index struct keeps key co-located with index during sort
+            struct key_index { unsigned_t key; uint32_t index; };
+
+            std::vector<key_index> pairs(n);
+            for (uint32_t i = 0; i < n; ++i) {
+                pairs[i] = {
+                    is_na(p_x[i]) ? std::numeric_limits<unsigned_t>::max()
+                                 : ska_sort::detail::to_unsigned_or_bool(p_x[i]) - 1u, // -1 so that INT_MAX doesn't sort after NA
+                    i
+                };
+            }
+
+            if (preserve_ties) {
+                ska_sort::ska_sort(pairs.begin(), pairs.end(),
+                    [](const key_index& k) { return std::make_pair(k.key, k.index); });
+            } else {
+                ska_sort::ska_sort(pairs.begin(), pairs.end(),
+                    [](const key_index& k) { return k.key; });
+            }
+            OMP_SIMD
+            for (uint32_t i = 0; i < n; ++i) {
+                p_out[i] = static_cast<int>(pairs[i].index);
+            }
         }
         return out;
     }
