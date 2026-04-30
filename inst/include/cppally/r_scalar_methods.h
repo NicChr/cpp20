@@ -331,6 +331,30 @@ inline constexpr r_dbl operator-(r_dbl x) {
   return r_dbl{-unwrap(x)};
 }
 
+template <RNumericType T>
+inline constexpr T& operator++(T &lhs) {
+  lhs += T(1);
+  return lhs;
+}
+template <RNumericType T>
+inline constexpr T operator++(T& lhs, int) {
+  T tmp = lhs;
+  ++lhs; 
+  return tmp;
+}
+
+template <RNumericType T>
+inline constexpr T& operator--(T &lhs) {
+  lhs -= T(1);
+  return lhs;
+}
+template <RNumericType T>
+inline constexpr T operator--(T& lhs, int) {
+  T tmp = lhs;
+  --lhs; 
+  return tmp;
+}
+
 }
 
 #endif
