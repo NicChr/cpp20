@@ -8,6 +8,7 @@ C++ scalar and vectors, to using templates and concepts.
 Let’s start by loading cppally
 
 ``` r
+
 library(cppally)
 ```
 
@@ -36,12 +37,14 @@ After writing our hello world program in foo.cpp we can use
 to compile and register the function to R.
 
 ``` r
+
 cpp_source(file = "src/foo.cpp")
 ```
 
 Now the function is available in R
 
 ``` r
+
 hello_world()
 #> Hello World!
 ```
@@ -51,6 +54,7 @@ return the result without needing to include cppally.hpp and register
 the function.
 
 ``` r
+
 cpp_eval('print("Hello World Again!")')
 #> Hello World Again!
 ```
@@ -110,6 +114,7 @@ r_na
 Logical operators work just like in R
 
 ``` cpp
+
 [[cppally::register]]
 r_vec<r_lgl> lgl_ops(){
   return make_vec<r_lgl>(
@@ -125,6 +130,7 @@ r_vec<r_lgl> lgl_ops(){
 ```
 
 ``` r
+
 lgl_ops()
 #> [1]  TRUE FALSE  TRUE    NA FALSE    NA    NA
 ```
@@ -137,6 +143,7 @@ except in if-statements where an error is thrown if the value is `NA`.
 **DON’T** do this:
 
 ``` cpp
+
 [[cppally::register]]
 void bad_lgl_print(r_lgl condition){
   if (condition){
@@ -148,6 +155,7 @@ void bad_lgl_print(r_lgl condition){
 ```
 
 ``` r
+
 bad_lgl_print(TRUE)
 #> true
 bad_lgl_print(FALSE)
@@ -160,6 +168,7 @@ bad_lgl_print(NA) # Can't implicitly convert NA to bool
 **DO** this:
 
 ``` cpp
+
 [[cppally::register]]
 void good_lgl_print(r_lgl condition){
   if (is_na(condition)){
@@ -173,6 +182,7 @@ void good_lgl_print(r_lgl condition){
 ```
 
 ``` r
+
 good_lgl_print(TRUE)
 #> true
 good_lgl_print(FALSE)
@@ -187,6 +197,7 @@ return `bool` and are equivalent to R’s
 [`isFALSE()`](https://rdrr.io/r/base/Logic.html)
 
 ``` cpp
+
 [[cppally::register]]
 void also_good_lgl_print(r_lgl condition){
   if (condition.is_true()){
@@ -198,6 +209,7 @@ void also_good_lgl_print(r_lgl condition){
 ```
 
 ``` r
+
 also_good_lgl_print(TRUE)
 #> true
 also_good_lgl_print(FALSE)
@@ -209,19 +221,19 @@ also_good_lgl_print(NA) # Falls into 'not true' branch here as expected
 All cppally scalar types are implemented as structs that contain the
 underlying C/C++ types as well as other member functions.
 
-| cppally type       | Description                      | Implicitly converts to           |
-|:-------------------|----------------------------------|:---------------------------------|
-| `r_lgl`            | Scalar logical                   | `bool` **only** in if-statements |
-| `r_int`            | Scalar integer                   | `int`                            |
-| `r_int64`          | Scalar 64-bit integer            | `int64_t`                        |
-| `r_dbl`            | Scalar double                    | `double`                         |
-| `r_str`            | Scalar string                    | `SEXP`                           |
-| `r_cplx`           | Scalar double complex            | `std::complex<double>`           |
-| `r_raw`            | Scalar raw                       | `unsigned char`                  |
-| `r_sym`            | Symbol                           | `SEXP`                           |
-| `r_date` [¹](#fn1) | Scalar date                      | `double`                         |
-| `r_psxct`          | Scalar date-time                 | `double`                         |
-| `r_sexp`           | Generic R object (SEXP)[²](#fn2) | `SEXP`                           |
+| cppally type  | Description                 | Implicitly converts to           |
+|:--------------|-----------------------------|:---------------------------------|
+| `r_lgl`       | Scalar logical              | `bool` **only** in if-statements |
+| `r_int`       | Scalar integer              | `int`                            |
+| `r_int64`     | Scalar 64-bit integer       | `int64_t`                        |
+| `r_dbl`       | Scalar double               | `double`                         |
+| `r_str`       | Scalar string               | `SEXP`                           |
+| `r_cplx`      | Scalar double complex       | `std::complex<double>`           |
+| `r_raw`       | Scalar raw                  | `unsigned char`                  |
+| `r_sym`       | Symbol                      | `SEXP`                           |
+| `r_date` [^1] | Scalar date                 | `double`                         |
+| `r_psxct`     | Scalar date-time            | `double`                         |
+| `r_sexp`      | Generic R object (SEXP)[^2] | `SEXP`                           |
 
 `NA` values can be accessed via the template function `na<T>`
 
@@ -237,6 +249,7 @@ scalar elements like `r_int`, `r_dbl`, etc.
 We can create vectors like so
 
 ``` cpp
+
 // Integer vector of size n
 [[cppally::register]]
 r_vec<r_int> new_integer_vector(int n){
@@ -246,6 +259,7 @@ r_vec<r_int> new_integer_vector(int n){
 ```
 
 ``` r
+
 new_integer_vector(3)
 #> [1] 0 0 0
 ```
@@ -263,6 +277,7 @@ make_vec<r_dbl>(1, 1.5, 2, na<r_dbl>())
 We can add names on the fly with `arg()`
 
 ``` cpp
+
 make_vec<r_dbl>(
     arg("first") = 1,
     arg("second") = 1.5,
@@ -293,6 +308,7 @@ make_vec<r_sexp>(1, 2, 3)
 A list of all cppally vectors of length 0
 
 ``` cpp
+
 [[cppally::register]]
 r_vec<r_sexp> all_vectors(){
   return make_vec<r_sexp>(
@@ -311,6 +327,7 @@ r_vec<r_sexp> all_vectors(){
 ```
 
 ``` r
+
 all_vectors()
 #> $logical
 #> logical(0)
@@ -355,6 +372,7 @@ Let’s practice by creating an absolute function in C++ using templates
 and the `RMathType` concept.
 
 ``` cpp
+
 template <RMathType T>
 [[cppally::register]]
 T cpp_abs(T x){
@@ -371,6 +389,7 @@ T cpp_abs(T x){
 Works correctly for doubles
 
 ``` r
+
 cpp_abs(-5)
 #> [1] 5
 cpp_abs(0)
@@ -384,6 +403,7 @@ cpp_abs(NA_real_)
 It also works for integers
 
 ``` r
+
 cpp_abs(-3L)
 #> [1] 3
 cpp_abs(NA_integer_)
@@ -448,6 +468,7 @@ An obvious and somewhat ugly workaround is to include a prototype
 argument that allows the template parameter to be deduced from.
 
 ``` cpp
+
 // Return the default constructor result of RScalar types
 
 template <RScalar T>
@@ -458,6 +479,7 @@ T scalar_default(T ptype){
 ```
 
 ``` r
+
 scalar_default(integer(1)) # Default is 0L
 #> [1] 0
 scalar_default(numeric(1)) # Default is 0.0
@@ -478,6 +500,7 @@ concepts, please see the **Annex**
 To coerce from one scalar to another we can use `as<T>`
 
 ``` cpp
+
 [[cppally::register]]
 r_int double_to_int(r_dbl x){
   return as<r_int>(x);
@@ -485,6 +508,7 @@ r_int double_to_int(r_dbl x){
 ```
 
 ``` r
+
 double_to_int(pi)
 #> [1] 3
 double_to_int(NA_real_)
@@ -494,6 +518,7 @@ double_to_int(NA_real_)
 We can also coerce from one vector type to another
 
 ``` cpp
+
 [[cppally::register]]
 r_vec<r_int> to_int_vec(r_vec<r_dbl> x){
   return as<r_vec<r_int>>(x);
@@ -501,6 +526,7 @@ r_vec<r_int> to_int_vec(r_vec<r_dbl> x){
 ```
 
 ``` r
+
 to_int_vec(c(0, 1.5, NA))
 #> [1]  0  1 NA
 ```
@@ -509,6 +535,7 @@ Since `as<T>` is extremely flexible, we can also coerce from a scalar to
 a vector or vice versa
 
 ``` cpp
+
 [[cppally::register]]
 r_vec<r_sexp> coercions(){
     r_dbl a(4.2);
@@ -523,6 +550,7 @@ r_vec<r_sexp> coercions(){
 ```
 
 ``` r
+
 coercions()
 #> [[1]]
 #> [1] 4
@@ -565,6 +593,7 @@ C++ string_view via `cpp_str()`
 This can be converted into a std::string via its constructor
 
 ``` cpp
+
 [[cppally::register]]
 r_str str_concatenate(r_str x, r_str y, r_str sep){
   std::string left = std::string(x.cpp_str());
@@ -576,6 +605,7 @@ r_str str_concatenate(r_str x, r_str y, r_str sep){
 ```
 
 ``` r
+
 str_concatenate("hello", "how are you?", sep = ", ")
 #> [1] "hello, how are you?"
 ```
@@ -630,6 +660,7 @@ are defined as `r_vec<r_sexp>`, a vector that holds generic `r_sexp`
 elements.
 
 ``` cpp
+
 using list = r_vec<r_sexp>;
 
 [[cppally::register]]
@@ -639,6 +670,7 @@ list new_list(int n){
 ```
 
 ``` r
+
 new_list(0)
 #> list()
 new_list(3)
@@ -660,6 +692,7 @@ type we can use `visit_vector()` or `visit_sexp()` via a C++ lambda.
 in-place
 
 ``` cpp
+
 [[cppally::register]]
 r_vec<r_sexp> resize_all(r_vec<r_sexp> x, r_size_t n){
     r_size_t list_length = x.length();
@@ -673,6 +706,7 @@ r_vec<r_sexp> resize_all(r_vec<r_sexp> x, r_size_t n){
 ```
 
 ``` r
+
 # Resize to size 1
 resize_all(list(1:5, letters), n = 1)
 #> [[1]]
@@ -686,6 +720,7 @@ When we pass a non-vector to `visit_vector`, it aborts and explains that
 the input must be a vector
 
 ``` r
+
 resize_all(list(mean_fn = mean), 1)
 #> Error:
 #> ! `x` must be a vector to be instantiated from an `r_sexp`
@@ -700,6 +735,7 @@ can’t be deduced into a distinct type, `r_sexp` is returned.
 **Example:** Same example as above but with `visit_sexp()`
 
 ``` cpp
+
 [[cppally::register]]
 r_vec<r_sexp> resize_all2(r_vec<r_sexp> x, r_size_t n){
     r_size_t list_length = x.length();
@@ -718,6 +754,7 @@ r_vec<r_sexp> resize_all2(r_vec<r_sexp> x, r_size_t n){
 ```
 
 ``` r
+
 # Resize to size 1
 resize_all2(list(1:5, letters), n = 1)
 #> [[1]]
@@ -728,6 +765,7 @@ resize_all2(list(1:5, letters), n = 1)
 ```
 
 ``` r
+
 resize_all2(list(mean_fn = mean), n = 1)
 #> Error:
 #> ! Cannot resize a non-vector
@@ -738,6 +776,7 @@ resize_all2(list(mean_fn = mean), n = 1)
 We can create a factor via `r_factors()`
 
 ``` cpp
+
 [[cppally::register]]
 r_factors new_factor(r_vec<r_str> x){
     return r_factors(x);
@@ -745,6 +784,7 @@ r_factors new_factor(r_vec<r_str> x){
 ```
 
 ``` r
+
 new_factor(letters)
 #>  [1] a b c d e f g h i j k l m n o p q r s t u v w x y z
 #> Levels: a b c d e f g h i j k l m n o p q r s t u v w x y z
@@ -755,6 +795,7 @@ the RVector concept. To access the underlying integer codes vector, use
 the public `codes()` member function
 
 ``` cpp
+
 static_assert(!RVector<r_factors>);
 
 [[cppally::register]]
@@ -764,6 +805,7 @@ r_vec<r_int> factor_codes(r_factors x){
 ```
 
 ``` r
+
 letter_fct <- new_factor(letters)
 
 letter_fct |>
@@ -780,6 +822,7 @@ namespace.
 **Example:** Converting a list of samples to a data frame
 
 ``` cpp
+
 [[cppally::register]]
 r_vec<r_sexp> list_as_df(r_vec<r_sexp> x){
 
@@ -810,6 +853,7 @@ r_vec<r_sexp> list_as_df(r_vec<r_sexp> x){
 ```
 
 ``` r
+
 set.seed(42)
 norm_samples <- lapply(1:5, \(x) rnorm(10, mean = x))
 names(norm_samples) <- paste0("sample_", 1:5)
@@ -851,6 +895,7 @@ cppally/sugar
 **Example:** `n_unique()` - fast calculation of number of unique values.
 
 ``` cpp
+
 template <RVector T>
 [[cppally::register]]
 r_int cpp_n_unique(T x){
@@ -859,6 +904,7 @@ r_int cpp_n_unique(T x){
 ```
 
 ``` r
+
 library(bench)
 x <- sample(1:100, 10^5, replace = TRUE)
 mark(
@@ -868,8 +914,8 @@ mark(
 #> # A tibble: 2 × 6
 #>   expression            min   median `itr/sec` mem_alloc `gc/sec`
 #>   <bch:expr>       <bch:tm> <bch:tm>     <dbl> <bch:byt>    <dbl>
-#> 1 base_n_unique       995µs   1.15ms      869.    1.38MB     24.8
-#> 2 cppally_n_unique    256µs 257.19µs     3855.        0B      0
+#> 1 base_n_unique      1.18ms   1.41ms      712.    1.38MB     18.2
+#> 2 cppally_n_unique 280.56µs 283.61µs     3460.        0B      0
 ```
 
 More useful sugar functions
@@ -1026,6 +1072,7 @@ consistently.
 **Example:** Summing a double vector using `r_vec<T>::data()` member
 
 ``` cpp
+
 [[cppally::register]]
 double primitive_sum(const r_vec<r_dbl>& x){
 
@@ -1047,32 +1094,16 @@ double primitive_sum(const r_vec<r_dbl>& x){
 ```
 
 ``` r
+
 x <- rnorm(10^5)
 primitive_sum(x)
 #> [1] -467.8787
 ```
 
-------------------------------------------------------------------------
-
-1.  Unlike `r_str` which is composite and holds an `r_sexp` member,
+[^1]: Unlike `r_str` which is composite and holds an `r_sexp` member,
     `r_date` and `r_psxct` instead inherit directly from `r_dbl`. This
     means that they can implicitly convert to `r_dbl`
 
-2.  `r_sexp` represents a generic R object which can include cppally
+[^2]: `r_sexp` represents a generic R object which can include cppally
     vectors. We will explain how to disambiguate `r_sexp` later which is
     most useful when working with lists and data frames
-
-3.  In C++ constexpr is used as a keyword to declare that it’s possible
-    to evaluate values at compile-time, meaning they are known before
-    any code is run by the user. Since `r_na` internally is the largest
-    possible `int` which does not change and is known a priori, it is
-    therefore a compile-time constant.
-
-4.  Having an `NA` sentinel for `r_sexp` is very useful when writing
-    templates involving vectors. For this reason the `NA` sentinel is
-    `r_null`. This doesn’t mean `is_na(r_null)` is true, and is
-    intentionally not true because it is not a scalar and therefore
-    cannot be `NA`. As `r_null` represents the absence of a tangible R
-    object, it can be thought of as a zero-length object and since all
-    `NA` values are represented as length-1 vectors (in R),
-    `is_na(r_null)` should not return true.

@@ -31,12 +31,14 @@ optimisations.
 First, let’s load cppally
 
 ``` r
+
 library(cppally)
 ```
 
 **Insert/release benchmark**
 
 ``` cpp
+
 #include <cpp11.hpp>
 
 [[cppally::linking_to("cpp11")]]
@@ -60,6 +62,7 @@ double bench_protect_insert_release_cpp11(int n) {
 ```
 
 ``` cpp
+
 #include <cppally.hpp>
 using namespace cppally;
 #include <chrono>
@@ -82,21 +85,23 @@ double bench_protect_insert_release_cppally(int n) {
 **Results in nanoseconds per insert & release**
 
 ``` r
+
 insert_release_cpp11 <- replicate(10^4, bench_protect_insert_release_cpp11(10^4)) 
 mean(insert_release_cpp11)
-#> [1] 38.66802
+#> [1] 41.85894
 insert_release_cppally <- replicate(10^4, bench_protect_insert_release_cppally(10^4))
 mean(insert_release_cppally)
-#> [1] 13.91917
+#> [1] 16.12793
 ```
 
-On my machine, cpp11 performs an insert & release every ~39 nanoseconds.
-cppally performs significantly better, with ~14 nanoseconds per insert &
+On my machine, cpp11 performs an insert & release every ~42 nanoseconds.
+cppally performs significantly better, with ~16 nanoseconds per insert &
 release.
 
 **Copy benchmark**
 
 ``` cpp
+
 
 #include <cpp11.hpp>
 [[cppally::linking_to("cpp11")]]
@@ -121,6 +126,7 @@ double bench_protect_copy_cpp11(int n) {
 ```
 
 ``` cpp
+
 #include <cppally.hpp>
 using namespace cppally;
 #include <chrono>
@@ -142,16 +148,17 @@ double bench_protect_copy_cppally(int n) {
 **Results in nanoseconds per copy**
 
 ``` r
+
 copy_sexp_cpp11 <- replicate(10^4, bench_protect_copy_cpp11(10^4))
 mean(copy_sexp_cpp11)
-#> [1] 33.66174
+#> [1] 36.15012
 copy_sexp_cppally <- replicate(10^4, bench_protect_copy_cppally(10^4))
 mean(copy_sexp_cppally)
-#> [1] 0.2926689
+#> [1] 0.3183727
 ```
 
 In these benchmark results we can see a drastic difference, with cpp11
-at ~34 ns/copy and cppally at ~0.3 ns/copy.
+at ~36 ns/copy and cppally at ~0.3 ns/copy.
 
 **Impact of protection overhead, a real example**
 
@@ -161,6 +168,7 @@ impact on performance.
 **Example:** Counting the number of `NA` values in a character vector
 
 ``` cpp
+
 // Pure R C API NA count - As fast as it can reasonably get
 [[cppally::register]] // Registered via cppally for convenience
 int C_na_count(SEXP x){
@@ -176,6 +184,7 @@ int C_na_count(SEXP x){
 ```
 
 ``` cpp
+
 #include <cpp11.hpp>
 [[cppally::linking_to("cpp11")]]
 
@@ -196,6 +205,7 @@ int cpp11_na_count(SEXP x){
 ```
 
 ``` cpp
+
 [[cppally::register]]
 int cppally_na_count(r_vec<r_str> x){
  r_size_t n = x.length();
@@ -209,6 +219,7 @@ int cppally_na_count(r_vec<r_str> x){
 ```
 
 ``` r
+
 set.seed(42)
 x <- sample(letters, 10^5, TRUE)
 x[sample.int(length(x), 10^3)] <- NA
@@ -217,32 +228,35 @@ x[sample.int(length(x), 10^3)] <- NA
 **R C API results** - Extremely fast \<30 microseconds
 
 ``` r
+
 library(bench)
 mark(C_na_count(x))
 #> # A tibble: 1 × 6
 #>   expression         min   median `itr/sec` mem_alloc `gc/sec`
 #>   <bch:expr>    <bch:tm> <bch:tm>     <dbl> <bch:byt>    <dbl>
-#> 1 C_na_count(x)   58.3µs   58.6µs    16784.        0B        0
+#> 1 C_na_count(x)   63.3µs   63.7µs    15364.        0B        0
 ```
 
 **cpp11 results** - ~5 milliseconds
 
 ``` r
+
 mark(cpp11_na_count(x))
 #> # A tibble: 1 × 6
 #>   expression             min   median `itr/sec` mem_alloc `gc/sec`
 #>   <bch:expr>        <bch:tm> <bch:tm>     <dbl> <bch:byt>    <dbl>
-#> 1 cpp11_na_count(x)    7.1ms   7.34ms      135.        0B     44.0
+#> 1 cpp11_na_count(x)   6.55ms   6.81ms      143.        0B     43.9
 ```
 
 **cppally results** - ~750 microseconds
 
 ``` r
+
 mark(cppally_na_count(x))
 #> # A tibble: 1 × 6
 #>   expression               min   median `itr/sec` mem_alloc `gc/sec`
 #>   <bch:expr>          <bch:tm> <bch:tm>     <dbl> <bch:byt>    <dbl>
-#> 1 cppally_na_count(x)   1.25ms   1.28ms      780.        0B        0
+#> 1 cppally_na_count(x)   1.46ms   1.47ms      679.        0B     2.02
 ```
 
 Counting values is a simple operation and because of its simplicity, the
@@ -272,6 +286,7 @@ could have improved performance by using `r_str_view`, a non-owning
 version of `r_str`.
 
 ``` cpp
+
 [[cppally::register]]
 int cppally_fast_na_count(r_vec<r_str_view> x){
  r_size_t n = x.length();
@@ -285,11 +300,12 @@ int cppally_fast_na_count(r_vec<r_str_view> x){
 ```
 
 ``` r
+
 mark(cppally_fast_na_count(x))
 #> # A tibble: 1 × 6
 #>   expression                    min   median `itr/sec` mem_alloc `gc/sec`
 #>   <bch:expr>               <bch:tm> <bch:tm>     <dbl> <bch:byt>    <dbl>
-#> 1 cppally_fast_na_count(x)    173µs    173µs     5715.        0B        0
+#> 1 cppally_fast_na_count(x)    218µs    219µs     4489.        0B        0
 ```
 
 Looking at the benchmark results, we have effectively eliminated the
@@ -303,6 +319,7 @@ We could have also used `view()`, a non-owning version of
 a non-owning context.
 
 ``` cpp
+
 [[cppally::register]]
 int cppally_fast_na_count_v2(r_vec<r_str> x){
  r_size_t n = x.length();
@@ -316,11 +333,12 @@ int cppally_fast_na_count_v2(r_vec<r_str> x){
 ```
 
 ``` r
+
 mark(cppally_fast_na_count_v2(x))
 #> # A tibble: 1 × 6
 #>   expression                       min   median `itr/sec` mem_alloc `gc/sec`
 #>   <bch:expr>                  <bch:tm> <bch:tm>     <dbl> <bch:byt>    <dbl>
-#> 1 cppally_fast_na_count_v2(x)    173µs    173µs     5717.        0B        0
+#> 1 cppally_fast_na_count_v2(x)    187µs    188µs     5228.        0B        0
 ```
 
 The results are similar to that of `cppally_fast_na_count()`.
@@ -337,6 +355,7 @@ pointing to.
 **DO**:
 
 ``` cpp
+
 void good(r_str x){
   r_str_view str = x;
   if (str.cpp_str() == "true"){
@@ -353,6 +372,7 @@ does not outlive `x`.
 **DON’T**:
 
 ``` cpp
+
 r_str_view bad(){
   r_str new_str("I will be destroyed at the end of `bad()`");
   r_str_view bad_str = new_str; // A view of new_str

@@ -108,6 +108,7 @@ as<r_int>(r_str("a"))
 This is contrast to R which returns an NA with a warning
 
 ``` r
+
 as.integer("a")
 #> Warning: NAs introduced by coercion
 #> [1] NA
@@ -121,6 +122,7 @@ it an `r_dbl` without realising - this will implicitly coerce to `r_int`
 without throwing an error.
 
 ``` cpp
+
 [[cppally::register]]
 r_int foo(r_int x){
   return x;
@@ -128,6 +130,7 @@ r_int foo(r_int x){
 ```
 
 ``` r
+
 foo(1.2345)
 #> [1] 1
 ```
@@ -147,10 +150,12 @@ cppally delegates the handling of 64-bit integer vectors to bit64 by
 marking them with the “integer64” class.
 
 ``` r
+
 library(bit64)
 ```
 
 ``` cpp
+
 [[cppally::register]]
 r_int64 as_int64(r_int x){
     return as<r_int64>(x);
@@ -158,6 +163,7 @@ r_int64 as_int64(r_int x){
 ```
 
 ``` r
+
 as_int64(.Machine$integer.max) + 1L
 #> integer64
 #> [1] 2147483648
@@ -295,18 +301,21 @@ My json file looks like this:
 As your R installation path may differ, you can find the exact path with
 
 ``` r
+
 normalizePath(Sys.getenv("R_HOME"), winslash = "/")
 ```
 
 Your R libraries can be found with
 
 ``` r
+
 .libPaths()
 ```
 
 The compiler bundled with RTools is likely found here
 
 ``` r
+
 cxx <- system2(file.path(R.home("bin"), "R"), 
                c("CMD", "config", "CXX20"), stdout = TRUE)
 cxx_bin <- trimws(strsplit(cxx, " ")[[1]][1])
