@@ -186,7 +186,7 @@ inline r_vec<T> r_vec<T>::subset(const r_vec<U>& indices, bool check, bool inver
   }
   r_vec<r_str_view> nms = attr::get_old_names(*this);
   if (!nms.is_null()){
-    r_vec<r_str_view> new_nms = nms.subset(indices, true, invert);
+    r_vec<r_str_view> new_nms = nms.subset(indices, check, invert);
     attr::set_old_names(out, new_nms);
   }
   return out;

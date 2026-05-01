@@ -98,7 +98,6 @@ struct r_df {
 
     private: 
 
-    // For methods that just return a non-factor (like length())
     #define FORWARD_METHOD(NAME)                               \
         template <typename... Args>                            \
         decltype(auto) NAME(Args&&... args) const {            \
@@ -136,7 +135,11 @@ struct r_df {
         value.set_names(colnames);
     }
 
-    r_vec<r_sexp> get(int index);
+    inline r_df get_row(int index) const;
+    inline r_sexp get_col(int index) const;
+    inline r_sexp get_col(const char* name) const;
+    template <RStringType U>
+    inline r_sexp get_col(U name) const;
 };
 
 }
