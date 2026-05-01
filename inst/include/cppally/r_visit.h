@@ -4,6 +4,7 @@
 #include <cppally/r_vec.h>
 #include <cppally/r_factor.h>
 #include <cppally/r_sexp_types.h>
+#include <cppally/r_df.h>
 
 namespace cppally {
 
@@ -26,7 +27,7 @@ switch (internal::CPPALLY_TYPEOF(x)) {
     case internal::CPPALLY_REALPSXTSXP:     return f(r_vec<r_psxct>(x));
     case internal::CPPALLY_FCTSXP:          return f(r_factors(x));
     case SYMSXP:                            return f(r_sym(x));
-    // case CPPALLY_DFSXP:                  return f(r_df(x));
+    case internal::CPPALLY_DFSXP:           return f(r_df(x));
     default:                                return f(r_sexp(x));
 }
 }
@@ -47,7 +48,7 @@ switch (internal::CPPALLY_TYPEOF(x)) {
     case internal::CPPALLY_REALPSXTSXP:   return f(r_vec<r_psxct>(x));
     case internal::CPPALLY_FCTSXP:        return f(r_factors(x));
     case SYMSXP:                        return f(r_sym(x));
-    // case CPPALLY_DFSXP:                return f(r_df(x));
+    case internal::CPPALLY_DFSXP:           return f(r_df(x));
     default:                            return f(r_sexp(x));
 }
 }
@@ -104,7 +105,7 @@ switch (internal::CPPALLY_TYPEOF(x)) {
     case internal::CPPALLY_REALPSXTSXP:   return f(r_vec<r_psxct>(x, internal::view_tag{}));
     case internal::CPPALLY_FCTSXP:        return f(r_factors(x, internal::view_tag{}));
     case SYMSXP:                        return f(r_sym(x, internal::view_tag{}));
-    // case CPPALLY_DFSXP:                return f(r_df(x));
+    case internal::CPPALLY_DFSXP:                return f(r_df(x, internal::view_tag{}));
     default:                            return f(r_sexp(x, internal::view_tag{}));
 }
 }
@@ -125,7 +126,7 @@ switch (internal::CPPALLY_TYPEOF(x)) {
     case internal::CPPALLY_REALPSXTSXP:   return f(r_vec<r_psxct>(x, internal::view_tag{}));
     case internal::CPPALLY_FCTSXP:        return f(r_factors(x, internal::view_tag{}));
     case SYMSXP:                        return f(r_sym(x, internal::view_tag{}));
-    // case CPPALLY_DFSXP:                return f(r_df(x));
+    case internal::CPPALLY_DFSXP:                return f(r_df(x, internal::view_tag{}));
     default:                            return f(r_sexp(x, internal::view_tag{}));
 }
 }

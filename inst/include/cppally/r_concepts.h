@@ -415,9 +415,7 @@ consteval uint8_t r_type_rank() {
     if constexpr (is<T, r_psxct>)                   return 7;
     if constexpr (is<T, r_str>)                     return 8;
     if constexpr (is<T, r_str_view>)                return 9;
-
-    if constexpr (is<T, r_sexp>)                     return std::numeric_limits<uint8_t>::max()  - 1;
-    return std::numeric_limits<uint8_t>::max();
+    if constexpr (is<T, r_sexp>)                    return std::numeric_limits<uint8_t>::max()  - 1;
 }
 
 template <MathType T, MathType U>

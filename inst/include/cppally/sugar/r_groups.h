@@ -7,7 +7,7 @@
 #include <cppally/sugar/r_stats.h>
 #include <cppally/sugar/r_hash.h>
 #include <cppally/sugar/r_sort.h>
-#include <cppally/sugar/r_identical.h>
+#include <cppally/r_identical.h>
 #include <ankerl/unordered_dense.h> // Hash maps for group IDs + unique + match
 #include <functional>
 #include <vector>
