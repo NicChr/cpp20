@@ -170,7 +170,7 @@ inline r_vec<T> r_vec<T>::subset(const r_vec<U>& indices, bool check, bool inver
         j = unwrap(indices.get(i));
         if (static_cast<r_size_t>(j) < xn){
           out.set(i, view(static_cast<r_size_t>(j)));
-        } else if (j > na_val){
+        } else if (j > na_val) [[unlikely]] {
           // If j > n_val then it is a negative signed integer
           abort("Negative indices are unsupported, use `invert = true`");
         } else {
@@ -179,13 +179,17 @@ inline r_vec<T> r_vec<T>::subset(const r_vec<U>& indices, bool check, bool inver
           }
         }
       }
-      return out;
     } else {
       for (r_size_t i = 0; i < n; ++i){
         out.set(i, view(unwrap(indices.get(i))));
     }
-    return out;
   }
+  r_vec<r_str_view> nms = attr::get_old_names(*this);
+  if (!nms.is_null()){
+    r_vec<r_str_view> new_nms = nms.subset(indices, true, invert);
+    attr::set_old_names(out, new_nms);
+  }
+  return out;
 }
 }
 
