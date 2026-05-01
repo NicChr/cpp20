@@ -105,6 +105,11 @@ inline r_sexp r_df::get_col(const char* name) const {
     return get_col(r_str(name));
 }
 
+template <internal::RSubscript U>
+inline r_df r_df::select(const r_vec<U>& cols) const {
+    return r_df(value.subset(cols), false, nrow());
+}
+
 }
 
 #endif

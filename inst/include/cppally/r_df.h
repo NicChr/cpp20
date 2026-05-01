@@ -135,6 +135,9 @@ struct r_df {
         value.set_names(colnames);
     }
 
+    template <internal::RSubscript U>
+    r_df select(const r_vec<U>& cols) const;
+
     inline r_df get_row(int index) const;
     inline r_sexp get_col(int index) const;
     inline r_sexp get_col(const char* name) const;
