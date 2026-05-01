@@ -89,7 +89,7 @@ using r_types = std::tuple<
     r_sexp // Catch-all
 >;
 
-using r_classed_vector_types = std::tuple<r_factors>;
+using r_classed_vector_types = std::tuple<r_factors, r_df>;
 
 
 template<typename Tuple> struct to_r_vec_tuple_impl;
