@@ -86,7 +86,7 @@ struct r_df {
     explicit r_df(const r_sexp& s) : value(s) {validate_df(value);}
     explicit r_df(const r_sexp& s, internal::view_tag) : value(s, internal::view_tag{}) {validate_df(value);}
     
-    // Forward declarations, defined in r_sexp_sugar.h
+    // Forward declarations, defined in r_df_methods.h
     explicit r_df(const r_vec<r_sexp>& cols, bool recycle = true);
     explicit r_df(const r_vec<r_sexp>& cols, bool recycle, int nrows);
     template <RScalar T>

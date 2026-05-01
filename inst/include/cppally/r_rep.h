@@ -1,5 +1,5 @@
-#ifndef CPPALLY_R_VEC_FNS_H
-#define CPPALLY_R_VEC_FNS_H
+#ifndef CPPALLY_R_REP_H
+#define CPPALLY_R_REP_H
 
 #include <cppally/r_vec.h>
 #include <cppally/r_visit.h>

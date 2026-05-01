@@ -1,13 +1,12 @@
-#ifndef CPPALLY_R_SEXP_SUGAR_H
-#define CPPALLY_R_SEXP_SUGAR_H
+#ifndef CPPALLY_R_DF_METHODS_H
+#define CPPALLY_R_DF_METHODS_H
 
-// Methods for r_sexp such as vector operations and data frame construction
-// the SEXP is visited in a lambda context and method applied to visited type
+// Methods for r_df that requires r_visit.h
 
 #include <cppally/r_vec.h>
 #include <cppally/r_attrs.h>
 #include <cppally/r_visit.h>
-#include <cppally/r_vec_fns.h>
+#include <cppally/r_rep.h>
 #include <cppally/r_list_helpers.h>
 #include <string>
 

@@ -23,7 +23,7 @@
 #include <cppally/r_visit.h>
 #include <cppally/r_list_helpers.h>
 #include <cppally/r_coerce.h>
-#include <cppally/r_vec_fns.h>
-#include <cppally/r_sexp_sugar.h>
+#include <cppally/r_rep.h>
+#include <cppally/r_df_methods.h>
 
 #endif

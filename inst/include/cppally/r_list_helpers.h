@@ -3,7 +3,7 @@
 
 #include <cppally/r_vec.h>
 #include <cppally/r_visit.h>
-#include <cppally/r_vec_fns.h>
+#include <cppally/r_rep.h>
 
 namespace cppally {
 
