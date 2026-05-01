@@ -328,7 +328,7 @@ inline r_vec<r_int> order(const r_factors& x, bool preserve_ties = true) {
 }
 
 
-inline r_vec<r_int> order(const r_df& x, bool preserve_ties = true) {
+inline r_vec<r_int> order(const r_sexp& x, bool preserve_ties = true) {
     return CPPALLY_VIEW_AND_APPLY(
         x, /*return_type = */ r_vec<r_int>, /*fn = */ order, 
         /*rest of args = */ preserve_ties
