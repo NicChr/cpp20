@@ -8,35 +8,12 @@
 
 namespace cppally {
 
-namespace internal {
-
-template <RVector T>
-T unsorted_unique(const T& x) {
-    auto group_info = make_groups(x);
-    auto starts = group_info.starts();
-    return x.subset(starts);
-}
-
-template <RVector T>
-T sorted_unique(const T& x) {
-    if constexpr (RSortableType<T>){
-        groups group_info = make_groups(x, true);
-        auto starts = group_info.starts();
-        return x.subset(starts);
-    } else {
-        return unsorted_unique(x); 
-    }
-}
-
-}
-
-template <RVector T>
+template <typename T>
+requires (RVector<T> || RFactor<T> || RDataFrame<T> || RSexpType<T>)
 T unique(const T& x, bool sort = false) {
-    if (sort){
-        return internal::sorted_unique(x);
-    } else {
-        return internal::unsorted_unique(x);
-    }
+    groups group_info = make_groups(x, sort);
+    auto starts = group_info.starts();
+    return subset(x, starts);
 }
 
 template <RVector T>

@@ -77,21 +77,6 @@ inline r_df::r_df(const r_vec<T>& col) : value(internal::new_df_impl(r_vec<r_sex
 // Factor constructor
 inline r_df::r_df(const r_factors& col) : value(internal::new_df_impl(r_vec<r_sexp>(1, r_sexp(static_cast<SEXP>(col))))){}
 
-template <internal::RSubscript U>
-inline r_df r_df::subset(const r_vec<U>& indices) const {
-    if (ncol() == 0){
-        // We don't have a function atm that tells us what the resulting size should be here
-        // So subset a dummy vector
-        r_vec<r_int> dummy(nrow()); // Uninitialised dummy vector
-        return r_df(r_vec<r_sexp>(), false, dummy.subset(indices).length());
-    }
-    r_vec<r_sexp> out(ncol());
-    internal::view_elements(value, [&]<typename T>(r_size_t i, const T& elem) {
-        out.set(i, elem.subset(indices));
-    });
-    return r_df(out, false, out.view(0).length());
-}
-
 }
 
 #endif

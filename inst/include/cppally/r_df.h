@@ -135,8 +135,6 @@ struct r_df {
     void set_colnames(const r_vec<U>& colnames) {
         value.set_names(colnames);
     }
-    template <internal::RSubscript U>
-    r_df subset(const r_vec<U>& indices) const;
 };
 
 }

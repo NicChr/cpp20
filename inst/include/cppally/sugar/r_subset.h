@@ -325,6 +325,42 @@ void r_vec<T>::replace(const r_vec<T>& old_values, const r_vec<T>& new_values){
   }
 }
 
+// Free subset functions
+
+template <RVector T, internal::RSubscript U>
+inline T subset(const T& x, const r_vec<U>& indices, bool check = true, bool invert = false) {
+  return x.subset(indices, check, invert);
+}
+template <RFactor T, internal::RSubscript U>
+inline T subset(const T& x, const r_vec<U>& indices, bool check = true, bool invert = false) {
+  return x.subset(indices, check, invert);
+}
+
+template <RSexpType T, internal::RSubscript U>
+inline T subset(const T& x, const r_vec<U>& indices, bool check = true, bool invert = false);
+
+template <RDataFrame T>
+inline T subset(const T& x, const r_vec<r_int>& indices, bool check = true, bool invert = false){
+
+  int ncol = x.ncol();
+
+  if (ncol == 0){
+    // We don't have a function atm that tells us what the resulting size should be here
+    // So subset a dummy vector
+    r_vec<r_int> dummy(x.nrow()); // Uninitialised dummy vector
+    return r_df(r_vec<r_sexp>(), false, subset(dummy, indices, check, invert).length());
+  }
+  r_vec<r_sexp> out(ncol);
+  for (int i = 0; i < ncol; ++i){
+    out.set(i, subset(x.value.view(i), indices, check, invert));
+  }
+  return r_df(out, false, out.view(0).length());
+}
+
+template <RSexpType T, internal::RSubscript U>
+inline T subset(const T& x, const r_vec<U>& indices, bool check, bool invert){
+  return r_sexp(CPPALLY_VIEW_AND_APPLY(x, /*return_type = */ SEXP, /*fn = */ subset, /*rest of args = */ indices, check, invert));
+}
 }
 
 #endif

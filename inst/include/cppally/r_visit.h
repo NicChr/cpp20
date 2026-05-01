@@ -131,25 +131,6 @@ switch (internal::CPPALLY_TYPEOF(x)) {
 }
 }
 
-namespace internal {
-
-// visits all elements, visitor receives (r_size_t i, r_vec<T> elem)
-template <typename Visitor>
-void view_elements(const r_vec<r_sexp>& x, Visitor&& vis) {
-    r_size_t n = x.length();
-    for (r_size_t i = 0; i < n; ++i) {
-        view_sexp(x.view(i), [&]<typename T>(const T& elem) {
-            if constexpr (is<T, r_sexp>){
-                abort("Don't know how to deal with object of type %s", internal::r_type_to_str(internal::CPPALLY_TYPEOF(elem)));
-            } else {
-                vis(i, elem);
-            }
-        });
-    }
-}
-
-}
-
 // Helper that disambiguates r_sexp type via view_sexp and then calls the named function
 // If there is no defined specialisation or overload then this is caught in the last branch
 // If the visited type can't be disambiguated, this is caught in the first branch
@@ -163,6 +144,18 @@ void view_elements(const r_vec<r_sexp>& x, Visitor&& vis) {
             abort("No available method for type %s in `" #fn "()`",             \
                 internal::type_str<std::remove_cvref_t<decltype(x_)>>());       \
         }                                                                       \
+    })
+
+#define CPPALLY_VISIT_AND_APPLY(x, ret, fn, ...)                                 \
+    visit_sexp(x, [&](const auto& x_) -> ret {                                   \
+        if constexpr (is<std::remove_cvref_t<decltype(x_)>, r_sexp>) {           \
+            abort("Unsupported SEXP type in `" #fn "()`");                       \
+        } else if constexpr (requires { fn(x_ __VA_OPT__(,) __VA_ARGS__); }) {   \
+            return fn(x_ __VA_OPT__(,) __VA_ARGS__);                             \
+        } else {                                                                 \
+            abort("No available method for type %s in `" #fn "()`",              \
+                internal::type_str<std::remove_cvref_t<decltype(x_)>>());        \
+        }                                                                        \
     })
 
 }
