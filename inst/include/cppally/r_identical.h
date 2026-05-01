@@ -97,6 +97,11 @@ inline bool identical_impl<r_factors>(const r_factors& a, const r_factors& b) {
     return identical_impl(a.value, b.value);
 }
 
+template<>
+inline bool identical_impl<r_df>(const r_df& a, const r_df& b) {
+    return identical_impl(a.value, b.value);
+}
+
 template <>
 inline bool identical_impl<r_sexp>(const r_sexp& a, const r_sexp& b) {
     SEXP x = unwrap(a);
