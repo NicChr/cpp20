@@ -122,6 +122,10 @@ r_vec<r_int> order() const {
 
 };
 
+// Forward decl
+template <RSexpType T>
+inline groups make_groups(const T& x, bool ordered = false);
+
 namespace internal {
 
 template <RSortableType T>
@@ -158,6 +162,49 @@ inline groups make_groups_from_order(const r_vec<T>& x, const r_vec<r_int>& o) {
     return groups(group_ids, n_groups, ordered, sorted);
 }
 
+// Build vector of row hashes by combining hashes across cols
+inline std::vector<uint64_t> row_hashes(const r_df& x) {
+    int nrow = x.nrow();
+    int ncol = x.ncol();
+    std::vector<uint64_t> row_ids(size_t(nrow), 0U);
+    for (int c = 0; c < ncol; ++c) {
+        view_sexp(x.value.view(c), [&]<typename ColT>(const ColT& col) {
+            if constexpr (requires (int i) { r_hash_impl(col.view(i)); }) {
+                for (int i = 0; i < nrow; ++i) {
+                    row_ids[i] = hash_combine(row_ids[i], r_hash_impl(col.view(i)));
+                }
+            } else {
+                abort("make_groups(r_df): unsupported column type");
+            }
+        });
+    }
+    return row_ids;
+}
+
+// Build a per-column equality probe for every column of `x`.
+// Each probe takes two row indices and returns whether the column values
+// at those rows are identical(). Columns whose type doesn't support
+// `identical(col.view(i), col.view(j))` cause an abort.
+inline std::vector<std::function<bool(int, int)>> build_col_eq_probes(const r_df& x) {
+    int ncol = x.ncol();
+    std::vector<std::function<bool(int, int)>> eqs;
+    eqs.reserve(ncol);
+    for (int c = 0; c < ncol; ++c) {
+        view_sexp(x.value.view(c), [&]<typename ColT>(const ColT& col) {
+            if constexpr (requires (int i, int j) {
+                identical(col.view(i), col.view(j));
+            }) {
+                eqs.emplace_back([col](int i, int j) {
+                    return identical(col.view(i), col.view(j));
+                });
+            } else {
+                abort("make_groups(r_df): unsupported column type");
+            }
+        });
+    }
+    return eqs;
+}
+
 template <RVal T>
 inline groups make_unordered_groups(const r_vec<T>& x) {
 
@@ -169,7 +216,7 @@ inline groups make_unordered_groups(const r_vec<T>& x) {
     r_vec<r_int> group_ids(n);
     int n_groups;
     bool ordered = false;
-    bool sorted;
+    bool sorted = false;
 
     // Table Method (For int with small range)
     if constexpr (is<T, r_int>) {
@@ -239,6 +286,7 @@ inline groups make_unordered_groups(const r_vec<T>& x) {
             }
             n_groups = next_id;
             // check if group IDs are sorted
+            sorted = true;
             for (r_size_t i = 1; i < n; ++i) {
               if (p_id[i] < p_id[i - 1]){
                   sorted = false;
@@ -273,6 +321,7 @@ inline groups make_unordered_groups(const r_vec<T>& x) {
       }
 
       // check if group IDs are sorted
+      sorted = true;
       for (r_size_t i = 1; i < n; ++i) {
         if (p_id[i] < p_id[i - 1]){
             sorted = false;
@@ -283,9 +332,65 @@ inline groups make_unordered_groups(const r_vec<T>& x) {
       return groups(group_ids, n_groups, ordered, sorted);
 }
 
+// hash each row directly into a single key
+inline groups make_unordered_groups(const r_df& x) {
+    int nrow = x.nrow();
+    int ncol = x.ncol();
+
+    if (nrow == 0) {
+        return groups(r_vec<r_int>(), 0, false, true); 
+    }
+    if (ncol == 0) {
+        return groups(r_vec<r_int>(nrow, r_int(0)), 1, false, true);
+    }
+    // If 1-col, use regular make_groups()
+    if (ncol == 1){
+        return make_groups(x.value.view(0), false);
+    }
+
+    r_vec<r_int> group_ids(nrow);
+
+    std::vector<uint64_t> row_ids = row_hashes(x);
+    std::vector<std::function<bool(int, int)>> eqs = build_col_eq_probes(x);
+
+    auto rows_equal = [&](int i, int j) {
+        for (auto& fn : eqs) {
+            if (!fn(i, j)) return false;
+        }
+        return true;
+    };
+
+    // Map: row-hash -> chain of (representative_row, group_id)
+    ankerl::unordered_dense::map<uint64_t, std::vector<std::pair<int, int>>> lookup;
+    lookup.reserve(get_hash_map_reserve_size<r_int>(static_cast<uint64_t>(nrow)));
+
+    int* RESTRICT p_id = group_ids.data();
+    int next_id = 0;
+
+    for (int i = 0; i < nrow; ++i) {
+        auto& chain = lookup[row_ids[i]];
+        int found = -1;
+        for (auto& [rep, gid] : chain) {
+            if (rows_equal(i, rep)) {
+                found = gid; 
+                break; 
+            }
+        }
+        if (found < 0) {
+            chain.emplace_back(i, next_id);
+            p_id[i] = next_id++;
+        } else {
+            p_id[i] = found;
+        }
+    }
+    int n_groups = next_id;
+    bool sorted = is_sorted(group_ids).is_true();
+    return groups(group_ids, n_groups, false, sorted);
+}
+
+
 template <RVal T>
 inline groups make_ordered_groups(const r_vec<T>& x) {
-
     if constexpr (!RSortableType<T>){
         return make_unordered_groups(x);
     } else {
@@ -295,9 +400,9 @@ inline groups make_ordered_groups(const r_vec<T>& x) {
 
 }
 
-template <RVal T>
-inline groups make_groups(const r_vec<T>& x, bool ordered = false) {
-    if (ordered){
+template <RVector T>
+inline groups make_groups(const T& x, bool ordered = false) {
+    if (ordered && RSortableType<typename T::data_type>){
         return internal::make_ordered_groups(x);
     } else {
         return internal::make_unordered_groups(x);
@@ -308,55 +413,20 @@ template <RFactor T>
 inline groups make_groups(const T& x, bool ordered = false) {
     return make_groups(x.value, ordered);
 }
-template <RSexpType T>
+
+template <RDataFrame T>
 inline groups make_groups(const T& x, bool ordered = false) {
-    return CPPALLY_VIEW_AND_APPLY(x, /*return_type = */ groups, /*fn = */ make_groups, /*rest of args = */ ordered);
+    if (ordered){
+        abort("Ordered data frame groups are currently unsupported");
+    } else {
+        return internal::make_unordered_groups(x);
+    }
 }
 
-// namespace internal {
-
-// // Build a per-column equality probe for every column of `x`.
-// // Each probe takes two row indices and returns whether the column values
-// // at those rows are identical(). Columns whose type doesn't support
-// // `identical(col.view(i), col.view(j))` cause an abort.
-// inline std::vector<std::function<bool(int, int)>> build_col_eq_probes(const r_df& x) {
-//     int ncol = x.ncol();
-//     std::vector<std::function<bool(int, int)>> eqs;
-//     eqs.reserve(ncol);
-//     for (int c = 0; c < ncol; ++c) {
-//         view_sexp(x.value.view(c), [&]<typename ColT>(const ColT& col) {
-//             if constexpr (requires (int i, int j) {
-//                 identical(col.view(i), col.view(j));
-//             }) {
-//                 eqs.emplace_back([col](int i, int j) {
-//                     return identical(col.view(i), col.view(j));
-//                 });
-//             } else {
-//                 abort("make_groups(r_df): unsupported column type");
-//             }
-//         });
-//     }
-//     return eqs;
-// }
-
-// // Build vector of row hashes by combining hashes across cols
-// inline std::vector<uint64_t> compute_row_hashes(const r_df& x) {
-//     int nrow = x.nrow();
-//     int ncol = x.ncol();
-//     std::vector<uint64_t> row_hashes(size_t(nrow), 0U);
-//     for (int c = 0; c < ncol; ++c) {
-//         view_sexp(x.value.view(c), [&]<typename ColT>(const ColT& col) {
-//             if constexpr (requires (int i) { r_hash_impl(col.view(i)); }) {
-//                 for (int i = 0; i < nrow; ++i) {
-//                     row_hashes[i] = hash_combine(row_hashes[i], r_hash_impl(col.view(i)));
-//                 }
-//             } else {
-//                 abort("make_groups(r_df): unsupported column type");
-//             }
-//         });
-//     }
-//     return row_hashes;
-// }
+template <RSexpType T>
+inline groups make_groups(const T& x, bool ordered){
+    return CPPALLY_VIEW_AND_APPLY(x, /*return_type = */ groups, /*fn = */ make_groups, /*rest of args = */ ordered);
+}
 
 // // Lexicographic order across all columns of a data frame.
 // // NAs sort first (consistent with cpp_stable_order).
@@ -456,73 +526,7 @@ inline groups make_groups(const T& x, bool ordered = false) {
 //     return groups(group_ids, n_groups, true, sorted);
 // }
 
-// // hash each row directly into a single key
-// inline groups make_unordered_df_groups(const r_df& x) {
-//     int nrow = x.nrow();
-//     int ncol = x.ncol();
-
-//     if (nrow == 0) {
-//         return groups(r_vec<r_int>(), 0, false, true); 
-//     }
-//     if (ncol == 0) {
-//         return groups(r_vec<r_int>(nrow, r_int(0)), 1, false, true);
-//     }
-//     // If 1-col, use regular make_groups()
-//     if (ncol == 1){
-//         return make_groups(x.value.view(0), false);
-//     }
-
-//     r_vec<r_int> group_ids(nrow);
-
-//     std::vector<uint64_t> row_hashes = compute_row_hashes(x);
-//     std::vector<std::function<bool(int, int)>> eqs = build_col_eq_probes(x);
-
-//     auto rows_equal = [&](int i, int j) {
-//         for (auto& fn : eqs) {
-//             if (!fn(i, j)) return false;
-//         }
-//         return true;
-//     };
-
-//     // Map: row-hash -> chain of (representative_row, group_id)
-//     ankerl::unordered_dense::map<uint64_t, std::vector<std::pair<int, int>>> lookup;
-//     lookup.reserve(get_hash_map_reserve_size<r_int>(static_cast<uint64_t>(nrow)));
-
-//     int* RESTRICT p_id = group_ids.data();
-//     int next_id = 0;
-
-//     for (int i = 0; i < nrow; ++i) {
-//         auto& chain = lookup[row_hashes[i]];
-//         int found = -1;
-//         for (auto& [rep, gid] : chain) {
-//             if (rows_equal(i, rep)) {
-//                 found = gid; 
-//                 break; 
-//             }
-//         }
-//         if (found < 0) {
-//             chain.emplace_back(i, next_id);
-//             p_id[i] = next_id++;
-//         } else {
-//             p_id[i] = found;
-//         }
-//     }
-//     int n_groups = next_id;
-//     bool sorted = is_sorted(group_ids).is_true();
-//     return groups(group_ids, n_groups, false, sorted);
 // }
-
-// }
-
-// template <RDataFrame T>
-// inline groups make_groups(const T& x, bool ordered = false) {
-//     if (ordered) {
-//         return internal::make_ordered_df_groups(x);
-//     } else {
-//         return internal::make_unordered_df_groups(x);
-//     }
-// }
-
 
 }
 
