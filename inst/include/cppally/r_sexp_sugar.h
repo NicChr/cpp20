@@ -39,8 +39,9 @@ inline r_vec<r_sexp> new_df_impl(const r_vec<r_sexp>& cols, bool recycle, int nr
     if (names.is_null()){
         names = r_vec<r_str_view>(n);
         for (r_size_t i = 0; i < n; ++i){
-            names.set(i, (std::string("col_") + std::to_string(i + 1).c_str()).c_str());
-        }
+            r_str elem( (std::string("col_") + std::to_string(i + 1)).c_str() );
+            names.set(i, elem);
+        } 
     }
     out.set_names(names); 
 
