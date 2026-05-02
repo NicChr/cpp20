@@ -5,6 +5,7 @@
 #include <cppally/r_vec.h>
 #include <cppally/r_visit.h>
 #include <cppally/r_sexp_types.h>
+#include <vector>
 
 
 // TO-DO: simplify the if statements below
@@ -12,6 +13,13 @@
 namespace cppally {
 
 namespace internal {
+
+template <typename T>
+struct is_std_vector : std::false_type {};
+template <typename T, typename A>
+struct is_std_vector<std::vector<T, A>> : std::true_type {};
+template <typename T>
+inline constexpr bool is_std_vector_v = is_std_vector<std::remove_cvref_t<T>>::value;
 
 // CHARSXP is always converted to STRSXP here, see `r_types.h` for info
 // to sexp is fairly simple but coercion from a sexp is more complicated
@@ -175,6 +183,29 @@ inline std::remove_cvref_t<T> as(const U& x) {
     // To C++ scalar that is RVal constructible
   } else if constexpr (CastableToRScalar<to_t>){
     return static_cast<to_t>(as<as_r_scalar_t<to_t>>(x));
+  } else if constexpr (internal::is_std_vector_v<from_t> && internal::is_std_vector_v<to_t>) {
+    r_size_t n = x.size();
+    to_t out(n);
+    for (r_size_t i = 0; i < n; ++i){
+      out[i] = as<typename to_t::value_type>(x[i]);
+    }
+    return out;
+  } else if constexpr (internal::is_std_vector_v<to_t>) {
+    static_assert(RVector<from_t>, "Can only convert RVector to std::vector");
+    r_size_t n = x.length();
+    to_t out(n);
+    for (r_size_t i = 0; i < n; ++i){
+      out[i] = as<typename to_t::value_type>(x.get(i));
+    }
+    return out;
+  } else if constexpr (internal::is_std_vector_v<from_t>) {
+    static_assert(RVector<to_t>, "Can only convert std::vector to RVector");
+    r_size_t n = x.size();
+    to_t out(n);
+    for (r_size_t i = 0; i < n; ++i){
+      out.set(i, x[i]);
+    }
+    return out;
   } else {
     static_assert(always_false<to_t>, "Unsupported type for `as`");
   }
