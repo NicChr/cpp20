@@ -65,7 +65,7 @@ inline std::remove_cvref_t<T> as(const U& x) {
   } else if constexpr (is<to_t, r_sexp>){ // To r_sexp (to SEXP is handled above)
     return internal::as_sexp(x);
   } else if constexpr (is_sexp<from_t> && !is_sexp<to_t>){ // From SEXP to non-SEXP, use visit_sexp to disambiguate the type
-    return view_sexp(x, [](const auto& xvec) -> to_t {
+    return visit_sexp(x, [](const auto& xvec) -> to_t {
       if constexpr (is<decltype(xvec), r_sexp>){ // Couldn't disambiguate if r_sexp is the return type
         abort("Don't know how to visit this r_sexp");
       } else {
