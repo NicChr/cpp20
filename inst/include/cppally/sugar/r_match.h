@@ -3,6 +3,7 @@
 
 #include <cppally/r_coerce.h>
 #include <cppally/sugar/r_hash.h>
+#include <cppally/sugar/r_stats.h>
 #include <cppally/r_vec_methods.h>
 #include <ankerl/unordered_dense.h> // Hash maps for group IDs + unique + match
 #include <functional>
@@ -133,7 +134,7 @@ build_cross_col_eq_probes(const r_df& needles, const r_df& haystack) {
         view_sexp(needles.value.view(c), [&]<typename NCol>(const NCol& nc) {
             view_sexp(haystack.value.view(c), [&]<typename HCol>(const HCol& hc) {
                 if constexpr (!is<NCol, HCol>) {
-                    abort("match(r_df, r_df): column %d types differ", c);
+                    abort("match(r_df, r_df): column %d types differ", c + 1);
                 } else if constexpr (requires (int i, int j) {
                     identical(nc.view(i), hc.view(j));
                 }) {
@@ -141,7 +142,7 @@ build_cross_col_eq_probes(const r_df& needles, const r_df& haystack) {
                         return identical(nc.view(i), hc.view(j));
                     });
                 } else {
-                    abort("match(r_df, r_df): unsupported column type at %d", c);
+                    abort("match(r_df, r_df): column %d is unsupported", c + 1);
                 }
             });
         });
@@ -152,35 +153,28 @@ build_cross_col_eq_probes(const r_df& needles, const r_df& haystack) {
 }
 
 // match() for r_df: row-level match of needle rows against haystack rows
-template <internal::RNumericSubscript U = r_int>
-r_vec<U> match(const r_df& needles, const r_df& haystack) {
+inline r_vec<r_int> match(const r_df& needles, const r_df& haystack) {
     int n_ncol = needles.ncol();
     int h_ncol = haystack.ncol();
-    if (n_ncol != h_ncol) {
+    
+    if (n_ncol != h_ncol){
         abort("match(r_df, r_df): both data frames must have the same number of columns");
     }
 
     r_size_t n_needles  = needles.nrow();
     r_size_t n_haystack = haystack.nrow();
 
-    if constexpr (is<U, r_int>) {
-        if (n_haystack > r_limits<r_int>::max()) {
-            abort("Cannot match to a long vector, please use match<r_int64> instead");
-        }
-    }
-
-    // 0-col: every needle row matches row 0 (if haystack non-empty), else NA
     if (n_ncol == 0) {
-        return r_vec<U>(n_needles, n_haystack > 0 ? U(0) : na<U>());
+        return r_vec<r_int>(n_needles, n_haystack > 0 ? r_int(0) : na<r_int>());
     }
 
-    // 1-col: delegate to scalar match (incl. integer-table fast path)
+    // Use vector match
     if (n_ncol == 1) {
-        r_vec<U> out;
+        r_vec<r_int> out;
         view_sexp(needles.value.view(0), [&]<typename NCol>(const NCol& nc) {
             view_sexp(haystack.value.view(0), [&]<typename HCol>(const HCol& hc) {
                 if constexpr (is<NCol, HCol> && RVector<NCol>) {
-                    out = match<U>(nc, hc);
+                    out = match<r_int>(nc, hc);
                 } else {
                     abort("match(r_df, r_df): single-column type mismatch or unsupported");
                 }
@@ -189,7 +183,7 @@ r_vec<U> match(const r_df& needles, const r_df& haystack) {
         return out;
     }
 
-    r_vec<U> out(n_needles);
+    r_vec<r_int> out(n_needles);
     if (n_needles == 0) return out;
 
     auto h_hashes = internal::row_hashes(haystack);
@@ -209,16 +203,15 @@ r_vec<U> match(const r_df& needles, const r_df& haystack) {
         lookup[h_hashes[j]].push_back(static_cast<int>(j));
     }
 
-    using int_t = unwrap_t<U>;
     auto* RESTRICT p_out = out.data();
 
     for (r_size_t i = 0; i < n_needles; ++i) {
         auto it = lookup.find(n_hashes[i]);
-        int_t found = unwrap(na<U>());
+        int found = unwrap(na<r_int>());
         if (it != lookup.end()) {
             for (int j : it->second) {
                 if (rows_equal(static_cast<int>(i), j)) {
-                    found = static_cast<int_t>(j);
+                    found = static_cast<int>(j);
                     break;  // first occurrence wins
                 }
             }
