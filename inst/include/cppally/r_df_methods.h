@@ -20,7 +20,7 @@ inline r_vec<r_sexp> new_df_impl(const r_vec<r_sexp>& cols, bool recycle, int nr
     r_size_t n = cols.length();
     r_vec<r_sexp> out(n);
 
-    if (nrows < 0){
+    if (nrows < 0) [[unlikely]] {
         abort("Supply a valid `nrows`");
     }
 
@@ -49,7 +49,7 @@ inline r_vec<r_sexp> new_df_impl(const r_vec<r_sexp>& cols, bool recycle, int nr
     out.set_names(names); 
 
     r_vec<r_int> row_names = create_row_names(nrows);
-    attr::set_attr(out, symbol::class_sym, r_vec<r_str_view>(1, r_str_view(cached_str<"data.frame">())));
+    attr::set_attr(out, symbol::class_sym, data_frame_class());
     attr::set_attr(out, symbol::row_names_sym, row_names);
     return out;
 }
@@ -85,25 +85,21 @@ inline r_df::r_df(const r_vec<T>& col) : r_df(r_vec<r_sexp>(1, r_sexp(static_cas
 inline r_df::r_df(const r_factors& col) : r_df(col.value){}
 
 inline r_df r_df::get_row(int index) const {
-    return subset(*this, r_vec<r_int>(1, r_int(index)), false, false);
+    int ncols = ncol();
+    r_vec<r_sexp> out(ncols);
+    attr::set_old_names(out, colnames());
+    for (int i = 0; i < ncols; ++i){
+        out.set(i, r_sexp(view_sexp(value.view(i), [index](const auto& vec) -> SEXP {
+            using vec_t = std::remove_cvref_t<decltype(vec)>;
+            if constexpr (requires { vec.view(index); }){
+                return as<SEXP>(vec.view(index));
+            } else {
+                abort("No view member exists for type %s", internal::type_str<vec_t>);
+            }
+        }), internal::view_tag{}));
+    }
+    return r_df(out, false, 1);
 }
-
-// inline r_vec<r_sexp> r_df::get_row(int index) const {
-//     int ncols = ncol();
-//     r_vec<r_sexp> out(ncols);
-//     attr::set_old_names(out, colnames());
-//     for (int i = 0; i < ncols; ++i){
-//         out.set(i, r_sexp(view_sexp(value.view(i), [index](const auto& vec) -> SEXP {
-//             using vec_t = decltype(vec);
-//             if constexpr (RVector<vec_t> || RFactor<vec_t>){
-//                 return as<SEXP>(vec.view(index));
-//             } else {
-//                 abort("error");
-//             }
-//         }), internal::view_tag{}));
-//     }
-//     return out;
-// }
 
 inline r_sexp r_df::get_col(int index) const {
     return subset(value, r_vec<r_int>(1, r_int(index)), false, false).get(0);

@@ -7,6 +7,12 @@
 namespace cppally {
 
 namespace internal {
+
+// Lazily cache data frame class for re-use
+inline r_vec<r_str_view> data_frame_class(){
+    static r_vec<r_str_view> df_cls = r_vec<r_str_view>(1, r_str_view(cached_str<"data.frame">()));
+    return df_cls;
+}
     
 inline r_vec<r_int> create_row_names(int n){
     if (n == 0){
@@ -23,7 +29,7 @@ inline r_vec<r_sexp> new_df_impl(int nrows){
     r_vec<r_sexp> out{};
     r_vec<r_int> row_names = create_row_names(nrows);
     out.set_names(r_vec<r_str_view>());
-    attr::set_attr(out, symbol::class_sym, r_vec<r_str_view>(1, r_str_view(cached_str<"data.frame">())));
+    attr::set_attr(out, symbol::class_sym, data_frame_class());
     attr::set_attr(out, symbol::row_names_sym, row_names);
     return out;
 }
@@ -154,7 +160,6 @@ struct r_df {
     r_df select(const r_vec<U>& cols) const;
 
     inline r_df get_row(int index) const;
-    // inline r_vec<r_sexp> get_row(int index) const; // Probably faster
     inline r_sexp get_col(int index) const;
     inline r_sexp get_col(const char* name) const;
     template <RStringType U>
