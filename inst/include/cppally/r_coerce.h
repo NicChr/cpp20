@@ -7,9 +7,6 @@
 #include <cppally/r_sexp_types.h>
 #include <vector>
 
-
-// TO-DO: simplify the if statements below
-
 namespace cppally {
 
 namespace internal {
