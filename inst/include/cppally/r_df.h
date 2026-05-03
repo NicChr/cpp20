@@ -126,6 +126,10 @@ struct r_df {
     explicit r_df(const r_sexp& s, internal::view_tag) : value(s, internal::view_tag{}) {
         init_df();
     }
+
+    explicit r_df(int nrows) : value(internal::new_df_impl(nrows)) {
+        nrow_ = nrows;
+    }
     
     // Forward declarations, defined in r_df_methods.h
     explicit r_df(const r_vec<r_sexp>& cols, bool recycle = true);
