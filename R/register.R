@@ -522,6 +522,7 @@ cpp_register <- function(path = ".", quiet = !is_interactive(), extension = c(".
 
       {extra_includes}
       #include <cppally/r_dispatch.h>
+      #include <cppally.hpp>
       #include <R_ext/Visibility.h>
       {user_includes}
 
