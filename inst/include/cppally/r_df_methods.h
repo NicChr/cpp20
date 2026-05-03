@@ -7,6 +7,7 @@
 #include <cppally/r_attrs.h>
 #include <cppally/r_visit.h>
 #include <cppally/r_rep.h>
+#include <cppally/r_coerce.h>
 #include <cppally/r_list_helpers.h>
 #include <cppally/sugar/r_subset.h>
 #include <cppally/sugar/r_make_vec.h>
@@ -123,6 +124,10 @@ inline r_sexp r_df::get_col(const char* name) const {
 template <internal::RSubscript U>
 inline r_df r_df::select(const r_vec<U>& cols) const {
     return r_df(value.subset(cols), false, nrow());
+}
+
+inline r_vec<r_str> r_df::rownames() const {
+    return as<r_vec<r_str>>(attr::get_attr(value, symbol::row_names_sym));
 }
 
 // Make in-line data frame

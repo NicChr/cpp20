@@ -72,8 +72,16 @@ struct r_df {
     }
 
     template <RStringType U>
+    void set_rownames(const r_vec<U>& rownames) {
+        if (rownames.length() != nrow()) [[unlikely]] {
+            abort("(set_rownames): `length(rownames)` must match `nrow()`");
+        }
+        attr::set_attr(value, symbol::row_names_sym, rownames);
+    }
+
+    template <RStringType U>
     void set_colnames(const r_vec<U>& colnames) {
-        attr::set_old_names(value ,colnames);
+        attr::set_old_names(value, colnames);
     }
 
     private: 
@@ -160,9 +168,10 @@ struct r_df {
     // Undefine the macros so they don't leak out of the struct
     #undef FORWARD_METHOD
 
+    
+    r_vec<r_str> rownames() const;
     template <internal::RSubscript U>
     r_df select(const r_vec<U>& cols) const;
-
     inline r_df get_row(int index) const;
     inline r_sexp get_col(int index) const;
     inline r_sexp get_col(const char* name) const;
