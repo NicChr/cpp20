@@ -69,25 +69,27 @@ inline r_vec<r_sexp> new_df_impl(const r_vec<r_sexp>& cols, bool recycle = true)
 
 // Constructor from list of cols
 // Supply a nrows value for a custom recycle length
-inline r_df::r_df(const r_vec<r_sexp>& cols, bool recycle) : value(internal::new_df_impl(cols, recycle)){}
-inline r_df::r_df(const r_vec<r_sexp>& cols, bool recycle, int nrows) : value(internal::new_df_impl(cols, recycle, nrows)){}
+inline r_df::r_df(const r_vec<r_sexp>& cols, bool recycle) : value(internal::new_df_impl(cols, recycle)){
+    init_df();
+}
+inline r_df::r_df(const r_vec<r_sexp>& cols, bool recycle, int nrows) : value(internal::new_df_impl(cols, recycle, nrows)){
+    init_df();
+}
 // Atomic vector constructor
 template <RScalar T>
-inline r_df::r_df(const r_vec<T>& col) : value(internal::new_df_impl(r_vec<r_sexp>(1, r_sexp(static_cast<SEXP>(col))))){}
+inline r_df::r_df(const r_vec<T>& col) : value(internal::new_df_impl(r_vec<r_sexp>(1, r_sexp(static_cast<SEXP>(col))))){
+    init_df();
+}
 // Factor constructor
-inline r_df::r_df(const r_factors& col) : value(internal::new_df_impl(r_vec<r_sexp>(1, r_sexp(static_cast<SEXP>(col))))){}
+inline r_df::r_df(const r_factors& col) : value(internal::new_df_impl(r_vec<r_sexp>(1, r_sexp(static_cast<SEXP>(col))))){
+    init_df();
+}
 
 inline r_df r_df::get_row(int index) const {
-    if (index < 0 || index > nrow()) [[unlikely]] {
-        abort("`index` must be between 0 and `nrow()`");
-    }
     return subset(*this, r_vec<r_int>(1, r_int(index)), false, false);
 }
 
 inline r_sexp r_df::get_col(int index) const {
-    if (index < 0 || index > ncol()) [[unlikely]] {
-        abort("`index` must be between 0 and `ncol()`");
-    }
     return subset(value, r_vec<r_int>(1, r_int(index)), false, false).get(0);
 }
 
