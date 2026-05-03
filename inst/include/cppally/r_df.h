@@ -1,4 +1,3 @@
-
 #ifndef CPPALLY_R_DF_H
 #define CPPALLY_R_DF_H
 
@@ -34,57 +33,93 @@ inline r_vec<r_sexp> new_df_impl(int nrows){
 struct r_df {
 
     r_vec<r_sexp> value;
-    
-    // Default constructor (empty data frame)
-    r_df() : value(internal::new_df_impl(0)) {}
 
     private: 
 
-    void validate_col_sizes(const r_vec<r_sexp>& x){
-        r_size_t n = x.length();
-        if (n > 0){
-            r_size_t init_size = length(x.view(0));
-            if (init_size > unwrap(r_limits<r_int>::max())) [[unlikely]] {
-                abort("Data frames can only contain short vectors, please check");
-            }
-            for (r_size_t i = 0; i < n; ++i){
-                if (init_size != length(x.view(i))){
-                    abort("All lengths of a data frame must be equal");
-                }
+    int get_nrow() const noexcept {
+        return Rf_length(Rf_getAttrib(value, symbol::row_names_sym));
+    }
+
+    int nrow_;
+
+    public:
+    
+    // Default constructor (empty data frame)
+    r_df() : value(internal::new_df_impl(0)) {
+        nrow_ = 0;
+    }
+
+    r_vec<r_str_view> colnames() const {
+        return value.names();
+    }
+
+    int nrow() const noexcept {
+        return nrow_;
+    }
+    int ncol() const noexcept {
+        return value.length();
+    }
+
+    void set_nrow(int n) {
+        attr::set_attr(value, symbol::row_names_sym, internal::create_row_names(n));
+        nrow_ = n;
+    }
+
+    template <RStringType U>
+    void set_colnames(const r_vec<U>& colnames) {
+        attr::set_old_names(value ,colnames);
+    }
+
+    private: 
+
+    void validate_col_sizes(){
+        int ncols = ncol();
+        for (int i = 0; i < ncols; ++i){
+            if (length(value.view(i)) != static_cast<r_size_t>(nrow_)) [[unlikely]] {
+                abort("All data frame col lengths must match `nrow()`");
             }
         }
     }
 
-    void validate_df(SEXP x){
+    void validate_df(){
 
-        if (TYPEOF(x) == NILSXP) return;
+        if (value.is_null()) return;
 
-        if (TYPEOF(x) != VECSXP){
-          abort("SEXP must have vector storage to be constructed as a data frame");
-        }
-        if (!Rf_inherits(x, "data.frame")){
+        if (!Rf_isDataFrame(value)) [[unlikely]] {
           abort("SEXP must be of class 'data.frame' to be constructed as a data frame");
         }
-        r_vec<r_str_view> names = attr::get_old_names(x);
-        if (names.length() != Rf_xlength(x)){
-          abort("data frame length of names must match ncol");
+        r_vec<r_str_view> names = attr::get_old_names(value);
+        if (names.length() != value.length()) [[unlikely]] {
+          abort("length of colnames must match `ncol()`");
         }
-        SEXP row_names = Rf_protect(Rf_getAttrib(x, symbol::row_names_sym));
-        if (TYPEOF(row_names) != INTSXP && TYPEOF(row_names) != STRSXP){
+        SEXP row_names = Rf_protect(Rf_getAttrib(value, symbol::row_names_sym));
+        if (TYPEOF(row_names) != INTSXP && TYPEOF(row_names) != STRSXP) [[unlikely]] {
             abort("rownames must be an integer or character vector");
         }
-        validate_col_sizes(r_vec<r_sexp>(x, internal::view_tag{}));
         Rf_unprotect(1);
+      }
+
+      void init_df() {
+        validate_df();
+        nrow_ = get_nrow();
+        validate_col_sizes();
       }
 
     public: 
 
     // Constructor from existing SEXP
-    explicit r_df(SEXP s) : value(s) {validate_df(value);}
-    explicit r_df(SEXP s, internal::view_tag) : value(s, internal::view_tag{}) {validate_df(value);}
-
-    explicit r_df(const r_sexp& s) : value(s) {validate_df(value);}
-    explicit r_df(const r_sexp& s, internal::view_tag) : value(s, internal::view_tag{}) {validate_df(value);}
+    explicit r_df(SEXP s) : value(s) {
+        init_df();
+    }
+    explicit r_df(SEXP s, internal::view_tag) : value(s, internal::view_tag{}) {
+        init_df();
+    }
+    explicit r_df(const r_sexp& s) : value(s) {
+        init_df();
+    }
+    explicit r_df(const r_sexp& s, internal::view_tag) : value(s, internal::view_tag{}) {
+        init_df();
+    }
     
     // Forward declarations, defined in r_df_methods.h
     explicit r_df(const r_vec<r_sexp>& cols, bool recycle = true);
@@ -115,30 +150,11 @@ struct r_df {
     // Undefine the macros so they don't leak out of the struct
     #undef FORWARD_METHOD
 
-    r_vec<r_str_view> colnames() const {
-        return value.names();
-    }
-
-    int nrow() const noexcept {
-        return Rf_length(Rf_getAttrib(value, symbol::row_names_sym));
-    }
-    int ncol() const noexcept {
-        return value.length();
-    }
-
-    void set_nrow(int n) {
-        attr::set_attr(value, symbol::row_names_sym, internal::create_row_names(n));
-    }
-
-    template <RStringType U>
-    void set_colnames(const r_vec<U>& colnames) {
-        value.set_names(colnames);
-    }
-
     template <internal::RSubscript U>
     r_df select(const r_vec<U>& cols) const;
 
     inline r_df get_row(int index) const;
+    // inline r_vec<r_sexp> get_row(int index) const; // Probably faster
     inline r_sexp get_col(int index) const;
     inline r_sexp get_col(const char* name) const;
     template <RStringType U>

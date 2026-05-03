@@ -30,6 +30,9 @@ inline r_vec<r_sexp> new_df_impl(const r_vec<r_sexp>& cols, bool recycle, int nr
         }
     } else {
         for (r_size_t i = 0; i < n; ++i){
+            if (static_cast<int>(length(cols.view(i))) != nrows) [[unlikely]] {
+                abort("new_df_impl: lengths of cols must match `nrows`");
+            }
             out.set(i, cols.view(i));
         }
     }
@@ -69,25 +72,40 @@ inline r_vec<r_sexp> new_df_impl(const r_vec<r_sexp>& cols, bool recycle = true)
 
 // Constructor from list of cols
 // Supply a nrows value for a custom recycle length
-inline r_df::r_df(const r_vec<r_sexp>& cols, bool recycle) : value(internal::new_df_impl(cols, recycle)){}
-inline r_df::r_df(const r_vec<r_sexp>& cols, bool recycle, int nrows) : value(internal::new_df_impl(cols, recycle, nrows)){}
+inline r_df::r_df(const r_vec<r_sexp>& cols, bool recycle) : value(internal::new_df_impl(cols, recycle)){
+    init_df();
+}
+inline r_df::r_df(const r_vec<r_sexp>& cols, bool recycle, int nrows) : value(internal::new_df_impl(cols, recycle, nrows)){
+    nrow_ = nrows;
+}
 // Atomic vector constructor
 template <RScalar T>
-inline r_df::r_df(const r_vec<T>& col) : value(internal::new_df_impl(r_vec<r_sexp>(1, r_sexp(static_cast<SEXP>(col))))){}
+inline r_df::r_df(const r_vec<T>& col) : r_df(r_vec<r_sexp>(1, r_sexp(static_cast<SEXP>(col), internal::view_tag{})), false, static_cast<int>(col.length())) {}
 // Factor constructor
-inline r_df::r_df(const r_factors& col) : value(internal::new_df_impl(r_vec<r_sexp>(1, r_sexp(static_cast<SEXP>(col))))){}
+inline r_df::r_df(const r_factors& col) : r_df(col.value){}
 
 inline r_df r_df::get_row(int index) const {
-    if (index < 0 || index > nrow()) [[unlikely]] {
-        abort("`index` must be between 0 and `nrow()`");
-    }
     return subset(*this, r_vec<r_int>(1, r_int(index)), false, false);
 }
 
+// inline r_vec<r_sexp> r_df::get_row(int index) const {
+//     int ncols = ncol();
+//     r_vec<r_sexp> out(ncols);
+//     attr::set_old_names(out, colnames());
+//     for (int i = 0; i < ncols; ++i){
+//         out.set(i, r_sexp(view_sexp(value.view(i), [index](const auto& vec) -> SEXP {
+//             using vec_t = decltype(vec);
+//             if constexpr (RVector<vec_t> || RFactor<vec_t>){
+//                 return as<SEXP>(vec.view(index));
+//             } else {
+//                 abort("error");
+//             }
+//         }), internal::view_tag{}));
+//     }
+//     return out;
+// }
+
 inline r_sexp r_df::get_col(int index) const {
-    if (index < 0 || index > ncol()) [[unlikely]] {
-        abort("`index` must be between 0 and `ncol()`");
-    }
     return subset(value, r_vec<r_int>(1, r_int(index)), false, false).get(0);
 }
 
