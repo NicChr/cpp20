@@ -172,11 +172,18 @@ struct r_df {
     r_vec<r_str> rownames() const;
     template <internal::RSubscript U>
     r_df select(const r_vec<U>& cols) const;
-    inline r_df get_row(int index) const;
-    inline r_sexp get_col(int index) const;
-    inline r_sexp get_col(const char* name) const;
+    r_df get_row(int index) const;
+    r_sexp get_col(int index) const;
+    r_sexp get_col(const char* name) const;
+
+
+    template <internal::RSubscript T, internal::RSubscript U>
+    void fill(const r_vec<T>& row_indices, const r_vec<U>& col_indices, const r_df& replacement);
+    template <internal::RSubscript T>
+    void fill(const r_vec<T>& row_indices, const r_df& replacement);
+
     template <RStringType U>
-    inline r_sexp get_col(U name) const;
+    r_sexp get_col(U name) const;
 };
 
 }

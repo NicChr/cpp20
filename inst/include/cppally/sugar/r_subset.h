@@ -58,19 +58,19 @@ r_vec<V> exclude_locs(const r_vec<U>& exclude, r_size_t xn) {
 
 // Returns valid indices
 // It ignores NA and out-of-bounds (OOB) indices, which differs to subset() which returns NA when given NA or OOB
-template <internal::RNumericSubscript V = r_int, typename T, internal::RSubscript U>
-r_vec<V> clean_locs(const r_vec<U>& locs, const r_vec<T>& x){
+template <internal::RNumericSubscript V = r_int, RComposite T, internal::RSubscript U>
+r_vec<V> clean_locs(const r_vec<U>& locs, const T& x){
 
   if (locs.is_null()){
     return r_vec<V>(r_null);
   }
 
-  r_size_t xn = x.length();
+  r_size_t xn = length(x);
   r_size_t n = locs.length();
 
   if constexpr (RStringType<U>){
     
-    r_vec<r_str_view> names = x.names();
+    r_vec<r_str_view> names = attr::get_old_names(x);
 
     if (names.is_null()){
       abort("Cannot subset on the names of an unnamed vector");
@@ -365,6 +365,38 @@ template <internal::RSubscript U>
 inline r_sexp subset(const r_sexp& x, const r_vec<U>& indices, bool check, bool invert){
   return r_sexp(CPPALLY_VIEW_AND_APPLY(x, /*return_type = */ SEXP, /*fn = */ subset, /*rest of args = */ indices, check, invert));
 }
+
+// Free fill function
+
+template <RVector T, internal::RSubscript U>
+void fill(T& x, const r_vec<U>& where, const T& with) {
+  x.fill(where, with);
+}
+
+template <internal::RSubscript U>
+void fill(r_factors& x, const r_vec<U>& where, const r_factors& with) {
+  x.fill(where, with);
+}
+
+template <internal::RSubscript U>
+void fill(r_df& x, const r_vec<U>& where, const r_df& with) {
+  x.fill(where, with);
+}
+
+template <internal::RSubscript U>
+void fill(r_sexp& x, const r_vec<U>& where, const r_sexp& with) {
+  mutate_sexp(x, [&](auto& x_) {
+    using x_t = std::remove_cvref_t<decltype(x_)>;
+    if constexpr (is<x_t, r_sexp>){
+        abort("Unsupported SEXP type in `fill()`");
+    } else if constexpr (requires { fill(x_, where, x_t(with)); }){
+        fill(x_, where, x_t(with));
+    } else {
+        abort("No available method for type %s in `fill()`", internal::type_str<std::remove_cvref_t<decltype(x_)>>());
+    }
+  });
+}
+
 }
 
 #endif

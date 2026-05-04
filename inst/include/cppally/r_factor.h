@@ -106,6 +106,13 @@ struct r_factors {
             return value.NAME(std::forward<Args>(args)...);    \
         }
 
+    // For no-return in-place modifying non-const methods
+    #define FORWARD_MUTATING_METHOD(NAME)                      \
+        template <typename... Args>                            \
+        void NAME(Args&&... args) {                            \
+            return value.NAME(std::forward<Args>(args)...);    \
+        }
+
     // For methods that return a factor
     #define FORWARD_FACTOR_METHOD(NAME)                                     \
         template <typename... Args>                                         \
@@ -169,8 +176,8 @@ struct r_factors {
   FORWARD_METHOD(any_na)
   FORWARD_METHOD(all_na)
   FORWARD_METHOD(count)
-  FORWARD_METHOD(fill)
-  FORWARD_METHOD(replace)
+  FORWARD_MUTATING_METHOD(fill)
+  FORWARD_MUTATING_METHOD(replace)
   FORWARD_METHOD(find)
 
   // Methods that return factors
@@ -181,6 +188,7 @@ struct r_factors {
   // Undefine the macros so they don't leak out of the struct
   #undef FORWARD_METHOD
   #undef FORWARD_FACTOR_METHOD
+  #undef FORWARD_MUTATING_METHOD
 
 };
 

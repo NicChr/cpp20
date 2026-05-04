@@ -130,6 +130,45 @@ inline r_vec<r_str> r_df::rownames() const {
     return as<r_vec<r_str>>(attr::get_attr(value, symbol::row_names_sym));
 }
 
+// inline void check_compatible_dfs(const r_df& x, const r_df& y){
+//     if (!identical(x.colnames(), y.colnames())) [[unlikely]] {
+//         abort("(compatible_dfs): `x` and `y` must have the same colnames");
+//     }
+//     if (!identical(x.nrow(), y.nrow())) [[unlikely]] {
+//         abort("(compatible_dfs): `x` and `y` must have the same nrows");
+//     }
+//     // If col types aren't the same..
+//     //     abort("(compatible_dfs): `x` and `y` must have the same nrows");
+//     // }
+// }
+
+template <internal::RSubscript T, internal::RSubscript U>
+void r_df::fill(const r_vec<T>& row_indices, const r_vec<U>& col_indices, const r_df& replacement) {
+
+    r_vec<r_int> row_locs = internal::clean_locs(row_indices, *this);
+    r_vec<r_int> col_locs = internal::clean_locs(col_indices, *this);
+
+    int ncols = col_locs.length();
+
+    if (ncols != replacement.ncol()){
+        abort("fill: `replacement.ncol()` must equal data frame ncol");
+    }
+
+    for (int i = 0; i < ncols; ++i){
+        int col_loc = col_locs.get(i);
+        r_sexp col = get_col(col_loc);
+        cppally::fill(col, row_locs, replacement.value.view(i));
+    }
+
+}
+
+template <internal::RSubscript T>
+void r_df::fill(const r_vec<T>& row_indices, const r_df& replacement) {
+    r_vec<r_int> col_locs(ncol());
+    col_locs.iota();
+    this->fill(row_indices, col_locs, replacement);
+}
+
 // Make in-line data frame
 template <typename... Args>
 inline r_df make_df(Args&&... args) {
