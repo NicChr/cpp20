@@ -90,6 +90,8 @@ inline r_df r_df::get_row(int index) const {
     int ncols = ncol();
     r_vec<r_sexp> out(ncols);
     attr::set_old_names(out, colnames());
+    attr::set_old_class(out, internal::data_frame_class());
+    attr::set_attr(out, symbol::row_names_sym, internal::create_row_names(1));
     for (int i = 0; i < ncols; ++i){
         out.set(i, r_sexp(view_sexp(value.view(i), [index](const auto& vec) -> SEXP {
             using vec_t = std::remove_cvref_t<decltype(vec)>;
@@ -100,7 +102,7 @@ inline r_df r_df::get_row(int index) const {
             }
         }), internal::view_tag{}));
     }
-    return r_df(out, false, 1);
+    return r_df(out, 1, internal::no_checks_tag{});
 }
 
 inline r_sexp r_df::get_col(int index) const {
