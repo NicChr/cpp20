@@ -13,13 +13,20 @@ struct r_factors {
 
   r_vec<r_int> value;
 
-  r_vec<r_str_view> levels() const {
-    return r_vec<r_str_view>(attr::get_attr(value, symbol::levels_sym));
+  private: 
+
+  r_vec<r_str_view> cached_levels; // Cache levels to avoid overhead of retrieving attribute
+
+  public: 
+
+  r_vec<r_str_view> levels() const noexcept {
+    return cached_levels;
   }
 
   r_vec<r_int> codes() const {
     r_size_t n = value.length();
     r_vec<r_int> out(n);
+    // r_copy_n(out, value, 0, n);
     OMP_SIMD
     for (r_size_t i = 0; i < n; ++i){
       out.set(i, value.get(i));
@@ -59,9 +66,8 @@ struct r_factors {
     if (!attr::inherits1(value, "factor")) [[unlikely]] {
       abort("SEXP must be of class 'factor' to be constructed as a factor");
     }
-    r_vec<r_str_view> levels = r_vec<r_str_view>(attr::get_attr(value, symbol::levels_sym));
     if (check_valid_levels){
-      validate_levels(value, levels);
+      validate_levels(value, levels());
     }
   }
 
@@ -73,6 +79,7 @@ struct r_factors {
       validate_levels(value, levels);
     }
     attr::set_attr(value, symbol::levels_sym, levels);
+    cached_levels = r_vec<r_str_view>(static_cast<SEXP>(levels));
   }
 
   private:
@@ -143,12 +150,14 @@ struct r_factors {
 
   explicit r_factors(SEXP x, bool check_valid_levels = true) : value(x) {
     if (!value.is_null()){
+      cached_levels = r_vec<r_str_view>(attr::get_attr(value, symbol::levels_sym));
       validate_factor(check_valid_levels);
     }
   }
 
   explicit r_factors(SEXP x, internal::view_tag, bool check_valid_levels = true) : value(x, internal::view_tag{}) {
     if (!value.is_null()){
+      cached_levels = r_vec<r_str_view>(attr::get_attr(value, symbol::levels_sym));
       validate_factor(check_valid_levels);
     }
   }
