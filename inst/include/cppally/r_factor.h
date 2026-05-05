@@ -55,20 +55,14 @@ struct r_factors {
     }
   }
 
-  void validate_factor(SEXP x, bool check_valid_levels = true){
-    if (TYPEOF(x) != INTSXP){
-      abort("SEXP must have integer storage to be constructed as a factor");
-    }
-    if (!Rf_inherits(x, "factor")){
+  void validate_factor(bool check_valid_levels = true){
+    if (!attr::inherits1(value, "factor")) [[unlikely]] {
       abort("SEXP must be of class 'factor' to be constructed as a factor");
     }
-    SEXP levels = Rf_getAttrib(x, symbol::levels_sym);
-    if (TYPEOF(levels) != STRSXP){
-      abort("SEXP must have valid levels attribute to be constructed as a factor");
+    r_vec<r_str_view> levels = r_vec<r_str_view>(attr::get_attr(value, symbol::levels_sym));
+    if (check_valid_levels){
+      validate_levels(value, levels);
     }
-    r_vec<r_str_view> levels2 = r_vec<r_str_view>(levels, internal::view_tag{});
-    r_vec<r_int> codes = r_vec<r_int>(x, internal::view_tag{});
-    if (check_valid_levels) validate_levels(codes, levels2);
   }
 
   public:
@@ -96,6 +90,23 @@ struct r_factors {
   explicit r_factors(r_vec<r_int>&& codes, const r_vec<T>& levels,
     bool check_valid_levels = true) : value(std::move(codes)){
       init_factor(levels, check_valid_levels);
+    }
+
+    // Find factor code associated with factor string
+    // Since levels are assumed to be unique, we find the first match
+    template <RStringType U>
+    r_int find_code(const U& val) const {
+      r_vec<r_str_view> lvls = levels();
+      int n_lvls = lvls.length();
+    
+      // Find level
+      r_int code(-1);
+      for (int i = 0; i < n_lvls; ++i){
+          if (unwrap(val) == unwrap(lvls.view(i))){
+            code = r_int(i + 1);
+          }
+      }
+      return code;
     }
 
 
@@ -132,13 +143,13 @@ struct r_factors {
 
   explicit r_factors(SEXP x, bool check_valid_levels = true) : value(x) {
     if (!value.is_null()){
-      validate_factor(value, check_valid_levels);
+      validate_factor(check_valid_levels);
     }
   }
 
   explicit r_factors(SEXP x, internal::view_tag, bool check_valid_levels = true) : value(x, internal::view_tag{}) {
     if (!value.is_null()){
-      validate_factor(value, check_valid_levels);
+      validate_factor(check_valid_levels);
     }
   }
 
@@ -175,7 +186,6 @@ struct r_factors {
   FORWARD_METHOD(na_count)
   FORWARD_METHOD(any_na)
   FORWARD_METHOD(all_na)
-  FORWARD_METHOD(count)
   FORWARD_MUTATING_METHOD(fill)
   FORWARD_MUTATING_METHOD(replace)
   FORWARD_METHOD(find)
@@ -189,6 +199,11 @@ struct r_factors {
   #undef FORWARD_METHOD
   #undef FORWARD_FACTOR_METHOD
   #undef FORWARD_MUTATING_METHOD
+
+template <RStringType U>
+r_size_t count(const U& val){
+  return value.count(find_code(val));
+}
 
 };
 
