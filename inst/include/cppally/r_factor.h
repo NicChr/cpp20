@@ -96,8 +96,7 @@ struct r_factors {
 
   // Internal direct constructor
   template <RStringType T>
-  explicit r_factors(r_vec<r_int>&& codes, const r_vec<T>& levels,
-    bool check_valid_levels = true) : value(std::move(codes)){
+  explicit r_factors(r_vec<r_int>&& codes, const r_vec<T>& levels, bool check_valid_levels = true) : value(std::move(codes)){
       init_factor(levels, check_valid_levels);
     }
 
@@ -301,14 +300,18 @@ struct r_factors {
   r_factors remove(const U& val) const {
     if (is_na(val)){
       r_vec<r_int> fct_codes = value.remove(na<r_int>());
-      return r_factors(std::move(fct_codes), this->levels(), false);
+      r_factors result(std::move(fct_codes), this->levels(), false);
+      result.levels_hash_table = this->levels_hash_table;
+      return result;
     }
     r_int code = get_code(val);
     if (is_na(code)){
       return *this;
     }
     r_vec<r_int> fct_codes = value.remove(code);
-    return r_factors(std::move(fct_codes), this->levels(), false);
+    r_factors result(std::move(fct_codes), this->levels(), false);
+    result.levels_hash_table = this->levels_hash_table;
+    return result;
   }
 
   template <RStringType U>
