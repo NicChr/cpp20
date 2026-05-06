@@ -358,7 +358,7 @@ struct r_vec {
     return true;
   } 
 
-  r_size_t count(T const& value) const {
+  r_size_t count(T const& val) const {
     r_size_t out = 0;
     r_size_t n = length();
 
@@ -366,18 +366,18 @@ struct r_vec {
       // SIMD vectorisation isn't working with identical function (sad)
       OMP_SIMD_REDUCTION1(+:out)
       for (r_size_t i = 0; i < n; ++i){
-        out += (unwrap(get(i)) == unwrap(value));
+        out += (unwrap(get(i)) == unwrap(val));
       }
     } else {
       // Fall-back
       for (r_size_t i = 0; i < n; ++i){
-        out += identical(view(i), value);
+        out += identical(view(i), val);
       }
     }
     return out;
   }
-  r_vec<T> remove(T const& value) const {
-    r_size_t n_remove = count(value);
+  r_vec<T> remove(T const& val) const {
+    r_size_t n_remove = count(val);
     r_size_t n = length();
 
     if (n_remove == 0){
@@ -389,7 +389,7 @@ struct r_vec {
       r_size_t k = 0;
 
       for (r_size_t i = 0; i < n; ++i){
-        if (!identical(view(i), value)){
+        if (!identical(view(i), val)){
           out.set(k++, view(i));
         }
       }
@@ -399,7 +399,7 @@ struct r_vec {
 
   // locations of value in vector
   template <internal::RNumericSubscript V = r_int>
-  r_vec<V> find(T const& value, bool invert = false) const {
+  r_vec<V> find(T const& val, bool invert = false) const {
 
     r_size_t n = length();
 
@@ -411,7 +411,7 @@ struct r_vec {
       }
     }
   
-    r_size_t n_vals = count(value);
+    r_size_t n_vals = count(val);
     int_t whichi = 0; 
     int_t i = 0; 
   
@@ -420,7 +420,7 @@ struct r_vec {
       r_vec<V> out(out_size);
       while (whichi < out_size){
           out.set(whichi, V(i));
-          whichi += static_cast<int_t>(!identical(view(i++), value));
+          whichi += static_cast<int_t>(!identical(view(i++), val));
       }
       return out;
     } else {
@@ -428,7 +428,7 @@ struct r_vec {
       r_vec<V> out(out_size);
       while (whichi < out_size){
         out.set(whichi, V(i));
-        whichi += static_cast<int_t>(identical(view(i++), value));
+        whichi += static_cast<int_t>(identical(view(i++), val));
     }
     return out;
     }
