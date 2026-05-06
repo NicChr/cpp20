@@ -292,11 +292,16 @@ struct r_factors {
 
   template <RStringType U>
   r_factors remove(const U& val) const {
+    if (is_na(val)){
+      r_vec<r_int> fct_codes = value.remove(na<r_int>());
+      return r_factors(std::move(fct_codes), this->levels(), false);
+    }
     r_int code = get_code(val);
+    if (is_na(code)){
+      return *this;
+    }
     r_vec<r_int> fct_codes = value.remove(code);
-    attr::set_old_class(fct_codes, r_vec<r_str>(1, cached_str<"factor">()));
-    attr::set_attr(fct_codes, symbol::levels_sym, levels());
-    return r_factors(static_cast<SEXP>(fct_codes), false);
+    return r_factors(std::move(fct_codes), this->levels(), false);
   }
 
 };
