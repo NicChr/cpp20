@@ -186,10 +186,6 @@ struct r_factors {
   template <RVal T>
   explicit r_factors(const r_vec<T>& x);
 
-  // Implicit coercion to r_vec<r_int>
-  constexpr operator r_vec<r_int>&() noexcept { return value; }
-  constexpr operator const r_vec<r_int>&() const noexcept { return value; }
-
   operator SEXP() const noexcept { return static_cast<SEXP>(value); }
 
   // Inherit standard methods from r_vec<>
