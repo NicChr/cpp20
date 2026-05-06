@@ -4,6 +4,8 @@
 #include <cppally/r_limits.h>
 #include <cppally/r_vec.h>
 #include <cppally/r_attrs.h>
+#include <optional>
+#include <ankerl/unordered_dense.h> // Hash map for levels
 
 namespace cppally {
 
@@ -16,6 +18,10 @@ struct r_factors {
   private: 
 
   r_vec<r_str_view> cached_levels; // Cache levels to avoid overhead of retrieving attribute
+
+  // Lazily-loaded hash table of levels (initialised once when `find_code()` is called)
+  using levels_map_t = ankerl::unordered_dense::map<SEXP, int>; // nullptr until first find_code()
+  mutable std::optional<levels_map_t> levels_hash_table;
 
   public: 
 
@@ -75,6 +81,7 @@ struct r_factors {
     }
     attr::set_attr(value, symbol::levels_sym, levels);
     cached_levels = r_vec<r_str_view>(static_cast<SEXP>(levels));
+    levels_hash_table.reset();
   }
 
   private:
@@ -94,47 +101,59 @@ struct r_factors {
       init_factor(levels, check_valid_levels);
     }
 
-    // Find factor code associated with factor string
-    // Since levels are assumed to be unique, we find the first match
-    template <RStringType U>
-    r_int find_code(const U& val) const {
-      r_vec<r_str_view> lvls = levels();
-      int n_lvls = lvls.length();
-    
-      // Find level
-      r_int code(-1);
-      for (int i = 0; i < n_lvls; ++i){
-          if (unwrap(val) == unwrap(lvls.view(i))){
-            code = r_int(i + 1);
-          }
-      }
-      return code;
+
+  void lazy_hash_levels() const {
+
+    // If hash table already built, exit
+    if (levels_hash_table.has_value()) return;
+
+    r_vec<r_str_view> lvls = levels();
+    int n = lvls.length();
+
+    levels_hash_table.emplace();
+    levels_hash_table->reserve(static_cast<std::size_t>(n));
+
+    for (int i = 0; i < n; ++i) {
+        levels_hash_table->emplace(unwrap(lvls.view(i)), i + 1);
     }
+  }
 
+  // Find factor code associated with factor string
+  // Since levels are assumed to be unique, we find the first match
+  template <RStringType U>
+  r_int find_code(const U& val) const {
+    lazy_hash_levels();
 
-    // For methods that just return a non-factor (like length())
-    #define FORWARD_METHOD(NAME)                               \
-        template <typename... Args>                            \
-        decltype(auto) NAME(Args&&... args) const {            \
-            return value.NAME(std::forward<Args>(args)...);    \
-        }
+    auto it = levels_hash_table->find(unwrap(val));
+    if (it == levels_hash_table->end()) {
+        return na<r_int>();
+    }
+    return r_int(it->second);
+  }
 
-    // For no-return in-place modifying non-const methods
-    #define FORWARD_MUTATING_METHOD(NAME)                      \
-        template <typename... Args>                            \
-        void NAME(Args&&... args) {                            \
-            return value.NAME(std::forward<Args>(args)...);    \
-        }
+  // For methods that just return a non-factor (like length())
+  #define FORWARD_METHOD(NAME)                               \
+      template <typename... Args>                            \
+      decltype(auto) NAME(Args&&... args) const {            \
+          return value.NAME(std::forward<Args>(args)...);    \
+      }
 
-    // For methods that return a factor
-    #define FORWARD_FACTOR_METHOD(NAME)                                     \
-        template <typename... Args>                                         \
-        r_factors NAME(Args&&... args) const {                              \
-            /* Call the method on the underlying r_vec<r_int> */            \
-            auto new_vec = value.NAME(std::forward<Args>(args)...);         \
-            /* Wrap it in a new r_factors and pass our current levels */    \
-            return r_factors(std::move(new_vec), this->levels(), false);    \
-        }
+  // For no-return in-place modifying non-const methods
+  #define FORWARD_MUTATING_METHOD(NAME)                      \
+      template <typename... Args>                            \
+      void NAME(Args&&... args) {                            \
+          return value.NAME(std::forward<Args>(args)...);    \
+      }
+
+  // For methods that return a factor
+  #define FORWARD_FACTOR_METHOD(NAME)                                     \
+      template <typename... Args>                                         \
+      r_factors NAME(Args&&... args) const {                              \
+          /* Call the method on the underlying r_vec<r_int> */            \
+          auto new_vec = value.NAME(std::forward<Args>(args)...);         \
+          /* Wrap it in a new r_factors and pass our current levels */    \
+          return r_factors(std::move(new_vec), this->levels(), false);    \
+      }
 
   public:
 
@@ -181,18 +200,10 @@ struct r_factors {
   FORWARD_METHOD(begin)
   FORWARD_METHOD(end)
   FORWARD_METHOD(address)
-  FORWARD_METHOD(get)
-  FORWARD_METHOD(view)
-  FORWARD_METHOD(set)
-  FORWARD_METHOD(names)
-  FORWARD_METHOD(set_names)
   // FORWARD_METHOD(is_na)
   FORWARD_METHOD(na_count)
   FORWARD_METHOD(any_na)
   FORWARD_METHOD(all_na)
-  FORWARD_MUTATING_METHOD(fill)
-  FORWARD_MUTATING_METHOD(replace)
-  FORWARD_METHOD(find)
 
   // Methods that return factors
   FORWARD_FACTOR_METHOD(subset)
@@ -204,10 +215,81 @@ struct r_factors {
   #undef FORWARD_FACTOR_METHOD
   #undef FORWARD_MUTATING_METHOD
 
-template <RStringType U>
-r_size_t count(const U& val){
-  return value.count(find_code(val));
-}
+
+  r_str get(r_size_t index) const {
+    return r_str(levels().get(unwrap(value.get(index)) - 1));
+  }
+
+  r_str_view view(r_size_t index) const {
+    return levels().view(unwrap(value.get(index)) - 1);
+  }
+
+  template <RStringType U>
+  void set(r_size_t index, const U& val) {
+    value.set(index, find_code(val));
+  }
+
+  template <RStringType U>
+  r_size_t count(const U& val) const {
+    if (is_na(val)){
+      return value.na_count();
+    } else {
+      r_int code = find_code(val);
+      if (is_na(code)){
+        return 0;
+      } else {
+        return value.count(code);
+      }
+    }
+  }
+
+  template <RStringType U>
+  void fill(r_size_t start, r_size_t n, const U& val){
+    return is_na(val) ? value.fill(start, n, na<r_int>()) : value.fill(start, n, find_code(val));
+  }
+  template <RStringType U>
+  void fill(const U& val){
+    fill(0, value.length(), val);
+  }
+
+  template <RStringType U>
+  r_vec<r_int> find(const U& val, bool invert = false) const {
+    if (is_na(val)){
+      return value.find(na<r_int>());
+    }
+    r_int code = find_code(val);
+    if (is_na(code)){
+      return r_vec<r_int>();
+    }
+    return value.find(code);
+  }
+
+  template <RStringType U>
+  void replace(r_size_t start, r_size_t n, const U& old_val, const U& new_val){
+    r_int old_code = find_code(old_val);
+    r_int new_code = find_code(new_val);
+  
+    for (r_size_t i = 0; i < n; ++i) {
+      r_size_t idx = start + i;
+      if (identical(value.get(idx), old_code)){
+        value.set(idx, new_code);
+      }
+    }
+  }
+  
+  template <RStringType U>
+  void replace(const U& old_val, const U& new_val){
+    replace(0, value.length(), old_val, new_val);
+  }
+
+  template <RStringType U>
+  r_factors remove(const U& val) const {
+    r_int code = find_code(val);
+    r_vec<r_int> fct_codes = value.remove(code);
+    attr::set_old_class(fct_codes, r_vec<r_str>(1, cached_str<"factor">()));
+    attr::set_attr(fct_codes, symbol::levels_sym, levels());
+    return r_factors(static_cast<SEXP>(fct_codes), false);
+  }
 
 };
 
