@@ -138,13 +138,6 @@ struct r_factors {
           return value.NAME(std::forward<Args>(args)...);    \
       }
 
-  // For no-return in-place modifying non-const methods
-  #define FORWARD_MUTATING_METHOD(NAME)                      \
-      template <typename... Args>                            \
-      void NAME(Args&&... args) {                            \
-          return value.NAME(std::forward<Args>(args)...);    \
-      }
-
   // For methods that return a factor
   #define FORWARD_FACTOR_METHOD(NAME)                                     \
       template <typename... Args>                                         \
@@ -209,8 +202,6 @@ struct r_factors {
   // Undefine the macros so they don't leak out of the struct
   #undef FORWARD_METHOD
   #undef FORWARD_FACTOR_METHOD
-  #undef FORWARD_MUTATING_METHOD
-
 
   r_str get(r_size_t index) const {
     return r_str(levels().get(unwrap(value.get(index)) - 1));
