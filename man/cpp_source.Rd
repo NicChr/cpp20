@@ -13,6 +13,7 @@ cpp_source(
   quiet = TRUE,
   debug = FALSE,
   preserve_altrep = FALSE,
+  check_factor_levels = FALSE,
   cxx_std = Sys.getenv("CXX_STD", "CXX20"),
   dir = tempfile()
 )
@@ -24,6 +25,7 @@ cpp_eval(
   quiet = TRUE,
   debug = FALSE,
   preserve_altrep = FALSE,
+  check_factor_levels = FALSE,
   simplify = TRUE,
   cxx_std = Sys.getenv("CXX_STD", "CXX20")
 )
@@ -48,6 +50,11 @@ Default is \code{FALSE}.}
 
 \item{preserve_altrep}{Should ALTREP vectors be preserved by avoiding
 materialisation where possible? Default is \code{FALSE}.}
+
+\item{check_factor_levels}{Should factor levels be validated for
+\code{r_factors} objects? Default is \code{FALSE}. When \code{TRUE}, factor levels are
+checked once on \code{r_factors} construction to ensure they are valid, reducing
+the chance of R crashing when passing factors with invalid levels.}
 
 \item{cxx_std}{C++ standard to use. Should be >= C++20.}
 
