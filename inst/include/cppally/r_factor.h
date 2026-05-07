@@ -63,7 +63,7 @@ struct r_factors {
     }
   }
 
-  void validate_factor(bool check_valid_levels = true){
+  void validate_factor(bool check_valid_levels = false){
     if (!attr::inherits1(value, "factor")) [[unlikely]] {
       abort("SEXP must be of class 'factor' to be constructed as a factor");
     }
@@ -75,7 +75,7 @@ struct r_factors {
   public:
 
   template <RStringType T>
-  void set_levels(const r_vec<T>& levels, bool check_valid_levels = true) {
+  void set_levels(const r_vec<T>& levels, bool check_valid_levels = false) {
     if (check_valid_levels){
       validate_levels(value, levels);
     }
@@ -87,7 +87,7 @@ struct r_factors {
   private:
 
   template <RStringType T>
-  void init_factor(const r_vec<T>& levels, bool check_valid_levels = true) {
+  void init_factor(const r_vec<T>& levels, bool check_valid_levels = false) {
       // Set class
       attr::set_attr(value, symbol::class_sym, r_vec<r_str_view>(1, r_str_view(cached_str<"factor">())));
       // Set levels
@@ -96,7 +96,7 @@ struct r_factors {
 
   // Internal direct constructor
   template <RStringType T>
-  explicit r_factors(r_vec<r_int>&& codes, const r_vec<T>& levels, bool check_valid_levels = true) : value(std::move(codes)){
+  explicit r_factors(r_vec<r_int>&& codes, const r_vec<T>& levels, bool check_valid_levels = false) : value(std::move(codes)){
       init_factor(levels, check_valid_levels);
     }
 
@@ -141,14 +141,14 @@ struct r_factors {
     init_factor(r_vec<r_str_view>(), false);
   }
 
-  explicit r_factors(SEXP x, bool check_valid_levels = true) : value(x) {
+  explicit r_factors(SEXP x, bool check_valid_levels = false) : value(x) {
     if (!value.is_null()){
       cached_levels = r_vec<r_str_view>(attr::get_attr(value, symbol::levels_sym));
       validate_factor(check_valid_levels);
     }
   }
 
-  explicit r_factors(SEXP x, internal::view_tag, bool check_valid_levels = true) : value(x, internal::view_tag{}) {
+  explicit r_factors(SEXP x, internal::view_tag, bool check_valid_levels = false) : value(x, internal::view_tag{}) {
     if (!value.is_null()){
       cached_levels = r_vec<r_str_view>(attr::get_attr(value, symbol::levels_sym));
       validate_factor(check_valid_levels);
@@ -199,6 +199,18 @@ struct r_factors {
         return na<r_int>();
     }
     return r_int(it->second);
+  }
+
+  template <RStringType U>
+  r_vec<r_int> get_codes(const r_vec<U>& vals) const {
+    lazy_hash_levels();
+    int n = vals.length();
+    r_vec<r_int> out(n);
+    for (int i = 0; i < n; ++i){
+      auto it = levels_hash_table->find(vals.data()[i]);
+      out.set(i, it == levels_hash_table->end() ? na<r_int>() : r_int(it->second));
+    }
+    return out;
   }
 
   r_int get_code(r_size_t index) const {

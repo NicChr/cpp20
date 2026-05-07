@@ -265,39 +265,6 @@ r_vec<T> r_vec<T>::remove(const r_vec<T>& values) const {
   }
 }
 
-template <RVal T>
-template <internal::RSubscript U>
-void r_vec<T>::fill(const r_vec<U>& where, const r_vec<T>& with) {
-
-  if (is_null()) return;
-
-  r_size_t with_size = with.length();
-  r_size_t withi = 0;
-
-  if (with_size == 0){
-    return;
-  }
-
-  r_vec<T> with_clean = as<r_vec<T>>(with);
-
-  if (is_long()){
-    // Clean where vector
-    r_vec<r_int64> where_clean = internal::clean_locs<r_int64>(where, *this);
-    r_size_t where_size = where_clean.length();
-  
-    for (r_size_t i = 0; i < where_size; recycle_index(withi, with_size), ++i){
-      set(unwrap(where_clean.get(i)), with_clean.get(withi));
-    }
-  } else {
-    // Clean where vector
-    r_vec<r_int> where_clean = internal::clean_locs<r_int>(where, *this);
-    r_size_t where_size = where_clean.length();
-  
-    for (r_size_t i = 0; i < where_size; recycle_index(withi, with_size), ++i){
-      set(unwrap(where_clean.get(i)), with_clean.get(withi));
-    }
-  }
-}
 
 template <RVal T>
 void r_vec<T>::replace(const r_vec<T>& old_values, const r_vec<T>& new_values){
@@ -364,37 +331,6 @@ inline r_df subset(const r_df& x, const r_vec<r_int>& indices, bool check = true
 template <internal::RSubscript U>
 inline r_sexp subset(const r_sexp& x, const r_vec<U>& indices, bool check, bool invert){
   return r_sexp(CPPALLY_VIEW_AND_APPLY(x, /*return_type = */ SEXP, /*fn = */ subset, /*rest of args = */ indices, check, invert));
-}
-
-// Free fill function
-
-template <RVector T, internal::RSubscript U>
-void fill(T& x, const r_vec<U>& where, const T& with) {
-  x.fill(where, with);
-}
-
-template <internal::RSubscript U>
-void fill(r_factors& x, const r_vec<U>& where, const r_factors& with) {
-  x.fill(where, with);
-}
-
-template <internal::RSubscript U>
-void fill(r_df& x, const r_vec<U>& where, const r_df& with) {
-  x.fill(where, with);
-}
-
-template <internal::RSubscript U>
-void fill(r_sexp& x, const r_vec<U>& where, const r_sexp& with) {
-  mutate_sexp(x, [&](auto& x_) {
-    using x_t = std::remove_cvref_t<decltype(x_)>;
-    if constexpr (is<x_t, r_sexp>){
-        abort("Unsupported SEXP type in `fill()`");
-    } else if constexpr (requires { fill(x_, where, x_t(with)); }){
-        fill(x_, where, x_t(with));
-    } else {
-        abort("No available method for type %s in `fill()`", internal::type_str<std::remove_cvref_t<decltype(x_)>>());
-    }
-  });
 }
 
 }

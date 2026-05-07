@@ -186,10 +186,10 @@ struct r_df {
     r_sexp get_col(const char* name) const;
 
 
-    template <internal::RSubscript T, internal::RSubscript U>
-    void fill(const r_vec<T>& row_indices, const r_vec<U>& col_indices, const r_df& replacement);
-    template <internal::RSubscript T>
-    void fill(const r_vec<T>& row_indices, const r_df& replacement);
+    // template <internal::RSubscript T, internal::RSubscript U>
+    // void fill(const r_vec<T>& row_indices, const r_vec<U>& col_indices, const r_df& replacement);
+    // template <internal::RSubscript T>
+    // void fill(const r_vec<T>& row_indices, const r_df& replacement);
 
     template <RStringType U>
     r_sexp get_col(U name) const;

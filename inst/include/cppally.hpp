@@ -43,6 +43,7 @@
 #include <cppally/sugar/r_unique.h>
 #include <cppally/sugar/r_copy.h>
 #include <cppally/sugar/r_subset.h>
+#include <cppally/sugar/r_fill.h>
 #include <cppally/sugar/r_make_vec.h>
 #include <cppally/sugar/r_recycle.h>
 #include <cppally/sugar/r_math.h>
