@@ -96,6 +96,18 @@ inline T shallow_copy(const T& x){
     // return out;
 }
 
+template <>
+inline r_vec<r_sexp> shallow_copy(const r_vec<r_sexp>& x){
+    if (x.is_null()) return x;
+    r_size_t n = x.length();
+    r_vec<r_sexp> out(n);
+    for (r_size_t i = 0; i < n; ++i){
+        out.set(i, x.view(i));
+    }
+    attr::set_attrs(out, attr::get_attrs(x));
+    return out;
+}
+
 template<>
 inline r_factors shallow_copy(const r_factors& x){
     r_vec<r_int> out = shallow_copy(x.value);
@@ -104,7 +116,7 @@ inline r_factors shallow_copy(const r_factors& x){
 
 template<>
 inline r_df shallow_copy(const r_df& x){
-    return r_df(shallow_copy(x.value));
+    return r_df(shallow_copy(x.value), x.nrow(), internal::no_checks_tag{});
 }
 
 // Symbols can't be copied

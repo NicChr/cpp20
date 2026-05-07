@@ -105,10 +105,6 @@ inline r_df r_df::get_row(int index) const {
     return r_df(out, 1, internal::no_checks_tag{});
 }
 
-inline r_sexp r_df::get_col(int index) const {
-    return subset(value, r_vec<r_int>(1, r_int(index)), false, false).get(0);
-}
-
 template <RStringType U>
 inline r_sexp r_df::get_col(U name) const {
     r_vec<r_sexp> sset = subset(value, r_vec<U>(1, name), true, false);
@@ -121,6 +117,11 @@ inline r_sexp r_df::get_col(U name) const {
 
 inline r_sexp r_df::get_col(const char* name) const {
     return get_col(r_str(name));
+}
+
+template <RObject col_t>
+void r_df::set_col(int index, const col_t& col) {
+    value.set(index, r_sexp(col, internal::view_tag{}));
 }
 
 template <internal::RSubscript U>

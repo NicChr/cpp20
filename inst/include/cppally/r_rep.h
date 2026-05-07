@@ -3,6 +3,7 @@
 
 #include <cppally/r_vec.h>
 #include <cppally/r_visit.h>
+#include <cppally/r_copy.h>
 
 namespace cppally {
 
@@ -20,17 +21,16 @@ inline r_factors rep_len(const r_factors& x, r_size_t n){
 inline r_sexp rep_len(const r_sexp& x, r_size_t n);
 
 inline r_df rep_len(const r_df& x, r_size_t n){
-    if (n == x.nrow()){
+    if (x.nrow() == n){
         return x;
-    }
-    int ncols = x.ncol();
-    r_vec<r_sexp> cols(ncols);
-    for (int i = 0; i < ncols; ++i){
-        cols.set(i, rep_len(x.value.view(i), n));
-    }
-    attr::set_attrs(cols, attr::get_attrs(x));
-    // SHALLOW_DUPLICATE_ATTRIB(cols, x);
-    return r_df(cols, n, internal::no_checks_tag{});
+      }
+      r_df out = shallow_copy(x);
+      out.set_nrow(n);
+      int ncols = out.ncol();
+      for (int i = 0; i < ncols; ++i){
+          out.set_col(i, rep_len(out.view_col(i), n));
+      }
+      return out;
 }
 
 inline r_sexp rep_len(const r_sexp& x, r_size_t n){

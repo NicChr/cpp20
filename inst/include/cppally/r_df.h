@@ -182,17 +182,23 @@ struct r_df {
     template <internal::RSubscript U>
     r_df select(const r_vec<U>& cols) const;
     r_df get_row(int index) const;
-    r_sexp get_col(int index) const;
+    r_sexp get_col(int index) const {
+        return value.get(index);
+    }
     r_sexp get_col(const char* name) const;
+    template <RStringType U>
+    r_sexp get_col(U name) const;
+    r_sexp view_col(int index) const {
+        return value.view(index);
+    }
 
+    template <RObject col_t>
+    void set_col(int index, const col_t& col);
 
     // template <internal::RSubscript T, internal::RSubscript U>
     // void fill(const r_vec<T>& row_indices, const r_vec<U>& col_indices, const r_df& replacement);
     // template <internal::RSubscript T>
     // void fill(const r_vec<T>& row_indices, const r_df& replacement);
-
-    template <RStringType U>
-    r_sexp get_col(U name) const;
 };
 
 }
