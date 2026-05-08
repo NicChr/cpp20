@@ -3,9 +3,8 @@
 
 #include <cppally/r_limits.h>
 #include <cppally/r_vec.h>
+#include <cppally/r_hash_names.h>
 #include <cppally/r_attrs.h>
-#include <optional>
-#include <ankerl/unordered_dense.h> // Hash map for levels
 
 namespace cppally {
 
@@ -23,16 +22,12 @@ struct r_factors {
   static constexpr bool chk_fct_lvls_opt = false;
   #endif
 
-  r_vec<r_str_view> cached_levels; // Cache levels to avoid overhead of retrieving attribute
-
-  // Lazily-loaded hash table of levels (initialised once when `get_code()` is called)
-  using levels_map_t = ankerl::unordered_dense::map<SEXP, int>; // nullptr until first get_code()
-  mutable std::optional<levels_map_t> levels_hash_table;
+  internal::hashed_names cached_levels; // Lazily cache hashed levels for O(1) lookup and reduced attribute overhead
 
   public: 
 
   r_vec<r_str_view> levels() const noexcept {
-    return cached_levels;
+    return cached_levels.names;
   }
 
   r_vec<r_int> codes() const {
@@ -86,8 +81,7 @@ struct r_factors {
       validate_levels(value, levels);
     }
     attr::set_attr(value, symbol::levels_sym, levels);
-    cached_levels = r_vec<r_str_view>(static_cast<SEXP>(levels));
-    levels_hash_table.reset();
+    cached_levels = internal::hashed_names(r_vec<r_str_view>(static_cast<SEXP>(levels)));
   }
 
   private:
@@ -105,24 +99,7 @@ struct r_factors {
   explicit r_factors(r_vec<r_int>&& codes, const r_vec<T>& levels, bool check_valid_levels = chk_fct_lvls_opt) : value(std::move(codes)){
       init_factor(levels, check_valid_levels);
     }
-
-
-  void lazy_hash_levels() const {
-
-    // If hash table already built, exit
-    if (levels_hash_table.has_value()) return;
-
-    r_vec<r_str_view> lvls = levels();
-    int n = lvls.length();
-
-    levels_hash_table.emplace();
-    levels_hash_table->reserve(static_cast<std::size_t>(n));
-
-    for (int i = 0; i < n; ++i) {
-        levels_hash_table->emplace(unwrap(lvls.view(i)), i + 1);
-    }
-  }
-
+    
   // For methods that just return a non-factor (like length())
   #define FORWARD_METHOD(NAME)                               \
       template <typename... Args>                            \
@@ -149,14 +126,14 @@ struct r_factors {
 
   explicit r_factors(SEXP x, bool check_valid_levels = chk_fct_lvls_opt) : value(x) {
     if (!value.is_null()){
-      cached_levels = r_vec<r_str_view>(attr::get_attr(value, symbol::levels_sym));
+      cached_levels = internal::hashed_names(r_vec<r_str_view>(attr::get_attr(value, symbol::levels_sym)));
       validate_factor(check_valid_levels);
     }
   }
 
   explicit r_factors(SEXP x, internal::view_tag, bool check_valid_levels = chk_fct_lvls_opt) : value(x, internal::view_tag{}) {
     if (!value.is_null()){
-      cached_levels = r_vec<r_str_view>(attr::get_attr(value, symbol::levels_sym));
+      cached_levels = internal::hashed_names(r_vec<r_str_view>(attr::get_attr(value, symbol::levels_sym)));
       validate_factor(check_valid_levels);
     }
   }
@@ -199,22 +176,15 @@ struct r_factors {
   // Since levels are assumed to be unique, we find the first match
   template <RStringType U>
   r_int get_code(const U& val) const {
-    lazy_hash_levels();
-    auto it = levels_hash_table->find(unwrap(val));
-    if (it == levels_hash_table->end()) {
-        return na<r_int>();
-    }
-    return r_int(it->second);
+    return cached_levels.find(val, /*offset = */ 1);
   }
 
   template <RStringType U>
   r_vec<r_int> get_codes(const r_vec<U>& vals) const {
-    lazy_hash_levels();
     int n = vals.length();
     r_vec<r_int> out(n);
     for (int i = 0; i < n; ++i){
-      auto it = levels_hash_table->find(vals.data()[i]);
-      out.set(i, it == levels_hash_table->end() ? na<r_int>() : r_int(it->second));
+      out.set(i, get_code(vals.view(i)));
     }
     return out;
   }
@@ -319,7 +289,7 @@ struct r_factors {
     if (is_na(val)){
       r_vec<r_int> fct_codes = value.remove(na<r_int>());
       r_factors result(std::move(fct_codes), this->levels(), false);
-      result.levels_hash_table = this->levels_hash_table;
+      result.cached_levels.map = this->cached_levels.map;
       return result;
     }
     r_int code = get_code(val);
@@ -328,7 +298,7 @@ struct r_factors {
     }
     r_vec<r_int> fct_codes = value.remove(code);
     r_factors result(std::move(fct_codes), this->levels(), false);
-    result.levels_hash_table = this->levels_hash_table;
+    result.cached_levels.map = this->cached_levels.map;
     return result;
   }
 
@@ -350,13 +320,15 @@ struct r_factors {
     r_copy_n(new_levels, levels(), 0, levels().length());
     new_levels.set(new_levels.length() - 1, level);
 
-    // Store previous hash table as set_levels() resets
-    auto previous_hash_table = levels_hash_table;
+    // Preserve the lazy hash across set_levels() (which resets it)
+    auto previous_map = std::move(cached_levels.map);
 
     set_levels(new_levels, false);
 
-    previous_hash_table->emplace(unwrap(level), previous_hash_table->size() + 1);
-    levels_hash_table = std::move(previous_hash_table);
+    if (previous_map.has_value()){
+      previous_map->emplace(unwrap(level), static_cast<int>(previous_map->size()));
+      cached_levels.map = std::move(previous_map);
+    }
   }
 
 };
