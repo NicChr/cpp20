@@ -8,7 +8,7 @@ is_windows <- function(){
 
 generate_makevars <- function (
     includes, cxx_std, debug,
-    preserve_altrep, check_factors
+    preserve_altrep, check_factors, check_data_frames
 ){
   out <- c(
     sprintf("CXX_STD=%s", cxx_std),
@@ -19,6 +19,9 @@ generate_makevars <- function (
   }
   if (check_factors){
    out[2]  <- paste(out[2], "-DCPPALLY_CHECK_FACTORS")
+  }
+  if (check_data_frames){
+    out[2]  <- paste(out[2], "-DCPPALLY_CHECK_DATA_FRAMES")
   }
   if (debug) {
     out <- c(out, "override CXXFLAGS += -O0")
@@ -96,6 +99,8 @@ curr_env <- function(){
 #' `r_factors` objects? Default is `FALSE`. When `TRUE`, factor levels are
 #' checked once on `r_factors` construction to ensure they are valid, reducing
 #' the chance of R crashing when passing factors with invalid levels.
+#' @param check_data_frames Should data frames be validated when constructing
+#' `r_df` objects from `SEXP`? Default is `FALSE`.
 #' @param dir Directory to store the source files.
 #' The default is a temporary directory via `tempfile()` which is removed when
 #' `clean = TRUE`.
@@ -195,6 +200,7 @@ cpp_source <- function(file, code = NULL, env = parent.frame(),
                        clean = TRUE, quiet = TRUE, debug = FALSE,
                        preserve_altrep = FALSE,
                        check_factors = FALSE,
+                       check_data_frames = FALSE,
                        cxx_std = Sys.getenv("CXX_STD", "CXX20"),
                        dir = tempfile()){
   stop_unless_installed(
@@ -247,7 +253,7 @@ cpp_source <- function(file, code = NULL, env = parent.frame(),
                                       use_package = TRUE)
   makevars_content <- generate_makevars(
     includes, cxx_std, debug,
-    preserve_altrep, check_factors
+    preserve_altrep, check_factors, check_data_frames
     )
   brio::write_lines(makevars_content, file.path(new_dir, "Makevars"))
   shared_lib_name <- paste0(tools::file_path_sans_ext(new_file_name), .Platform$dynlib.ext)
@@ -272,6 +278,7 @@ source_single_exprs <- function(exprs, env = parent.frame(), clean = TRUE,
                                 quiet = TRUE, debug = FALSE,
                                 preserve_altrep = FALSE,
                                 check_factors = FALSE,
+                                check_data_frames = FALSE,
                                 cxx_std = Sys.getenv("CXX_STD", "CXX20")){
   if (length(exprs) == 0){
     cli::cli_abort("{.arg exprs} is length 0, please supply a valid input")
@@ -317,7 +324,8 @@ source_single_exprs <- function(exprs, env = parent.frame(), clean = TRUE,
     env = env, clean = clean, quiet = quiet,
     debug = debug, cxx_std = cxx_std,
     preserve_altrep = preserve_altrep,
-    check_factors = check_factors
+    check_factors = check_factors,
+    check_data_frames = check_data_frames
   )
 }
 #' @rdname cpp_source
@@ -326,6 +334,7 @@ cpp_eval <- function(code, env = curr_env(), clean = TRUE,
                      quiet = TRUE, debug = FALSE,
                      preserve_altrep = FALSE,
                      check_factors = FALSE,
+                     check_data_frames = FALSE,
                      simplify = TRUE,
                      cxx_std = Sys.getenv("CXX_STD", "CXX20")){
   curr_objs <- names(env)
@@ -334,6 +343,7 @@ cpp_eval <- function(code, env = curr_env(), clean = TRUE,
     quiet = quiet, debug = debug,
     preserve_altrep = preserve_altrep,
     check_factors = check_factors,
+    check_data_frames = check_data_frames,
     cxx_std = cxx_std
   )
   fn_names <- paste0("f", seq_along(code))

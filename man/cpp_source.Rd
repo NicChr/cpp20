@@ -14,6 +14,7 @@ cpp_source(
   debug = FALSE,
   preserve_altrep = FALSE,
   check_factors = FALSE,
+  check_data_frames = FALSE,
   cxx_std = Sys.getenv("CXX_STD", "CXX20"),
   dir = tempfile()
 )
@@ -26,6 +27,7 @@ cpp_eval(
   debug = FALSE,
   preserve_altrep = FALSE,
   check_factors = FALSE,
+  check_data_frames = FALSE,
   simplify = TRUE,
   cxx_std = Sys.getenv("CXX_STD", "CXX20")
 )
@@ -55,6 +57,9 @@ materialisation where possible? Default is \code{FALSE}.}
 \code{r_factors} objects? Default is \code{FALSE}. When \code{TRUE}, factor levels are
 checked once on \code{r_factors} construction to ensure they are valid, reducing
 the chance of R crashing when passing factors with invalid levels.}
+
+\item{check_data_frames}{Should data frames be validated when constructing
+\code{r_df} objects from \code{SEXP}? Default is \code{FALSE}.}
 
 \item{cxx_std}{C++ standard to use. Should be >= C++20.}
 

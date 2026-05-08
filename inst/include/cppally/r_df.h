@@ -128,7 +128,9 @@ struct r_df {
         validate_df();
         cached_nrow = get_nrow();
         cached_colnames = get_colnames();
+        #ifdef CPPALLY_CHECK_DATA_FRAMES
         validate_col_sizes();
+        #endif
       }
 
     public: 
