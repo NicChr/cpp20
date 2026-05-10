@@ -640,6 +640,10 @@ struct r_vec {
 
 };
 
+// Alias of r_vec
+template <RVal T>
+using r_vector = r_vec<T>;
+
 template <RVal T>
 inline void r_copy_n(r_vec<T>& target, const r_vec<T>& source, r_size_t target_offset, r_size_t n){
 
