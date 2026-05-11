@@ -318,9 +318,7 @@ struct r_vec {
     } else {
       Rf_namesgets(sexp, names);
     }
-    if (!cached_names) {
-      cached_names = internal::get_or_create_name_cache(sexp.value);
-    }
+    cached_names = internal::get_or_create_name_cache(sexp);
     cached_names->invalidate();
   }
 

@@ -350,11 +350,14 @@ struct r_factors {
 
     set_levels(new_levels, false);
 
-    if (previous_map.has_value()){
-      previous_map->emplace(unwrap(level), static_cast<int>(previous_map->size()));
-      ensure_levels_cached();
-      cached_levels->names.emplace(static_cast<r_sexp>(new_levels));
-      cached_levels->map = std::move(previous_map);
+    if (previous_map){
+      previous_map->set_names_ptr(new_levels.data());
+      // previous_map->set_names_ptr(STRING_PTR_RO(static_cast<SEXP>(new_levels)));
+      if (previous_map->insert(static_cast<int>(previous_map->size()))){
+        ensure_levels_cached();
+        cached_levels->names.emplace(static_cast<r_sexp>(new_levels));
+        cached_levels->map = std::move(previous_map);
+      }
     }
   }
 
