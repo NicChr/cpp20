@@ -219,9 +219,13 @@ struct r_df {
     void set_col(int index, const col_t& col) {
         value.set(index, r_sexp(col, internal::view_tag{}));
     }
+    template <RStringType U, RObject col_t>
+    void set_col(const U& colname, const col_t& col) {
+        set_col(value.name_index(colname), col);
+    }
     template <RObject col_t>
     void set_col(std::string_view colname, const col_t& col) {
-        set_col(value.name_index(r_str(colname.data())), col);
+        set_col(r_str(colname.data()), col);
     }
 
     // template <internal::RSubscript T, internal::RSubscript U>
