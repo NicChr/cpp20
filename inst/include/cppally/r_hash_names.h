@@ -21,6 +21,8 @@ namespace internal {
 // alive via r_sexp; if the owner swaps the SEXP it must call set_names_ptr.
 struct sexp_index_table {
 
+    static constexpr std::size_t MIN_CAPACITY = 16;
+
     sexp_index_table() = default;
 
     sexp_index_table(const sexp_index_table&) = delete;
@@ -32,7 +34,6 @@ struct sexp_index_table {
     // post-build append (e.g. r_factors::append_level) cannot fill the table.
     void reserve(std::size_t n, const SEXP* names_ptr) {
         std::size_t target = n + (n >> 1) + 1;
-        static constexpr std::size_t MIN_CAPACITY = 16;
         std::size_t cap = std::bit_ceil(std::max<std::size_t>(target, MIN_CAPACITY));
         slots_ = std::make_unique<int[]>(cap); // value-init: all 0 = EMPTY
         capacity_ = cap;
@@ -182,7 +183,7 @@ inline std::shared_ptr<names_map> get_or_create_cache(
     SEXP s
 ) {
     static std::size_t counter = 0;
-    // if ((++cache_construction_counter() % 1024) == 0) // Equivalent to this line
+    // Equivalent to (++counter % CACHE_SWEEP_INTERVAL) == 0 when the interval is a power of two
     if ((++counter & (CACHE_SWEEP_INTERVAL - 1)) == 0)
         sweep_cache_storage(storage);
 
@@ -199,7 +200,7 @@ inline std::shared_ptr<names_map> get_or_create_cache(
 inline std::shared_ptr<names_map> try_lookup_cache(
     ankerl::unordered_dense::map<SEXP, std::weak_ptr<names_map>>& storage,
     SEXP s
-) {
+) noexcept {
     auto it = storage.find(s);
     if (it != storage.end()) {
         return it->second.lock();
@@ -215,11 +216,11 @@ inline std::shared_ptr<names_map> get_or_create_levels_cache(SEXP s) {
     return get_or_create_cache(levels_cache_storage(), s);
 }
 
-inline std::shared_ptr<names_map> try_lookup_name_cache(SEXP s) {
+inline std::shared_ptr<names_map> try_lookup_name_cache(SEXP s) noexcept {
     return try_lookup_cache(name_cache_storage(), s);
 }
 
-inline std::shared_ptr<names_map> try_lookup_levels_cache(SEXP s) {
+inline std::shared_ptr<names_map> try_lookup_levels_cache(SEXP s) noexcept {
     return try_lookup_cache(levels_cache_storage(), s);
 }
 
