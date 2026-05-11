@@ -311,20 +311,23 @@ struct r_vec {
 
   template <RStringType U>
   void set_names(const r_vec<U>& names){
-    if (names.is_null()){
-      Rf_setAttrib(sexp, symbol::names_sym, r_null);
-    } else if (names.length() != Rf_xlength(sexp)) [[unlikely]] {
-      abort("`length(names)` must equal `length(x)`");
-    } else {
-      Rf_namesgets(sexp, names);
-    }
-    cached_names = internal::get_or_create_name_cache(sexp);
-    cached_names->invalidate();
+      if (names.is_null()){
+        // Removing names from an unnamed vector - return early
+        if (Rf_getAttrib(*this, symbol::names_sym) == R_NilValue){
+          return;
+        }
+        Rf_setAttrib(sexp, symbol::names_sym, r_null);
+      } else if (names.length() != Rf_xlength(sexp)) [[unlikely]] {
+          abort("`length(names)` must equal `length(x)`");
+      } else {
+          Rf_namesgets(sexp, names);
+      }
+      cached_names = internal::get_or_create_name_cache(sexp);
+      cached_names->invalidate();
   }
 
   template <typename V>
   friend void internal::share_name_cache(V&, const V&);
-
 
   r_vec<r_lgl> is_na() const {
     r_size_t n = length();
