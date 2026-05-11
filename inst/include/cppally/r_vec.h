@@ -317,7 +317,7 @@ struct r_vec {
           return;
         }
         Rf_setAttrib(sexp, symbol::names_sym, r_null);
-      } else if (names.length() != Rf_xlength(sexp)) [[unlikely]] {
+      } else if (names.length() != length()) [[unlikely]] {
           abort("`length(names)` must equal `length(x)`");
       } else {
           Rf_namesgets(sexp, names);
