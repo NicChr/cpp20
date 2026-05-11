@@ -112,13 +112,13 @@ inline void set_attr(T& x, const r_sym& sym, const U& value){
       x.set_names(value);
       return;
     }
-    if (auto sp = internal::try_lookup_name_cache(static_cast<SEXP>(x))) sp->invalidate();
+    if (auto sp = internal::name_cache().try_lookup(static_cast<SEXP>(x))) sp->invalidate();
   } else if (internal::ptrs_identical(sym, symbol::levels_sym)) [[unlikely]] {
     if constexpr (requires { x.set_levels(value); }) {
       x.set_levels(value);
       return;
     }
-    if (auto sp = internal::try_lookup_levels_cache(static_cast<SEXP>(x))) sp->invalidate();
+    if (auto sp = internal::levels_cache().try_lookup(static_cast<SEXP>(x))) sp->invalidate();
   }
   safe[Rf_setAttrib](x, sym, value);
 }
@@ -164,8 +164,8 @@ inline void clear_attrs(SEXP x){
   CLEAR_ATTRIB(x);
   // Cached attributes (names, levels) have just been removed from x —
   // invalidate any wrapper caches that point at them.
-  if (auto sp = internal::try_lookup_name_cache(x)) sp->invalidate();
-  if (auto sp = internal::try_lookup_levels_cache(x)) sp->invalidate();
+  if (auto sp = internal::name_cache().try_lookup(x)) sp->invalidate();
+  if (auto sp = internal::levels_cache().try_lookup(x)) sp->invalidate();
 }
 
 }

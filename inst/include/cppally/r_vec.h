@@ -84,7 +84,7 @@ struct r_vec {
 
   void ensure_names_cached() const {
     if (!cached_names) {
-      cached_names = internal::get_or_create_name_cache(sexp.value);
+      cached_names = internal::name_cache().get_or_create(sexp.value);
     }
     if (!cached_names->names.has_value()) {
       // Construct via r_vec<r_str_view> so the SEXP type is validated before
@@ -335,7 +335,7 @@ struct r_vec {
           Rf_namesgets(sexp, names);
       }
       if (!cached_names) {
-        cached_names = internal::get_or_create_name_cache(sexp);
+        cached_names = internal::name_cache().get_or_create(sexp);
       }
       cached_names->invalidate();
   }
@@ -703,7 +703,7 @@ inline void share_name_cache(V& target, const V& source) {
         return;
     }
     target.cached_names = source.cached_names;
-    name_cache_storage()[target.sexp.value] = target.cached_names;
+    name_cache().store(target.sexp.value, target.cached_names);
     Rf_unprotect(1);
 }
 

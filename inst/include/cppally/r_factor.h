@@ -33,7 +33,7 @@ struct r_factors {
 
   void ensure_levels_cached() const {
     if (!cached_levels) {
-      cached_levels = internal::get_or_create_levels_cache(static_cast<SEXP>(value));
+      cached_levels = internal::levels_cache().get_or_create(static_cast<SEXP>(value));
     }
     if (!cached_levels->names.has_value()) {
       r_vec<r_str_view> validated(Rf_getAttrib(value, symbol::levels_sym));
@@ -100,7 +100,7 @@ struct r_factors {
     }
     safe[Rf_setAttrib](value, symbol::levels_sym, levels);
     if (!cached_levels) {
-      cached_levels = internal::get_or_create_levels_cache(static_cast<SEXP>(value));
+      cached_levels = internal::levels_cache().get_or_create(static_cast<SEXP>(value));
     }
     cached_levels->invalidate();
   }
@@ -358,8 +358,7 @@ struct r_factors {
     set_levels(new_levels, false);
 
     if (previous_map){
-      previous_map->set_names_ptr(new_levels.data());
-      // previous_map->set_names_ptr(STRING_PTR_RO(static_cast<SEXP>(new_levels)));
+      previous_map->rebind_to_storage(new_levels.data());
       if (previous_map->insert(static_cast<int>(previous_map->size()))){
         ensure_levels_cached();
         cached_levels->names.emplace(static_cast<r_sexp>(new_levels));
@@ -383,7 +382,7 @@ inline void share_levels_cache(r_factors& target, const r_factors& source) {
         return;
     }
     target.cached_levels = source.cached_levels;
-    levels_cache_storage()[target] = target.cached_levels;
+    levels_cache().store(target, target.cached_levels);
     Rf_unprotect(1);
 }
 
