@@ -94,20 +94,6 @@ struct r_vec {
     }
   }
 
-  template <RStringType U>
-  r_size_t get_index(const U& name) const {
-    ensure_names_cached();
-    r_int index = cached_names->find(name);
-    if (cppally::is_na(index)) [[unlikely]] {
-        if (cppally::is_na(name)){
-            abort("%s: Please supply a non-NA name", __func__);
-        } else {
-            abort("%s: There is no value named '%s'", __func__, name.c_str());
-        }
-    }
-    return static_cast<r_size_t>(unwrap(index));
-  }
-
   // By default do nothing (e.g. for vectors with no attrs)
   template <typename U>
   void validate_attrs(SEXP x){
@@ -226,6 +212,20 @@ struct r_vec {
     return sexp.address();
   }
 
+  template <RStringType U>
+  r_size_t name_index(const U& name) const {
+    ensure_names_cached();
+    r_int index = cached_names->find(name);
+    if (cppally::is_na(index)) [[unlikely]] {
+        if (cppally::is_na(name)){
+            abort("%s: Please supply a non-NA name", __func__);
+        } else {
+            abort("%s: There is no value named '%s'", __func__, name.c_str());
+        }
+    }
+    return static_cast<r_size_t>(unwrap(index));
+  }
+
   // Get element (no bounds-check)
   T get(r_size_t index) const {
     #ifdef CPPALLY_PRESERVE_ALTREP
@@ -241,7 +241,7 @@ struct r_vec {
   
   template <RStringType U>
   T get(const U& name) const {
-    return get(get_index(name));
+    return get(name_index(name));
   }
 
   // View element (like `get()` but elements must be short-lived)
@@ -272,7 +272,7 @@ struct r_vec {
 
   template <RStringType U>
   T view(const U& name) const {
-      return view(get_index(name));
+      return view(name_index(name));
   }
 
   // Set element (no bounds-check)
@@ -294,7 +294,7 @@ struct r_vec {
 
   template <RStringType U>
   void set(const U& name, const T& val) {
-      set(get_index(name), val);
+      set(name_index(name), val);
   }
 
   template <internal::RSubscript U>
