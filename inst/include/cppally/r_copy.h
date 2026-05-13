@@ -75,17 +75,10 @@ inline r_sexp deep_copy(const r_sexp& x){
 }
 
 template <RVector T>
-inline T shallow_copy(const T& x){
-    T out(safe[Rf_shallow_duplicate](x));
-    internal::share_name_cache(out, x);
-    return out;
-}
-
-template <>
-inline r_vec<r_sexp> shallow_copy(const r_vec<r_sexp>& x){
+T shallow_copy(const T& x){
     if (x.is_null()) return x;
     r_size_t n = x.length();
-    r_vec<r_sexp> out(n);
+    T out(n);
     for (r_size_t i = 0; i < n; ++i){
         out.set(i, x.view(i));
     }
