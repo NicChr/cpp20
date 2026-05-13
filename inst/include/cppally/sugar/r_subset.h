@@ -93,42 +93,19 @@ r_vec<V> clean_locs(const r_vec<U>& locs, const T& x){
     }
     return locs.template find<V>(r_true, false);
   } else {
-    r_size_t in_bounds_count = 0,
-    oob_count = 0,
-    na_count = 0,
-    neg_count = 0;
 
-    for (r_size_t i = 0; i < n; ++i){
-      auto loc = locs.data()[i];
-      if (is_na(loc)){
-        ++na_count;
-      } else if (loc < 0){
-        ++neg_count;
-      } else if (static_cast<r_size_t>(loc) >= xn){
-        ++oob_count;
-      } else {
-        ++in_bounds_count;
-      }
-    }
-
-  if (neg_count > 0) [[unlikely]] {
-    abort("Negative indices are not allowed, use `invert = true`");
-  }
-  if (oob_count > 0 || na_count > 0){
-    r_vec<V> out(in_bounds_count);
-    r_size_t k = 0;
-    
     using unsigned_int_t = std::make_unsigned_t<unwrap_t<U>>;
+
+    std::vector<unwrap_t<V>> valid_indices;
+    valid_indices.reserve(n);
 
     for (r_size_t i = 0; i < n; ++i){
       unsigned_int_t loc = static_cast<unsigned_int_t>(locs.data()[i]);
-      if (static_cast<r_size_t>(loc) < xn){
-        out.set(k++, V(static_cast<unwrap_t<V>>(loc)));
+      if (loc < static_cast<unsigned_int_t>(xn)){
+        valid_indices.push_back(static_cast<unwrap_t<V>>(loc));
       }
     }
-    return out;
-  }
-  return as<r_vec<V>>(locs);
+    return as<r_vec<V>>(valid_indices);
   }
 }
 
@@ -182,8 +159,8 @@ inline r_vec<T> r_vec<T>::subset(const r_vec<U>& indices, bool check, bool inver
       unsigned_int_t j;
   
       for (r_size_t i = 0; i < n; ++i){
-        j = unwrap(indices.get(i));
-        if (static_cast<r_size_t>(j) < xn){
+        j = indices.data()[i];
+        if (j < static_cast<unsigned_int_t>(xn)){
           out.set(i, view(static_cast<r_size_t>(j)));
         } else if (j > na_val) [[unlikely]] {
           // If j > n_val then it is a negative signed integer
@@ -196,7 +173,7 @@ inline r_vec<T> r_vec<T>::subset(const r_vec<U>& indices, bool check, bool inver
       }
     } else {
       for (r_size_t i = 0; i < n; ++i){
-        out.set(i, view(unwrap(indices.get(i))));
+        out.set(i, view(indices.data()[i]));
     }
   }
   r_vec<r_str_view> nms = names();
