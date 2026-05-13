@@ -243,10 +243,11 @@ struct r_vec {
       cached_names->invalidate();
   }
 
+  // For named vectors: find first index of name
+  // `abort_on_missing` - When supplied name doesn't exist, abort, otherwise return `NA`
   template <RStringType U>
-  r_size_t name_index(const U& name) const {
-    auto report_missing = [&]() -> r_size_t {
-      if (cppally::is_na(name)) abort("%s: Please supply a non-NA name", __func__);
+  r_int name_index(const U& name, bool abort_on_missing = true) const {
+    auto report_no_match = [&]() {
       abort("%s: There is no value named '%s'", __func__, name.c_str());
     };
 
@@ -254,8 +255,14 @@ struct r_vec {
     if (first_access) {
       ensure_names_cached();
       r_int index = cached_names->find(name);
-      if (cppally::is_na(index)) [[unlikely]] return report_missing();
-      return static_cast<r_size_t>(unwrap(index));
+      if (cppally::is_na(index)){ 
+        if (abort_on_missing) {
+          report_no_match();
+        } else {
+          return na<r_int>();
+        }
+      }
+      return index;
     }
 
     first_access = true;
@@ -269,9 +276,12 @@ struct r_vec {
     r_size_t n = names_attr.length();
     const auto* RESTRICT p = names_attr.data();
     for (r_size_t i = 0; i < n; ++i) {
-      if (p[i] == key) return i;
+      if (p[i] == key) return r_int(static_cast<int>(i));
     }
-    return report_missing();
+    if (abort_on_missing){
+      report_no_match();
+    }
+    return na<r_int>();
   }
 
   // Get element (no bounds-check)
@@ -289,11 +299,11 @@ struct r_vec {
   
   template <RStringType U>
   T get(const U& name) const {
-    return get(name_index(name));
+    return get(static_cast<r_size_t>(unwrap(name_index(name))));
   }
 
   T get(std::string_view name) const {
-    return get(name_index(r_str(name.data())));
+    return get(r_str(name.data()));
   }
 
   // View element (like `get()` but elements must be short-lived)
@@ -324,11 +334,11 @@ struct r_vec {
 
   template <RStringType U>
   T view(const U& name) const {
-      return view(name_index(name));
+    return view(static_cast<r_size_t>(unwrap(name_index(name))));
   }
 
   T view(std::string_view name) const {
-    return view(name_index(r_str(name.data())));
+    return view(r_str(name.data()));
   }
 
   // Set element (no bounds-check)
@@ -350,11 +360,11 @@ struct r_vec {
 
   template <RStringType U>
   void set(const U& name, const T& val) {
-      set(name_index(name), val);
+      set(static_cast<r_size_t>(unwrap(name_index(name))), val);
   }
   
   void set(std::string_view name, const T& val) {
-      set(r_str(name_index(name.data())), val);
+      set(r_str(name.data()), val);
   }
 
   template <internal::RSubscript U>
