@@ -98,6 +98,9 @@ struct r_vec {
     }
   }
 
+  template <typename V>
+  friend void internal::share_name_cache(V&, const V&);
+
   // By default do nothing (e.g. for vectors with no attrs)
   template <typename U>
   void validate_attrs(SEXP x){
@@ -216,6 +219,30 @@ struct r_vec {
     return sexp.address();
   }
 
+  r_vec<r_str_view> names() const {
+    ensure_names_cached();
+    return r_vec<r_str_view>(*cached_names->names);
+  }
+
+  template <RStringType U>
+  void set_names(const r_vec<U>& names){
+      if (names.is_null()){
+        // Removing names from an unnamed vector - return early
+        if (Rf_getAttrib(*this, symbol::names_sym) == R_NilValue){
+          return;
+        }
+        Rf_setAttrib(sexp, symbol::names_sym, r_null);
+      } else if (names.length() != length()) [[unlikely]] {
+          abort("`length(names)` must equal `length(x)`");
+      } else {
+          Rf_namesgets(sexp, names);
+      }
+      if (!cached_names) {
+        cached_names = internal::name_cache().get_or_create(sexp);
+      }
+      cached_names->invalidate();
+  }
+
   template <RStringType U>
   r_size_t name_index(const U& name) const {
     auto report_missing = [&]() -> r_size_t {
@@ -223,15 +250,7 @@ struct r_vec {
       abort("%s: There is no value named '%s'", __func__, name.c_str());
     };
 
-    // Hash path: the cache already exists, either because we built it on a
-    // prior call or because a sibling wrapper around the same SEXP did.
-    if (cached_names && cached_names->names.has_value()) {
-      r_int index = cached_names->find(name);
-      if (cppally::is_na(index)) [[unlikely]] return report_missing();
-      return static_cast<r_size_t>(unwrap(index));
-    }
-
-    // Second-or-later lookup without a built cache: build it now.
+    // Second-or-later lookup - cache hash map
     if (first_access) {
       ensure_names_cached();
       r_int index = cached_names->find(name);
@@ -241,14 +260,14 @@ struct r_vec {
 
     first_access = true;
 
-    // First lookup: linear scan, no hash-table allocation.
-    SEXP names_attr = Rf_getAttrib(sexp, symbol::names_sym);
-    if (names_attr == R_NilValue) [[unlikely]] {
+    // First lookup: linear scan, no hash-table allocation
+    r_vec<r_str_view> names_attr = names();
+    if (names_attr.is_null()) [[unlikely]] {
       abort("%s: vector has no names", __func__);
     }
     SEXP key = unwrap(name);
-    r_size_t n = Rf_xlength(names_attr);
-    const SEXP* RESTRICT p = STRING_PTR_RO(names_attr);
+    r_size_t n = names_attr.length();
+    const auto* RESTRICT p = names_attr.data();
     for (r_size_t i = 0; i < n; ++i) {
       if (p[i] == key) return i;
     }
@@ -344,33 +363,6 @@ struct r_vec {
   r_vec<T> subset(r_size_t index, bool check = true, bool invert = false) const {
     return subset(r_vec<r_int64>(1, r_int64(static_cast<int64_t>(index))), check, invert);
   }
-
-  r_vec<r_str_view> names() const {
-    ensure_names_cached();
-    return r_vec<r_str_view>(*cached_names->names);
-  }
-
-  template <RStringType U>
-  void set_names(const r_vec<U>& names){
-      if (names.is_null()){
-        // Removing names from an unnamed vector - return early
-        if (Rf_getAttrib(*this, symbol::names_sym) == R_NilValue){
-          return;
-        }
-        Rf_setAttrib(sexp, symbol::names_sym, r_null);
-      } else if (names.length() != length()) [[unlikely]] {
-          abort("`length(names)` must equal `length(x)`");
-      } else {
-          Rf_namesgets(sexp, names);
-      }
-      if (!cached_names) {
-        cached_names = internal::name_cache().get_or_create(sexp);
-      }
-      cached_names->invalidate();
-  }
-
-  template <typename V>
-  friend void internal::share_name_cache(V&, const V&);
 
   r_vec<r_lgl> is_na() const {
     r_size_t n = length();

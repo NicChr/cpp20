@@ -21,6 +21,13 @@ namespace cppally {
 // the table is built only on the first find(). Most wrappers never look
 // up by name, so both stages matter.
 
+// Knuth multiplicative — upper bits of the product distribute well even
+// when the input bits are correlated (e.g. aligned pointers).
+inline std::size_t sexp_data_hash(SEXP p) noexcept {
+    constexpr auto phi = 0x9E3779B97F4A7C15ull;
+    return (reinterpret_cast<std::uintptr_t>(p) * phi);
+}
+
 namespace internal {
 
 // Open-addressing hash from SEXP keys to indices into an external names
@@ -106,7 +113,7 @@ struct sexp_index_table {
     // Knuth multiplicative — upper bits of the product distribute well even
     // when the input bits are correlated (e.g. aligned pointers).
     std::size_t hash_(SEXP p) const noexcept {
-        return (reinterpret_cast<std::uintptr_t>(p) * 0x9E3779B97F4A7C15ull) >> shift_;
+        return sexp_data_hash(p) >> shift_;
     }
 };
 
