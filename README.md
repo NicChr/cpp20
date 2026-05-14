@@ -81,6 +81,18 @@ not be released. If you really want to use the R C API and cppally, you
 must make sure that either the code is exception safe (unlikely), or
 that R C API functions are called via cppally’s `safe[]`.
 
+### Attributes
+
+The use of `Rf_setAttrib` is dangerous and highly discouraged in
+cppally. Since cppally caches vector names in all `r_vec` objects, the
+use of `Rf_namesgets()` or `Rf_setAttrib(, R_NamesSymbol)` will
+invalidate the cache and inevitably lead to incorrect results. Use
+`names()` and `set_names()` member functions. The same goes for factor
+levels, use `levels()` and `set_levels()` over
+`Rf_setAttrib(, R_LevelsSymbol)`.
+
+Attribute helpers can be found in attr namespace via `cppally::attr::`
+
 ### views
 
 To avoid the overhead associated with automatic protection entirely, one
