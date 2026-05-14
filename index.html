@@ -96,6 +96,12 @@
 <p>If R throws an error via <code>Rf_error()</code> a ‘longjmp’ will occur, meaning C++ destructors won’t run and memory that should have been released will not be released. If you really want to use the R C API and cppally, you must make sure that either the code is exception safe (unlikely), or that R C API functions are called via cppally’s <code>safe[]</code>.</p>
 </div>
 <div class="section level3">
+<h3 id="attributes">Attributes<a class="anchor" aria-label="anchor" href="#attributes"></a>
+</h3>
+<p>The use of <code>Rf_setAttrib</code> is dangerous and highly discouraged in cppally. Since cppally caches vector names in all <code>r_vec</code> objects, the use of <code>Rf_namesgets()</code> or <code>Rf_setAttrib(, R_NamesSymbol)</code> will invalidate the cache and inevitably lead to incorrect results. Use <code><a href="https://rdrr.io/r/base/names.html" class="external-link">names()</a></code> and <code>set_names()</code> member functions. The same goes for factor levels, use <code><a href="https://rdrr.io/r/base/levels.html" class="external-link">levels()</a></code> and <code>set_levels()</code> over <code>Rf_setAttrib(, R_LevelsSymbol)</code>.</p>
+<p>Attribute helpers can be found in attr namespace via <code>cppally::attr::</code></p>
+</div>
+<div class="section level3">
 <h3 id="views">views<a class="anchor" aria-label="anchor" href="#views"></a>
 </h3>
 <p>To avoid the overhead associated with automatic protection entirely, one can use view types like e.g. <code>r_str_view</code>, a non-owning class for R strings. For more info on views see <a href="https://nicchr.github.io/cppally/articles/protection.html">Automatic Protection</a></p>
