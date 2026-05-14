@@ -441,12 +441,12 @@ struct common_r_type_impl {
     using type = std::conditional_t<(rank_t >= rank_u), T, U>;
 };
 
-template <RVector T, RScalar U>
+template <RVector T, RVal U>
 struct common_r_type_impl<T, U> {
     using type = r_vec<typename common_r_type_impl<typename T::data_type, U>::type>;
 };
 
-template <RScalar T, RVector U>
+template <RVal T, RVector U>
 struct common_r_type_impl<T, U> {
     using type = r_vec<typename common_r_type_impl<T, typename U::data_type>::type>;
 };
@@ -456,13 +456,48 @@ struct common_r_type_impl<T, U> {
     using type = r_vec<typename common_r_type_impl<typename T::data_type, typename U::data_type>::type>;
 };
 
+template <RVector T, RFactor U>
+struct common_r_type_impl<T, U> {
+    using type = r_factors;
+};
+
+template <RFactor T, RVector U>
+struct common_r_type_impl<T, U> {
+    using type = r_factors;
+};
+
+template <RVector T, RDataFrame U>
+struct common_r_type_impl<T, U> {
+    using type = r_df;
+};
+
+template <RDataFrame T, RVector U>
+struct common_r_type_impl<T, U> {
+    using type = r_df;
+};
+
+template <RFactor T, RDataFrame U>
+struct common_r_type_impl<T, U> {
+    using type = r_df;
+};
+
+template <RDataFrame T, RFactor U>
+struct common_r_type_impl<T, U> {
+    using type = r_df;
+};
+
+template <CppallyType T>
+struct common_r_type_impl<T, T> {
+    using type = T;
+};
+
 }
 
 template <MathType T, MathType U>
 requires (RMathType<T> || RMathType<U>) // At least one RMathType
 using common_math_t = typename internal::common_r_math_impl<T, U>::type;
 
-template <RVal T, RVal U>
+template <typename T, typename U>
 using common_r_t = typename internal::common_r_type_impl<T, U>::type;
 
 
