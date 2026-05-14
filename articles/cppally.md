@@ -816,6 +816,15 @@ letter_fct |>
 
 ## Attributes
 
+**Note:** The use of `Rf_setAttrib` is dangerous and highly discouraged
+in cppally. Since cppally caches vector names in all `r_vec` objects,
+the use of `Rf_namesgets()` or `Rf_setAttrib(, R_NamesSymbol)` will
+invalidate the cache and inevitably lead to incorrect results. Use
+[`names()`](https://rdrr.io/r/base/names.html) and `set_names()` member
+functions. The same goes for factor levels, use
+[`levels()`](https://rdrr.io/r/base/levels.html) and `set_levels()` over
+`Rf_setAttrib(, R_LevelsSymbol)`.
+
 Attributes can be manipulated via functions defined in the attr
 namespace.
 
@@ -899,8 +908,8 @@ mark(
 #> # A tibble: 2 × 6
 #>   expression            min   median `itr/sec` mem_alloc `gc/sec`
 #>   <bch:expr>       <bch:tm> <bch:tm>     <dbl> <bch:byt>    <dbl>
-#> 1 base_n_unique       776µs    795µs     1206.    1.38MB     33.8
-#> 2 cppally_n_unique    283µs    284µs     3460.        0B      0
+#> 1 base_n_unique       782µs    797µs     1193.    1.38MB     34.0
+#> 2 cppally_n_unique    281µs    283µs     3484.        0B      0
 ```
 
 More useful sugar functions
