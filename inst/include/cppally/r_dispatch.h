@@ -66,7 +66,6 @@ struct fn_traits<Ret(*)(Args...)> {
     static constexpr size_t arity = sizeof...(Args);
 };
 
-// The reverse of above
 // Special case - never return CHARSXP
 template <typename T>
 SEXP cpp_to_sexp(const T& x) {
