@@ -24,6 +24,7 @@
 #include <cppally/r_attrs.h>
 #include <cppally/r_visit.h>
 #include <cppally/r_length.h>
+#include <cppally/r_copy.h>
 #include <cppally/r_list_helpers.h>
 #include <cppally/r_df.h>
 #include <cppally/r_coerce.h>
@@ -41,10 +42,10 @@
 #include <cppally/sugar/r_groups.h>
 #include <cppally/sugar/r_match.h>
 #include <cppally/sugar/r_unique.h>
-#include <cppally/r_copy.h>
 #include <cppally/sugar/r_subset.h>
 #include <cppally/sugar/r_fill.h>
 #include <cppally/sugar/r_make_vec.h>
+#include <cppally/sugar/r_combine.h>
 #include <cppally/sugar/r_recycle.h>
 #include <cppally/sugar/r_math.h>
 #include <cppally/sugar/r_seq.h>
