@@ -216,13 +216,17 @@ struct r_factors {
     first_access = true;
 
     // First lookup: linear scan over the levels STRSXP.
-    SEXP levels_attr = Rf_getAttrib(value, symbol::levels_sym);
-    if (levels_attr == R_NilValue) [[unlikely]] return na<r_int>();
-    SEXP key = unwrap(val);
-    r_size_t n = Rf_xlength(levels_attr);
-    const SEXP* RESTRICT p = STRING_PTR_RO(levels_attr);
+    r_vec<r_str_view> levels_attr = levels();
+    if (levels_attr.is_null()) [[unlikely]] {
+      return na<r_int>();
+    }
+    r_size_t n = levels_attr.length();
+    auto key = unwrap(val);
+    const auto* RESTRICT p = levels_attr.data();
     for (r_size_t i = 0; i < n; ++i) {
-      if (p[i] == key) return r_int(static_cast<int>(i) + 1);
+      if (p[i] == key){
+        return r_int(static_cast<int>(i) + 1);
+      }
     }
     return na<r_int>();
   }
