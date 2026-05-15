@@ -18,13 +18,12 @@ T flatten(const r_vec<r_sexp>& x) {
 
     T out(out_size);
     r_size_t k = 0; 
+    r_size_t m;
 
-    for (r_size_t i = 0; i < n; ++i) {
+    for (r_size_t i = 0; i < n; k += m, ++i) {
         T vec = as<T>(x.view(i));
-        r_size_t m = length(vec);
-        for (r_size_t j = 0; j < m; ++j){
-            out.set(k++, vec.view(j));
-        }
+        m = length(vec);
+        r_copy_n(out, vec, k, m);
     }
     return out;
 }
