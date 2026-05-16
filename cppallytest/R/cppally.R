@@ -340,6 +340,38 @@ test_factor3 <- function(x) {
   .Call(`_cppallytest_test_factor3`, x)
 }
 
+test_names_inplace_mutation <- function() {
+  .Call(`_cppallytest_test_names_inplace_mutation`)
+}
+
+test_names_stale_invalidation <- function() {
+  .Call(`_cppallytest_test_names_stale_invalidation`)
+}
+
+test_names_set_attr_invalidation <- function() {
+  .Call(`_cppallytest_test_names_set_attr_invalidation`)
+}
+
+test_names_growing <- function() {
+  .Call(`_cppallytest_test_names_growing`)
+}
+
+test_names_sweep <- function() {
+  .Call(`_cppallytest_test_names_sweep`)
+}
+
+test_names_shallow_copy_isolation <- function() {
+  .Call(`_cppallytest_test_names_shallow_copy_isolation`)
+}
+
+test_names_empty <- function() {
+  .Call(`_cppallytest_test_names_empty`)
+}
+
+test_names_roundtrip_after_grow <- function() {
+  .Call(`_cppallytest_test_names_roundtrip_after_grow`)
+}
+
 test_nas <- function(x) {
   .Call(`_cppallytest_test_nas`, x)
 }

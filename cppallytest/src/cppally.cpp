@@ -772,6 +772,62 @@ extern "C" SEXP _cppallytest_test_factor3(SEXP x) {
   return cpp_to_sexp(::test_factor3(as<r_factors>(x)));
   END_CPPALLY
 }
+// test_names.cpp
+r_vec<r_str_view> test_names_inplace_mutation();
+extern "C" SEXP _cppallytest_test_names_inplace_mutation() {
+  BEGIN_CPPALLY
+  return cpp_to_sexp(::test_names_inplace_mutation());
+  END_CPPALLY
+}
+// test_names.cpp
+r_lgl test_names_stale_invalidation();
+extern "C" SEXP _cppallytest_test_names_stale_invalidation() {
+  BEGIN_CPPALLY
+  return cpp_to_sexp(::test_names_stale_invalidation());
+  END_CPPALLY
+}
+// test_names.cpp
+r_lgl test_names_set_attr_invalidation();
+extern "C" SEXP _cppallytest_test_names_set_attr_invalidation() {
+  BEGIN_CPPALLY
+  return cpp_to_sexp(::test_names_set_attr_invalidation());
+  END_CPPALLY
+}
+// test_names.cpp
+r_lgl test_names_growing();
+extern "C" SEXP _cppallytest_test_names_growing() {
+  BEGIN_CPPALLY
+  return cpp_to_sexp(::test_names_growing());
+  END_CPPALLY
+}
+// test_names.cpp
+r_lgl test_names_sweep();
+extern "C" SEXP _cppallytest_test_names_sweep() {
+  BEGIN_CPPALLY
+  return cpp_to_sexp(::test_names_sweep());
+  END_CPPALLY
+}
+// test_names.cpp
+r_lgl test_names_shallow_copy_isolation();
+extern "C" SEXP _cppallytest_test_names_shallow_copy_isolation() {
+  BEGIN_CPPALLY
+  return cpp_to_sexp(::test_names_shallow_copy_isolation());
+  END_CPPALLY
+}
+// test_names.cpp
+r_lgl test_names_empty();
+extern "C" SEXP _cppallytest_test_names_empty() {
+  BEGIN_CPPALLY
+  return cpp_to_sexp(::test_names_empty());
+  END_CPPALLY
+}
+// test_names.cpp
+r_lgl test_names_roundtrip_after_grow();
+extern "C" SEXP _cppallytest_test_names_roundtrip_after_grow() {
+  BEGIN_CPPALLY
+  return cpp_to_sexp(::test_names_roundtrip_after_grow());
+  END_CPPALLY
+}
 // test_nas.h
 extern "C" SEXP _cppallytest_test_nas(SEXP x) {
   BEGIN_CPPALLY
@@ -1017,6 +1073,14 @@ static const R_CallMethodDef CallEntries[] = {
     {"_cppallytest_test_multiple_deduction",              (DL_FUNC) &_cppallytest_test_multiple_deduction,              2},
     {"_cppallytest_test_n_unique",                        (DL_FUNC) &_cppallytest_test_n_unique,                        1},
     {"_cppallytest_test_na_types",                        (DL_FUNC) &_cppallytest_test_na_types,                        0},
+    {"_cppallytest_test_names_empty",                     (DL_FUNC) &_cppallytest_test_names_empty,                     0},
+    {"_cppallytest_test_names_growing",                   (DL_FUNC) &_cppallytest_test_names_growing,                   0},
+    {"_cppallytest_test_names_inplace_mutation",          (DL_FUNC) &_cppallytest_test_names_inplace_mutation,          0},
+    {"_cppallytest_test_names_roundtrip_after_grow",      (DL_FUNC) &_cppallytest_test_names_roundtrip_after_grow,      0},
+    {"_cppallytest_test_names_set_attr_invalidation",     (DL_FUNC) &_cppallytest_test_names_set_attr_invalidation,     0},
+    {"_cppallytest_test_names_shallow_copy_isolation",    (DL_FUNC) &_cppallytest_test_names_shallow_copy_isolation,    0},
+    {"_cppallytest_test_names_stale_invalidation",        (DL_FUNC) &_cppallytest_test_names_stale_invalidation,        0},
+    {"_cppallytest_test_names_sweep",                     (DL_FUNC) &_cppallytest_test_names_sweep,                     0},
     {"_cppallytest_test_nas",                             (DL_FUNC) &_cppallytest_test_nas,                             1},
     {"_cppallytest_test_null",                            (DL_FUNC) &_cppallytest_test_null,                            0},
     {"_cppallytest_test_order",                           (DL_FUNC) &_cppallytest_test_order,                           2},
