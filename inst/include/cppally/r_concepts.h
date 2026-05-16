@@ -464,9 +464,17 @@ struct common_r_math_impl {
     using type = std::conditional_t<(rank_t >= rank_u), lhs_math_t, rhs_math_t>;
 };
 
+template <typename T, typename U>
+struct common_r_type_impl {};
 
-template <CppallyType T, CppallyType U>
-struct common_r_type_impl {
+template <typename T, typename U>
+requires (is<T, U>)
+struct common_r_type_impl<T, U> {
+    using type = T;
+};
+
+template <RVal T, RVal U>
+struct common_r_type_impl<T, U> {
     static constexpr uint8_t rank_t = r_type_rank<T>();
     static constexpr uint8_t rank_u = r_type_rank<U>();
     using type = std::conditional_t<(rank_t >= rank_u), T, U>;
@@ -515,11 +523,6 @@ struct common_r_type_impl<T, U> {
 template <RDataFrame T, RFactor U>
 struct common_r_type_impl<T, U> {
     using type = r_df;
-};
-
-template <CppallyType T>
-struct common_r_type_impl<T, T> {
-    using type = T;
 };
 
 // Variadic fold: reduces N types by pairwise application of common_r_type_impl.
