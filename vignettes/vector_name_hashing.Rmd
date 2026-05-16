@@ -277,12 +277,12 @@ many lookups we need to do before we start seeing the benefits of hashing
 
 ```{r, fig.width=11, fig.height=7, out.width="100%", echo=FALSE}
 cost_per_lookup <- numeric(10^3)
-measure_ms <- function(expr){
-  unclass(bench::bench_time(expr))[["real"]] * 10^3
+measure_time <- function(expr, scale = 1){
+  unclass(bench::bench_time(expr))[["real"]] * scale
 }
 
 for (i in 1:10^3){
-  cost_per_lookup[i] <- measure_ms(do_lookup(large, nm, i)) / i
+  cost_per_lookup[i] <- measure_time(do_lookup(large, nm, i), scale = 10^6) / i
 }
 
 
@@ -296,7 +296,8 @@ pt_cols <- ifelse(
 plot(
     cost_per_lookup, 
     xlab = "N lookups",
-    ylab = "Cost per lookup (ms)",
+    ylab = "Cost per lookup (µs)",
+    main = "Time per name lookup (microseconds) as lookups increase",
     col = pt_cols
 )
 points(1, cost_per_lookup[1], pch = 19, col = "orange")
@@ -348,15 +349,16 @@ cost_per_lookup1 <- numeric(250)
 cost_per_lookup2 <- numeric(250)
 
 for (i in 1:250){
-  cost_per_lookup1[i] <- measure_ms(do_lookup(large, nm, i)) / i
-  cost_per_lookup2[i] <- measure_ms(do_first_lookup_hashed(large, nm, i)) / i
+  cost_per_lookup1[i] <- measure_time(do_lookup(large, nm, i), scale = 10^6) / i
+  cost_per_lookup2[i] <- measure_time(do_first_lookup_hashed(large, nm, i), scale = 10^6) / i
 }
 
 plot(
     cost_per_lookup1, 
     xlab = "N lookups",
-    ylab = "Cost per lookup (ms)",
+    ylab = "Cost per lookup (µs)",
     col = "darkblue",
+    main = "Hash on 1st lookup vs hash on 2nd lookup",
     type = "l"
 )
 lines(cost_per_lookup2, col = "darkorange")
@@ -404,6 +406,11 @@ r_vec<r_sexp> do_linear_lookup(r_vec<r_sexp> x, r_str name, int n_iterations){
 
 
 ```{r, fig.width=11, fig.height=7, out.width="100%", echo=FALSE}
+
+measure_ms <- function(expr){
+  measure_time(expr, scale = 10^3)
+}
+
 cost_per_hash_lookup <- numeric(250)
 nm <- names(large)[length(large) %/% 2]
 for (i in 1:length(cost_per_hash_lookup)){
@@ -435,6 +442,7 @@ plot(
     cost_per_hash_lookup,
     xlab = "N lookups",
     ylab = "Cost per lookup (ms)",
+    main = "Hashed lookups compared against three linear scan scenarios",
     col = "#0072B2"
 )
 
