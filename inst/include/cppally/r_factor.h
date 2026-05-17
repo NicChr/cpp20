@@ -243,6 +243,10 @@ struct r_factors {
     return get_code(r_str(val.data()));
   }
 
+  r_int get_code(r_size_t index) const {
+    return value.get(index);
+  }
+
   template <RStringType U>
   r_vec<r_int> get_codes(const r_vec<U>& vals, r_int no_match = na<r_int>()) const {
     int n = vals.length();
@@ -252,10 +256,6 @@ struct r_factors {
       out.set(i, code);
     }
     return out;
-  }
-
-  r_int get_code(r_size_t index) const {
-    return value.get(index);
   }
 
   void set_code(r_size_t index, r_int val) {
