@@ -300,7 +300,8 @@ struct r_factors {
     r_vec<r_int> out(n);
     for (r_size_t i = 0; i < n; ++i){
       r_int c = value.get(i);
-      out.set(i, is_na(c) ? no_match : remap.get(unwrap(c) - 1));
+      // Legit NA codes always stay NA — only unmapped levels use the sentinel
+      out.set(i, is_na(c) ? na<r_int>() : remap.get(unwrap(c) - 1));
     }
     return out;
   }
