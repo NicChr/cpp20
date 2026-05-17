@@ -67,12 +67,10 @@ struct r_factors {
     // Max code
     int max_code = unwrap(r_limits<r_int>::min());
 
-    const int *p_codes = codes.data();
-
     OMP_SIMD_REDUCTION1(max:max_code)
     for (r_size_t i = 0; i < n; ++i){
         // No need to ignore NA for max() because NA is defined as lowest representable value
-        max_code = std::max(max_code, p_codes[i]);
+        max_code = std::max(max_code, codes.data()[i]);
     }
 
     // If max is still the same value as when initialised, this either means the vector was full of NAs, or the max really is max int
@@ -108,6 +106,13 @@ struct r_factors {
     }
     cached_levels->invalidate();
   }
+
+  void set_codes(r_vec<r_int> new_codes) {
+    r_vec<r_str_view> lvls = levels();
+    value = std::move(new_codes);
+    cached_levels.reset();
+    init_factor(lvls, false);
+}
 
   private:
 

@@ -185,17 +185,6 @@ inline r_vec<T> r_vec<T>::subset(const r_vec<U>& indices, bool check, bool inver
 }
 }
 
-template <RVal T>
-r_vec<T> r_vec<T>::remove(const r_vec<T>& values) const {
-  if (is_long()){
-    r_vec<r_int64> keep = find<r_int64>(values, /*invert=*/ true);
-    return subset(keep, false);
-  } else {
-    r_vec<r_int> keep = find<r_int>(values, /*invert=*/ true);
-    return subset(keep, false);
-  }
-}
-
 
 template <RVal T>
 void r_vec<T>::replace(const r_vec<T>& old_values, const r_vec<T>& new_values){

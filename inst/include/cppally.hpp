@@ -45,6 +45,7 @@
 #include <cppally/sugar/r_count.h>
 #include <cppally/sugar/r_fill.h>
 #include <cppally/sugar/r_find.h>
+#include <cppally/sugar/r_remove.h>
 #include <cppally/sugar/r_make_vec.h>
 #include <cppally/sugar/r_combine.h>
 #include <cppally/sugar/r_recycle.h>
