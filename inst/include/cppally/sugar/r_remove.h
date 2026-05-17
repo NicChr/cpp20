@@ -38,20 +38,8 @@ r_factors remove(const r_factors& x, const r_vec<U>& values){
 }
 
 inline r_factors remove(const r_factors& x, const r_factors& values){
-    r_vec<r_int> remap = x.get_codes(values.levels(), r_int(-1));
-
-    r_size_t n = values.length();
-    r_vec<r_int> translated(n);
-    r_vec<r_int> source_codes = values.value;
-
-    for (r_size_t i = 0; i < n; ++i){
-        r_int c = source_codes.get(i) - 1;
-        translated.set(i, is_na(c) ? na<r_int>() : remap.get(unwrap(c)));
-    }
-    r_vec<r_int> new_codes = x.value.remove(translated);
-    r_factors out = x;
-    out.set_codes(new_codes);
-    return out;
+    r_vec<r_int> new_codes = x.value.remove(values.new_codes(x.levels(), r_int(-1)));
+    return r_factors(std::move(new_codes), x.levels());
 }
 
 template <typename T, typename U>

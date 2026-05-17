@@ -290,19 +290,24 @@ struct r_factors {
   }
 
   template <RStringType U>
-  r_factors recode(const r_vec<U>& new_levels) const {
+  r_vec<r_int> new_codes(const r_vec<U>& new_levels, r_int no_match = na<r_int>()) const {
     // Empty codes — we only need the temp's levels for lookup
     r_factors new_lvls_fct(r_vec<r_int>(), new_levels);
     
     // For each of this factor's levels, find its position in new_levels
-    r_vec<r_int> remap = new_lvls_fct.get_codes(levels());
+    r_vec<r_int> remap = new_lvls_fct.get_codes(levels(), no_match);
     r_size_t n = length();
     r_vec<r_int> out(n);
     for (r_size_t i = 0; i < n; ++i){
       r_int c = value.get(i);
-      out.set(i, is_na(c) ? na<r_int>() : remap.get(unwrap(c) - 1));
+      out.set(i, is_na(c) ? no_match : remap.get(unwrap(c) - 1));
     }
-    return r_factors(std::move(out), new_levels); 
+    return out;
+  }
+
+  template <RStringType U>
+  r_factors recode(const r_vec<U>& new_levels) const {
+    return r_factors(std::move(new_codes(new_levels)), new_levels); 
   }
 
   template <RStringType U>

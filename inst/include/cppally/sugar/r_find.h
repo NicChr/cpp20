@@ -51,17 +51,7 @@ r_vec<r_int> find(const r_factors& x, const r_vec<U>& values, bool invert = fals
 }
 
 inline r_vec<r_int> find(const r_factors& x, const r_factors& values, bool invert = false){
-    r_vec<r_int> remap = x.get_codes(values.levels(), r_int(-1));
-
-    r_size_t n = values.length();
-    r_vec<r_int> translated(n);
-    r_vec<r_int> source_codes = values.value;
-
-    for (r_size_t i = 0; i < n; ++i){
-        r_int c = source_codes.get(i) - 1;
-        translated.set(i, is_na(c) ? na<r_int>() : remap.get(unwrap(c)));
-    }
-    return x.value.find(translated, invert);
+    return x.value.find(values.new_codes(x.levels(), r_int(-1)), invert);
 }
 
 inline r_vec<r_int> find(const r_df& x, const r_df& rows, bool invert = false){
