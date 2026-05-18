@@ -71,7 +71,7 @@ T flatten(const r_vec<r_sexp>& x) {
     }
 
     // Grab first vector from list and resize it to final size
-    T first_vec = as<T>(x.view(0));
+    T first_vec = as<T>(x.get(0));
     // resize is best here as it resizes, doesn't initialise extra memory
     // and preserves attributes
     T out = resize(first_vec, out_size);
@@ -81,6 +81,53 @@ T flatten(const r_vec<r_sexp>& x) {
         T vec = as<T>(x.view(i));
         m = length(vec);
         r_copy_n(out, vec, k, m);
+    }
+    return out;
+}
+
+// Flatten a list of vectors, factors or data frames to a single
+// vector, factor or data frame
+inline r_sexp flatten(const r_vec<r_sexp>& x) {
+
+    r_size_t n = x.length();
+
+    if (n == 0){
+        return r_null;
+    }
+
+    r_size_t out_size = 0;
+    for (r_size_t i = 0; i < n; ++i) {
+        out_size += length(x.view(i));
+    }
+
+    // Grab first vector from list and resize it to final size
+    // resize is best here as it resizes, doesn't initialise extra memory
+    // and preserves attributes
+    r_sexp out = resize(x.get(0), out_size);
+
+    r_size_t k = length(x.view(0)), m;
+    for (r_size_t i = 1; i < n; k += m, ++i){
+        r_sexp next = x.view(i);
+        m = length(next);
+        // Rolling common type
+        out = visit_sexp(out, [&]<typename out_t>(out_t&& out_vec) -> r_sexp {
+            return visit_sexp(next, [&]<typename next_t>(const next_t& next_vec) -> r_sexp {
+                if constexpr (RComposite<out_t> && RComposite<next_t>){
+                    using common_t = common_r_t<out_t, next_t>;
+                    if constexpr (is<out_t, common_t>){
+                        r_copy_n(out_vec, as<common_t>(next_vec), k, m);
+                        return out;
+                    } else {
+                        // Promote out to common type, then write
+                        common_t out_promoted = as<common_t>(out_vec);
+                        r_copy_n(out_promoted, next_vec, k, m);
+                        return r_sexp(static_cast<SEXP>(out_promoted));
+                    }
+                } else {
+                    abort("flatten: unsupported element type %s", internal::type_str<next_t>());
+                }
+            });
+        });
     }
     return out;
 }
