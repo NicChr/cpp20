@@ -476,7 +476,7 @@ inline r_vec<r_lgl> operator!(const r_vec<r_lgl>& x){
     r_vec<r_lgl> out(n);
     OMP_SIMD
     for (r_size_t i = 0; i < n; ++i){
-        out.set(i, !x.view(i));
+        out.set(i, !x.get(i));
     }
     return out;
 }
@@ -490,6 +490,22 @@ inline r_vec<T> operator-(const r_vec<T>& x){
         out.set(i, -x.get(i));
     }
     return out;
+}
+
+namespace internal {
+
+// Helper to negative result of `==` in-place
+template <typename T, typename U>
+inline r_vec<r_lgl> not_equal(const T& lhs, const U& rhs){
+    r_vec<r_lgl> eq = lhs == rhs;
+    r_size_t n = eq.length();
+    OMP_SIMD
+    for (r_size_t i = 0; i < n; ++i){
+        eq.set(i, !eq.get(i));
+    }
+    return eq;
+}
+
 }
 
 

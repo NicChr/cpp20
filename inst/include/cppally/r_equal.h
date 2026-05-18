@@ -55,12 +55,6 @@ inline r_vec<r_lgl> operator==(const r_vec<U>& lhs, const r_factors& rhs) {
   return fct_codes == comparable_codes;
 }
 
-template <typename T, typename U>
-requires (RFactor<T> || RFactor<U>)
-inline r_vec<r_lgl> operator!=(const T& lhs, const U& rhs) {
-  return !(lhs == rhs);
-}
-
 // Forward decl for r_df
 template <typename T, typename U>
 requires (is<T, r_sexp> || is<U, r_sexp>)
@@ -122,10 +116,32 @@ inline r_vec<r_lgl> operator==(const T& lhs, const U& rhs) {
   }
 }
 
+inline r_vec<r_lgl> operator!=(const r_factors& lhs, const r_factors& rhs) {
+  return internal::not_equal(lhs, rhs);
+}
+
+template <RStringType U>
+inline r_vec<r_lgl> operator!=(const r_factors& lhs, const r_vec<U>& rhs) {
+  return internal::not_equal(lhs, rhs);
+}
+
+template <RStringType U>
+inline r_vec<r_lgl> operator!=(const r_vec<U>& lhs, const r_factors& rhs) {
+  return internal::not_equal(lhs, rhs);
+}
+
+inline r_vec<r_lgl> operator!=(const r_df& lhs, const r_df& rhs) {
+  return internal::not_equal(lhs, rhs);
+}
+
+inline r_vec<r_lgl> operator!=(const r_vec<r_sexp>& lhs, const r_vec<r_sexp>& rhs) {
+  return internal::not_equal(lhs, rhs);
+}
+
 template <typename T, typename U>
 requires (is<T, r_sexp> || is<U, r_sexp>)
 inline r_vec<r_lgl> operator!=(const T& lhs, const U& rhs) {
-    return !(lhs == rhs);
+  return internal::not_equal(lhs, rhs);
 }
 
 }
