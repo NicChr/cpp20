@@ -5,9 +5,33 @@
 #include <cppally/r_vec_methods.h>
 #include <cppally/r_visit.h>
 #include <cppally/r_length.h>
+#include <cppally/r_identical.h>
 #include <cppally/r_df_methods.h>
 
 namespace cppally {
+
+
+// Equality operator for lists
+// list-comparison becomes element-wise `identical()` comparison
+inline r_vec<r_lgl> operator==(const r_vec<r_sexp>& lhs, const r_vec<r_sexp>& rhs){
+  r_size_t n1 = lhs.length();
+  r_size_t n2 = rhs.length();
+
+  if (n1 == 0 || n2 == 0){
+    return r_vec<r_lgl>();
+  }
+
+  r_size_t n = std::max(n1, n2);
+  r_vec<r_lgl> out(n);
+  for (r_size_t i = 0, li = 0, ri = 0; 
+    i < n; 
+    recycle_index(li, n1), 
+    recycle_index(ri, n2), 
+    ++i){
+    out.set(i, r_lgl(identical(lhs.view(li), rhs.view(ri))));
+  }
+  return out;
+}
 
 // r_factors vectorised operators
 
@@ -64,14 +88,14 @@ inline r_vec<r_lgl> operator==(const r_df& lhs, const r_df& rhs) {
 
         lhs.with_col(colname, [&]<typename lhs_t>(const lhs_t& left_col) -> void {
             lhs_t right_col = lhs_t(rhs_col); // Assume right col is same type as left col (avoiding double visit dispatch)
-            int leftn = length(left_col);
-            int rightn = length(right_col);
-            if constexpr (RDataFrame<lhs_t>){
+            if constexpr (RDataFrame<lhs_t> || RListVector<lhs_t>){
               r_vec<r_lgl> cols_eq = left_col == right_col;
               for (int j = 0; j < out_size; ++j){
                 out.set(j, out.get(j) && cols_eq.get(j));
               }
             } else {
+              int leftn = length(left_col);
+              int rightn = length(right_col);
               for (int j = 0, li = 0, ri = 0; j < out_size;
                 recycle_index(li, leftn), 
                 recycle_index(ri, rightn), ++j) {
