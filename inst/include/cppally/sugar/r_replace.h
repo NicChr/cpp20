@@ -66,6 +66,7 @@ inline void replace(r_df& x, const r_df& old_values, const r_df& new_values){
   }
 
   for (r_size_t i = 0; i < ncols; ++i){
+    // Use colname-indexing to ensure colnames between data frames are coherent
     r_str colname = r_str(x.colnames().view(i));
     r_sexp col = x.get_col(i);
     replace(col, old_values.get_col(colname), new_values.get_col(colname));
