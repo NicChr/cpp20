@@ -158,7 +158,11 @@ inline std::remove_cvref_t<T> as(const U& x) {
     r_size_t n = x.length();
     auto out = to_t(n);
     // Lists sometimes can't be converted to atomic vectors so we can't run the coercion under an SIMD clause
-    if constexpr (internal::RPtrWritableType<to_data_t> && internal::RPtrWritableType<from_data_t>){
+    if constexpr (is<to_data_t, r_sexp> && !is<from_data_t, r_sexp>){
+      for (r_size_t i = 0; i < n; ++i){
+        out.set(i, from_t(1, x.view(i)).sexp);
+      }
+    } else if constexpr (internal::RPtrWritableType<to_data_t> && internal::RPtrWritableType<from_data_t>){
       OMP_SIMD
       for (r_size_t i = 0; i < n; ++i){
         out.set(i, as<to_data_t>(x.view(i)));
