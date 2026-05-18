@@ -94,19 +94,11 @@ inline r_lgl operator>=(const r_str& lhs, const r_str& rhs) {
   return static_cast<r_str_view>(lhs) >= static_cast<r_str_view>(rhs);
 }
 
-inline r_lgl operator==(const r_sexp& lhs, const r_sexp& rhs) {
-  return r_lgl{unwrap(lhs) == unwrap(rhs)};
-}
-
 template <RStringType T, RStringType U>
 inline T operator+(const T& lhs, const U& rhs){
   std::string a(lhs.c_str());
   return T((a + rhs.c_str()).c_str());
 }
-
-// inline r_lgl operator!=(const r_sexp& lhs, const r_sexp& rhs) {
-//   return r_lgl{unwrap(lhs) != unwrap(rhs)};
-// }
 
 inline r_lgl operator==(r_sym lhs, r_sym rhs) {
   return r_lgl{unwrap(lhs) == unwrap(rhs)};
