@@ -6,6 +6,8 @@
 
 * New variadic function `make_df()` to create in-line data frames
 
+* Various `r_df` members have been added to allow easier data frame manipulation
+
 ### Breaking changes
 
 * `r_sexp.length()` has been deprecated, in favour 
@@ -52,12 +54,16 @@ is possible so long as the element coercions are supported by `cppally::as`
 
 * New alias of `r_vec`, `r_vector`
 
-* For named vectors, lookup by name has been improved in C++ 
+* For named vectors, lookup by name has been dramatically improved in C++ 
 by introducing a hashing approach. On second lookup, a hash map of names 
 is created and cached, making subsequent lookups much faster. This also 
 applies to factor levels.
 
 * Named-vector subsetting is now supported
+
+* Many functions that were originally `r_vec` only members are now 
+free functions that also work on `r_sexp` as well as `RComposite` types, 
+allowing for easier manipulation of lists. 
 
 ### Bug fixes
 
