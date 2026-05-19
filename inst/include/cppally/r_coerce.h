@@ -124,11 +124,10 @@ inline std::remove_cvref_t<T> as(const U& x) {
     }
 
   } else if constexpr (RDataFrame<from_t>){ // from data frame
-    r_vec<r_sexp> lst(shallow_copy(x.value));
-    attr::clear_attrs(lst);
-    // Keep names
-    lst.set_names(x.colnames());
-    return as<to_t>(lst);
+    if (x.ncol() != 1){
+      abort("r_df must be a 1-column data frame to convert to %s", internal::type_str<to_t>());
+    }
+    return as<to_t>(x.get_col(0));
   } else if constexpr (RScalar<to_t> && RVector<from_t>){ // From vector to scalar
     if (x.length() != 1){
       abort("Vector must be length-1 to be coerced to requested scalar type");
