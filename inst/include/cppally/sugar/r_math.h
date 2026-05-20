@@ -16,12 +16,6 @@ inline constexpr r_dbl round_to_even(r_dbl x){
   return x - r_dbl{std::remainder(unwrap(x), 1.0)};
 }
 
-// Constexpr version of std::abs
-template<CppMathType T>
-inline constexpr T cpp_abs(T v) {
-    return (v < 0) ? -v : v;
-}
-
 }
 
 template <SortableType T, SortableType U>
@@ -91,8 +85,13 @@ inline r_str max(const r_str& x, const r_str& y){
 }
 
 template <RMathType T>
-inline constexpr T abs(T x){
-  return is_na(x) ? x : T{internal::cpp_abs(unwrap(x))};
+inline T abs(T x){
+  return is_na(x) ? x : T{std::abs(unwrap(x))};
+}
+
+template <>
+inline r_dbl abs(r_dbl x){
+  return r_dbl(std::abs(unwrap(x)));
 }
 
 template<RMathType T>
@@ -243,14 +242,8 @@ inline r_dbl signif(T x, U digits){
   }
 }
 
-template<MathType T, MathType U>
-requires (AtLeastOneRMathType<T, U>)
-inline constexpr auto abs_diff(T x, U y){
-  return abs(x - y);
-}
-
 inline r_lgl is_whole_number(r_dbl x, r_dbl tolerance){
-  return is_na(x) || is_na(tolerance) ? na<r_lgl>() : r_lgl(abs_diff(x, round(x)) <= tolerance);
+  return is_na(x) || is_na(tolerance) ? na<r_lgl>() : abs(x - round(x)) <= tolerance;
 }
 
 
